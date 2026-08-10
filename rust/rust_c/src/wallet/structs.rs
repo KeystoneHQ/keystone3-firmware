@@ -14,6 +14,8 @@ use crate::common::types::{Ptr, PtrString, PtrT};
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::{check_and_free_ptr, free_str_ptr, impl_c_ptr, make_free_method};
 
+const MAX_KEY_DERIVATION_SCHEMAS: usize = 24;
+
 #[repr(C)]
 pub struct QRHardwareCallData {
     pub call_type: PtrString,
@@ -43,8 +45,14 @@ impl TryFrom<&mut QRHardwareCall> for QRHardwareCallData {
     fn try_from(value: &mut QRHardwareCall) -> Result<Self, Self::Error> {
         match value.get_params() {
             CallParams::KeyDerivation(data) => {
-                let schemas = data
-                    .get_schemas()
+                let source_schemas = data.get_schemas();
+                if source_schemas.is_empty() || source_schemas.len() > MAX_KEY_DERIVATION_SCHEMAS {
+                    return Err(RustCError::InvalidData(
+                        "invalid key derivation schema count".to_string(),
+                    ));
+                }
+
+                let schemas = source_schemas
                     .iter()
                     .map(KeyDerivationSchema::try_from)
                     .collect::<Result<Vec<KeyDerivationSchema>, RustCError>>()?;

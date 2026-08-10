@@ -27,24 +27,45 @@ static uint16_t g_requestID = REQUEST_ID_IDLE;
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
-    EAPDUResponsePayload_t *payload = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
+    EAPDUResponsePayload_t *payload = NULL;
+    cJSON *root = NULL;
+    char *json_str = NULL;
+    (void)data_len;
 
-    cJSON *root = cJSON_CreateObject();
-    cJSON_AddStringToObject(root, "payload", (char *)data);
-    char *json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024 * 4, false);
-    cJSON_Delete(root);
+    payload = (EAPDUResponsePayload_t *)SRAM_MALLOC(sizeof(EAPDUResponsePayload_t));
+    if (payload == NULL) {
+        goto cleanup;
+    }
+
+    root = cJSON_CreateObject();
+    if (root == NULL ||
+        cJSON_AddStringToObject(root, "payload", data != NULL ? (char *)data : "") == NULL) {
+        goto cleanup;
+    }
+    json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024 * 4, false);
+    if (json_str == NULL) {
+        goto cleanup;
+    }
     payload->data = (uint8_t *)json_str;
-    payload->dataLen = strlen((char *)payload->data);
+    payload->dataLen = strlen(json_str);
     payload->status = status;
     payload->cla = EAPDU_PROTOCOL_HEADER;
     payload->commandType = CMD_RESOLVE_UR;
     payload->requestID = requestID;
 
     SendEApduResponse(payload);
-    EXT_FREE(json_str);
 
+cleanup:
+    if (root != NULL) {
+        cJSON_Delete(root);
+    }
+    if (json_str != NULL) {
+        EXT_FREE(json_str);
+    }
     g_requestID = REQUEST_ID_IDLE;
-    SRAM_FREE(payload);
+    if (payload != NULL) {
+        SRAM_FREE(payload);
+    }
 };
 
 void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
@@ -169,6 +190,7 @@ static void HandleHardwareCall(struct URParseResult *urResult)
 
     const char *data = "Export address is just allowed on specific pages";
     HandleURResultViaUSBFunc(data, strlen(data), g_requestID, PRS_PARSING_DISALLOWED);
+    free_ur_parse_result(urResult);
     g_requestID = REQUEST_ID_IDLE;
 }
 
@@ -192,11 +214,12 @@ static bool HandleNormalCall(void)
 
 static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewType_t urViewType)
 {
-    if (checkResult != NULL && checkResult->error_code == 0) {
+    if (checkResult == NULL) {
+        GotoFailPage(PRS_PARSING_ERROR, "Transaction check failed");
+    } else if (checkResult->error_code == 0) {
         PubValueMsg(UI_MSG_PREPARE_RECEIVE_UR_USB, urViewType.viewType);
-    } else if (checkResult != NULL &&
-               (checkResult->error_code == MasterFingerprintMismatch ||
-                checkResult->error_code == BitcoinNoMyInputs)) {
+    } else if (checkResult->error_code == MasterFingerprintMismatch ||
+               checkResult->error_code == BitcoinNoMyInputs) {
         const char *data = _("usb_transport_mismatched_wallet_desc");
         GotoFailPage(PRS_PARSING_MISMATCHED_WALLET, data);
     } else {
@@ -218,6 +241,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
         urResult = parse_ur((char *)payload->data);
         if (urResult->error_code != 0) {
             HandleURResultViaUSBFunc(urResult->error_message, strlen(urResult->error_message), g_requestID, PRS_PARSING_ERROR);
+            free_ur_parse_result(urResult);
             break;
         }
 
@@ -231,15 +255,18 @@ void ProcessURService(EAPDURequestPayload_t *payload)
             break;
         }
         if (!CheckURAcceptable()) {
+            free_ur_parse_result(urResult);
             break;
         }
         if (!HandleNormalCall()) {
+            free_ur_parse_result(urResult);
             break;
         }
 
         if (!CheckViewTypeIsAllow(urViewType.viewType)) {
             const char *data = "this view type is not supported";
             HandleURResultViaUSBFunc(data, strlen(data), g_requestID, RSP_FAILURE_CODE);
+            free_ur_parse_result(urResult);
             break;
         }
 

@@ -171,10 +171,19 @@ void GetSolMessageType(void *indata, void *param, uint32_t maxLen)
 void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
+    if (indata == NULL || maxLen == 0) {
+        return;
+    }
+    if (message == NULL || message->from == NULL) {
+        ((char *)indata)[0] = '\0';
+        return;
+    }
     if (strlen(message->from) >= maxLen) {
-        snprintf((char *)indata, maxLen - 3, "%s", message->from);
-        strcat((char *)indata, "...");
-        snprintf((char *)indata, maxLen, "%.*s...", maxLen - 4, message->from);
+        if (maxLen <= 4) {
+            snprintf((char *)indata, maxLen, "%.*s", (int)(maxLen - 1), "...");
+        } else {
+            snprintf((char *)indata, maxLen, "%.*s...", (int)(maxLen - 4), message->from);
+        }
     } else {
         strcpy_s((char *)indata, maxLen, message->from);
     }

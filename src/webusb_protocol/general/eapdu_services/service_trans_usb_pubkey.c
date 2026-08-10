@@ -11,6 +11,7 @@
 
 #define COIN_TYPE_SIZE 4
 #define SOLANA_COIN_TYPE 501U
+#define SOLANA_MAX_DERIVATION_DEPTH 4U
 
 static bool ParseCoinType(const uint8_t *data, uint32_t len, uint32_t *coinType)
 {
@@ -33,9 +34,12 @@ static bool ParseSolDerivationPath(const uint8_t *data, uint32_t len, char *path
     }
 
     uint8_t depth = data[0];
+    if (depth == 0 || depth > SOLANA_MAX_DERIVATION_DEPTH) {
+        return false;
+    }
     uint32_t expectedLen = 1 + (depth * 4);
 
-    if (len < expectedLen) {
+    if (len != expectedLen) {
         return false;
     }
 
@@ -55,10 +59,16 @@ static bool ParseSolDerivationPath(const uint8_t *data, uint32_t len, char *path
         }
 
         component &= 0x7FFFFFFF;
-        if (strlen(path) == 0) {
-            snprintf(path, pathSize, "%u'", component);
+        size_t used = strlen(path);
+        size_t available = pathSize - used;
+        int written;
+        if (used == 0) {
+            written = snprintf(path, pathSize, "%u'", component);
         } else {
-            snprintf(path + strlen(path), pathSize - strlen(path), "/%u'", component);
+            written = snprintf(path + used, available, "/%u'", component);
+        }
+        if (written < 0 || (size_t)written >= available) {
+            return false;
         }
     }
 

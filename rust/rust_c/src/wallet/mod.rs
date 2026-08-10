@@ -51,72 +51,58 @@ pub unsafe extern "C" fn parse_qr_hardware_call(ur: PtrUR) -> Ptr<Response<QRHar
 }
 
 #[no_mangle]
-pub unsafe extern "C" fn check_hardware_call_path(
-    path: PtrString,
-    chain_type: PtrString,
-) -> *mut Response<bool> {
-    let chain_type_str = recover_c_char(chain_type);
-    let prefix = match chain_type_str.as_str() {
-        "BTC_LEGACY" => "m/44'/0'",
-        "BTC_NATIVE_SEGWIT" => "m/84'",
-        "BTC_TAPROOT" => "m/86'",
-        "BTC" => "m/49'",
-        "ETH" => "m/44'/60'",
-        "SOL" => "m/44'/501'",
-        "XRP" => "m/44'/144'",
-        "ADA" => "m/1852'/1815'",
-        "ADA_CIP_1853" => "m/1853'/1815'",
-        "ADA_CIP_1854" => "m/1854'/1815'",
-        "TRX" => "m/44'/195'",
-        "LTC" => "m/49'/2'",
-        "BCH" => "m/44'/145'",
-        "APT" => "m/44'/637'",
-        "SUI" => "m/44'/784'",
-        "DASH" => "m/44'/5'",
-        "AR" => "m/44'/472'",
-        "XLM" => "m/44'/148'",
-        "TIA" => "m/44'/118'",
-        "ATOM" => "m/44'/118'",
-        "DYM" => "m/44'/118'",
-        "OSMO" => "m/44'/118'",
-        "INJ" => "m/44'/60'",
-        "CRO" => "m/44'/394'",
-        "KAVA" => "m/44'/459'",
-        "LUNC" => "m/44'/330'",
-        "AXL" => "m/44'/118'",
-        "LUNA" => "m/44'/330'",
-        "AKT" => "m/44'/118'",
-        "STRD" => "m/44'/118'",
-        "SCRT" => "m/44'/529'",
-        "BLD" => "m/44'/564'",
-        "CTK" => "m/44'/118'",
-        "EVMOS" => "m/44'/60'",
-        "STARS" => "m/44'/118'",
-        "XPRT" => "m/44'/118'",
-        "SOMM" => "m/44'/118'",
-        "JUNO" => "m/44'/118'",
-        "IRIS" => "m/44'/118'",
-        "DVPN" => "m/44'/118'",
-        "ROWAN" => "m/44'/118'",
-        "REGEN" => "m/44'/118'",
-        "BOOT" => "m/44'/118'",
-        "GRAV" => "m/44'/118'",
-        "IXO" => "m/44'/118'",
-        "NGM" => "m/44'/118'",
-        "IOV" => "m/44'/234'",
-        "UMEE" => "m/44'/118'",
-        "QCK" => "m/44'/118'",
-        "TGD" => "m/44'/118'",
-        "THOR" => "m/44'/931'",
-        "IOTA" => "m/44'/4218'",
-        _ => return Response::success(false).c_ptr(),
-    };
+pub unsafe extern "C" fn check_hardware_call_path(path: PtrString) -> *mut Response<bool> {
     let mut path = recover_c_char(path).to_lowercase();
     if !path.starts_with('m') {
         path = format!("m/{path}");
     }
-    let result = path.starts_with(prefix);
-    Response::success(result).c_ptr()
+    if DerivationPath::from_str(path.as_str()).is_err() {
+        return Response::success(false).c_ptr();
+    }
+
+    Response::success(is_supported_hardware_call_path(path.as_str())).c_ptr()
+}
+
+fn is_supported_hardware_call_path(path: &str) -> bool {
+    const SUPPORTED_PATH_PREFIXES: &[&str] = &[
+        "m/44'/0'",
+        "m/84'",
+        "m/86'",
+        "m/49'",
+        "m/44'/60'",
+        "m/44'/501'",
+        "m/44'/144'",
+        "m/1852'/1815'",
+        "m/1853'/1815'",
+        "m/1854'/1815'",
+        "m/44'/195'",
+        "m/44'/145'",
+        "m/44'/637'",
+        "m/44'/784'",
+        "m/44'/5'",
+        "m/44'/472'",
+        "m/44'/148'",
+        "m/44'/118'",
+        "m/44'/394'",
+        "m/44'/459'",
+        "m/44'/330'",
+        "m/44'/529'",
+        "m/44'/564'",
+        "m/44'/234'",
+        "m/44'/931'",
+        "m/44'/4218'",
+    ];
+
+    SUPPORTED_PATH_PREFIXES
+        .iter()
+        .any(|prefix| path_matches_prefix(path, prefix))
+}
+
+fn path_matches_prefix(path: &str, prefix: &str) -> bool {
+    path == prefix
+        || path
+            .strip_prefix(prefix)
+            .map_or(false, |suffix| suffix.starts_with('/'))
 }
 
 #[no_mangle]

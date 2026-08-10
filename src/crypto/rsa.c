@@ -29,7 +29,7 @@ static void RsaHashWithSalt(const uint8_t *data, uint8_t *hash)
     char hexString[2 * sizeof(mfp) + 1];
     char *hexPtr = hexString;
     for (size_t i = 0; i < sizeof(mfp); ++i) {
-        sprintf(hexPtr, "%02X", mfp[i]);
+        snprintf(hexPtr, 3, "%02X", mfp[i]);
         hexPtr += 2;
     }
     *hexPtr = '\0';

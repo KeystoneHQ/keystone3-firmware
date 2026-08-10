@@ -1,6 +1,7 @@
 use alloc::string::ToString;
 use alloc::vec::Vec;
 use alloc::{boxed::Box, string::String};
+use app_cardano::errors::CardanoError;
 use app_cardano::structs::{
     CardanoCertificate, CardanoFrom, CardanoTo, CardanoWithdrawal, ParsedCardanoSignCip8Data,
     ParsedCardanoSignData, ParsedCardanoTx, VotingProcedure, VotingProposal,
@@ -33,17 +34,17 @@ pub struct DisplayCardanoCatalyst {
     pub vote_keys: Ptr<VecFFI<PtrString>>,
 }
 
-impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
-    fn from(value: CardanoCatalystVotingRegistrationRequest) -> Self {
-        Self {
+impl TryFrom<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
+    type Error = CardanoError;
+
+    fn try_from(value: CardanoCatalystVotingRegistrationRequest) -> Result<Self, Self::Error> {
+        let stake_key = app_cardano::governance::parse_stake_address(value.get_stake_pub())?;
+        let rewards = app_cardano::governance::parse_payment_address(value.get_payment_address())?;
+
+        Ok(Self {
             nonce: convert_c_char(value.get_nonce().to_string()),
-            stake_key: convert_c_char(
-                app_cardano::governance::parse_stake_address(value.get_stake_pub()).unwrap(),
-            ),
-            rewards: convert_c_char(
-                app_cardano::governance::parse_payment_address(value.get_payment_address())
-                    .unwrap(),
-            ),
+            stake_key: convert_c_char(stake_key),
+            rewards: convert_c_char(rewards),
             vote_keys: VecFFI::from(
                 value
                     .get_delegations()
@@ -52,7 +53,7 @@ impl From<CardanoCatalystVotingRegistrationRequest> for DisplayCardanoCatalyst {
                     .collect_vec(),
             )
             .c_ptr(),
-        }
+        })
     }
 }
 

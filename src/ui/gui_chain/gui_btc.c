@@ -1098,8 +1098,8 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
 
         if (hasMultiFromAddress) {
             orderLabel = lv_label_create(formInnerContainer);
-            char str[4] = {0};
-            sprintf(str, "%d", (i + 1));
+            char str[BUFFER_SIZE_16] = {0};
+            snprintf(str, sizeof(str), "%d", (i + 1));
             lv_label_set_text(orderLabel, str);
             lv_obj_align(orderLabel, LV_ALIGN_DEFAULT, 0, 0);
             SetTitleLabelStyle(orderLabel);
@@ -1170,8 +1170,8 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
 
         if (hasMultiToAddress) {
             toOrderLabel = lv_label_create(toInnerContainer);
-            char str[4] = {0};
-            sprintf(str, "%d", (i + 1));
+            char str[BUFFER_SIZE_16] = {0};
+            snprintf(str, sizeof(str), "%d", (i + 1));
             lv_label_set_text(toOrderLabel, str);
             lv_obj_align(toOrderLabel, LV_ALIGN_DEFAULT, 0, 0);
             SetTitleLabelStyle(toOrderLabel);
@@ -1312,8 +1312,8 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_set_style_bg_opa(formInnerContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
         orderLabel = lv_label_create(formInnerContainer);
-        char str[4] = {0};
-        sprintf(str, "%d", (i + 1));
+        char str[BUFFER_SIZE_16] = {0};
+        snprintf(str, sizeof(str), "%d", (i + 1));
         lv_label_set_text(orderLabel, str);
         lv_obj_align(orderLabel, LV_ALIGN_DEFAULT, 0, 0);
         SetTitleLabelStyle(orderLabel);
@@ -1398,8 +1398,8 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         lv_obj_set_style_bg_opa(toInnerContainer, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
 
         orderLabel = lv_label_create(toInnerContainer);
-        char str[4] = {0};
-        sprintf(str, "%d", (i + 1));
+        char str[BUFFER_SIZE_16] = {0};
+        snprintf(str, sizeof(str), "%d", (i + 1));
         lv_label_set_text(orderLabel, str);
         lv_obj_align(orderLabel, LV_ALIGN_DEFAULT, 0, 0);
         SetTitleLabelStyle(orderLabel);

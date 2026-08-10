@@ -554,7 +554,7 @@ static lv_obj_t *CreateCosmosFeeDetails(lv_obj_t *parent, const cJSON *common, l
     y = CreateCosmosDetailInlineValue(container, "Max Fee", maxFee, y, false);
     if (maxFee != NULL) {
         lv_obj_t *description = GuiCreateLabelWithFont(
-            container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit", &openSansDesc);
+            container, "  ·  Max Fee Price * Gas Limit", &openSansDesc);
         lv_obj_set_style_text_opa(description, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(description, LV_ALIGN_TOP_LEFT, 24, y);
         lv_obj_update_layout(description);

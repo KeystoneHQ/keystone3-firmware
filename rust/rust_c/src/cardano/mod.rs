@@ -348,12 +348,26 @@ pub unsafe extern "C" fn cardano_parse_sign_tx_hash(
     let sign_hash_request = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
     let message = sign_hash_request.get_tx_hash();
     let crypto_key_paths = sign_hash_request.get_paths();
-    let paths = crypto_key_paths
+    let paths = match crypto_key_paths
         .iter()
         .map(|v| v.get_path())
         .collect::<Option<Vec<String>>>()
-        .unwrap_or_default();
+    {
+        Some(paths) => paths,
+        None => {
+            return TransactionParseResult::from(RustCError::InvalidData(
+                "invalid derivation path".to_string(),
+            ))
+            .c_ptr()
+        }
+    };
     let address_list = sign_hash_request.get_address_list();
+    if paths.len() != address_list.len() {
+        return TransactionParseResult::from(RustCError::InvalidData(
+            "address and derivation path count mismatch".to_string(),
+        ))
+        .c_ptr();
+    }
     let network = "Cardano".to_string();
     let result = DisplayCardanoSignTxHash::new(network, paths, message, address_list);
     TransactionParseResult::success(result.c_ptr()).c_ptr()
@@ -479,9 +493,10 @@ pub unsafe extern "C" fn cardano_parse_catalyst(
 ) -> PtrT<TransactionParseResult<DisplayCardanoCatalyst>> {
     let cardano_catalyst_request =
         extract_ptr_with_type!(ptr, CardanoCatalystVotingRegistrationRequest);
-    let res = DisplayCardanoCatalyst::from(cardano_catalyst_request.clone()).c_ptr();
-
-    TransactionParseResult::success(res).c_ptr()
+    match DisplayCardanoCatalyst::try_from(cardano_catalyst_request.clone()) {
+        Ok(value) => TransactionParseResult::success(value.c_ptr()).c_ptr(),
+        Err(error) => TransactionParseResult::from(error).c_ptr(),
+    }
 }
 
 #[no_mangle]

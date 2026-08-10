@@ -414,7 +414,7 @@ UREncodeResult *GuiGetADADataByIndex(char *walletName)
     char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
             GetConnectWalletPathIndex(walletName), index));
     char path[BUFFER_SIZE_32] = {0};
-    sprintf(path, "1852'/1815'/%u'", index);
+    snprintf(path, sizeof(path), "1852'/1815'/%u'", index);
     ExtendedPublicKey xpubs[1];
     xpubs[0].path = path;
     xpubs[0].xpub = xpub;

@@ -385,14 +385,14 @@ static void print_call_stack(uint32_t sp)
     cur_depth = cm_backtrace_call_stack(call_stack_buf, CMB_CALL_STACK_MAX_DEPTH, sp);
 
     for (i = 0; i < cur_depth; i++) {
-        sprintf(call_stack_info + i * (8 + 1), "%08lx", (unsigned long)call_stack_buf[i]);
+        snprintf(call_stack_info + i * (8 + 1), 9, "%08lx", (unsigned long)call_stack_buf[i]);
         call_stack_info[i * (8 + 1) + 8] = ' ';
     }
 
     if (cur_depth) {
         call_stack_info[cur_depth * (8 + 1) - 1] = '\0';
         cmb_println(print_info[PRINT_CALL_STACK_INFO], fw_name, CMB_ELF_FILE_EXTENSION_NAME, call_stack_info);
-        sprintf(callStackStr, print_info[PRINT_CALL_STACK_INFO], fw_name, CMB_ELF_FILE_EXTENSION_NAME, call_stack_info);
+        snprintf(callStackStr, sizeof(callStackStr), print_info[PRINT_CALL_STACK_INFO], fw_name, CMB_ELF_FILE_EXTENSION_NAME, call_stack_info);
     } else {
         cmb_println(print_info[PRINT_CALL_STACK_ERR]);
         strcpy(callStackStr, print_info[PRINT_CALL_STACK_ERR]);

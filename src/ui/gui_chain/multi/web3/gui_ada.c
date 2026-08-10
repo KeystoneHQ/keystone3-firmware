@@ -277,10 +277,15 @@ PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void)
     uint8_t mfp[4];
     GetMasterFingerPrint(mfp);
     Ptr_SimpleResponse_c_char master_key_index = cardano_get_catalyst_root_index(data);
-    if (master_key_index->error_code != 0) {
+    if (master_key_index == NULL) {
+        return NULL;
+    }
+    if (master_key_index->error_code != 0 || master_key_index->data == NULL) {
+        free_simple_response_c_char(master_key_index);
         return NULL;
     }
     uint16_t index = atoi(master_key_index->data);
+    free_simple_response_c_char(master_key_index);
     char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
     PtrT_TransactionCheckResult precheckResult;
     precheckResult = cardano_check_catalyst_path_type(data, xpub);
@@ -910,13 +915,22 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     // address + path card
     Ptr_VecFFI_PtrString addressList = hashData->address_list;
     Ptr_VecFFI_PtrString pathList = hashData->path;
-    for (int i = 0; i < addressList->size; i++) {
+    if (addressList == NULL || pathList == NULL || addressList->size != pathList->size ||
+        (addressList->size > 0 && (addressList->data == NULL || pathList->data == NULL))) {
+        return;
+    }
+    for (size_t i = 0; i < addressList->size; i++) {
+        if (addressList->data[i] == NULL || pathList->data[i] == NULL) {
+            return;
+        }
+    }
+    for (size_t i = 0; i < addressList->size; i++) {
         char *address = addressList->data[i];
         char *path = pathList->data[i];
         char formattedPath[128] = {0};
         snprintf(formattedPath, sizeof(formattedPath), "m/%s", path);
         char num[10] = {0};
-        snprintf(num, sizeof(num), "%d", i + 1);
+        snprintf(num, sizeof(num), "%zu", i + 1);
         lv_obj_t *num_label = GuiCreateIllustrateLabel(from_container, num);
         lv_obj_set_style_text_color(num_label, WHITE_COLOR, LV_PART_MAIN);
         lv_obj_set_style_text_opa(num_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);

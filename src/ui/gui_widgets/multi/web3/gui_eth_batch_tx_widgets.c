@@ -203,7 +203,10 @@ static void HandleClickAddressChecker(lv_event_t *e)
     if (code == LV_EVENT_CLICKED) {
         char *address = lv_event_get_user_data(e);
         char *text = malloc(BUFFER_SIZE_128);
-        sprintf(text, "https://etherscan.io/address/%s", address);
+        if (text == NULL) {
+            return;
+        }
+        snprintf(text, BUFFER_SIZE_128, "https://etherscan.io/address/%s", address);
         GuiQRCodeHintBoxOpen(text, _("Check the Address"), text);
     }
 }
@@ -520,10 +523,13 @@ static void GuiEthBatchTxNavBarInit()
 static void GuiEthBatchTxNavBarRefresh()
 {
     char* text = malloc(BUFFER_SIZE_128);
+    if (text == NULL) {
+        return;
+    }
     if (g_txCount > 1) {
-        sprintf(text, "%s (%d/%d)", _("confirm_transaction"), g_currentTxIndex + 1, g_txCount);
+        snprintf(text, BUFFER_SIZE_128, "%s (%d/%d)", _("confirm_transaction"), g_currentTxIndex + 1, g_txCount);
     } else {
-        sprintf(text, "%s", _("confirm_transaction"));
+        snprintf(text, BUFFER_SIZE_128, "%s", _("confirm_transaction"));
     }
     SetCoinWallet(g_pageWidget->navBarWidget, CHAIN_ETH, text);
     if (g_currentTxIndex == 0) {
@@ -904,7 +910,7 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
 
         height += 30 + 8;
 
-        titleLabel = GuiCreateIllustrateLabel(container, "  \xE2\x80\xA2  Max Priority Fee Price * Gas Limit");
+        titleLabel = GuiCreateIllustrateLabel(container, "  ·  Max Priority Fee Price * Gas Limit");
         lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, height);
 
         height += 30 + 8;
@@ -996,14 +1002,17 @@ static lv_obj_t *GuiRenderDetailContractData(lv_obj_t *parent, lv_obj_t *last_vi
             bool asset_is_eth = strcmp(param.value, "0x0000000000000000000000000000000000000000") == 0;
             Erc20Contract_t *erc20Contract = FindErc20Contract(param.value);
             char* text = malloc(BUFFER_SIZE_64);
+            if (text == NULL) {
+                continue;
+            }
             if (erc20Contract != NULL) {
-                sprintf(text, "%s (#1BE0C6 %s#)", param.value, erc20Contract->symbol);
+                snprintf(text, BUFFER_SIZE_64, "%s (#1BE0C6 %s#)", param.value, erc20Contract->symbol);
                 showAddressChecker = true;
             } else if (asset_is_eth) {
-                sprintf(text, "%s (#F5870A %s#)", param.value, g_currentNetwork.symbol);
+                snprintf(text, BUFFER_SIZE_64, "%s (#F5870A %s#)", param.value, g_currentNetwork.symbol);
                 showAddressChecker = false;
             } else {
-                sprintf(text, "%s", param.value);
+                snprintf(text, BUFFER_SIZE_64, "%s", param.value);
                 showAddressChecker = true;
             }
             label = GuiCreateIllustrateLabel(container, text);

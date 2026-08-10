@@ -2,11 +2,14 @@
 #include "stdio.h"
 #include "librust_c.h"
 
+#ifndef COMPILE_SIMULATOR
+#include "safe_str_lib.h"
+#endif
+
 #ifdef RUST_MEMORY_DEBUG
 #include "user_memory.h"
 #include "assert.h"
 #include "string.h"
-#include "safe_str_lib.h"
 
 #define MEM_DEBUG_BUF_SIZE 128
 

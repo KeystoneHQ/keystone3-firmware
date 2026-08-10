@@ -80,7 +80,7 @@ use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
 use super::types::{PtrDecoder, PtrEncoder, PtrString, PtrUR};
 use super::ur_ext::InferViewType;
-use super::utils::{convert_c_char, recover_c_char};
+use super::utils::{check_recover_c_char_lossy, convert_c_char, recover_c_char};
 use crate::{
     extract_ptr_with_type, free_ptr_with_type, free_str_ptr, impl_c_ptr, impl_new_error,
     impl_response,
@@ -1038,11 +1038,33 @@ pub extern "C" fn get_next_cyclic_part(ptr: PtrEncoder) -> *mut UREncodeMultiRes
 
 #[no_mangle]
 pub unsafe extern "C" fn parse_ur(ur: PtrString) -> *mut URParseResult {
-    decode_ur(recover_c_char(ur)).c_ptr()
+    if ur.is_null() {
+        return URParseResult::from(RustCError::InvalidData("UR payload is null".to_string()))
+            .c_ptr();
+    }
+    let (is_valid_utf8, ur) = check_recover_c_char_lossy(ur);
+    if !is_valid_utf8 {
+        return URParseResult::from(RustCError::InvalidData(
+            "UR payload is not valid UTF-8".to_string(),
+        ))
+        .c_ptr();
+    }
+    decode_ur(ur).c_ptr()
 }
 
 #[no_mangle]
 pub unsafe extern "C" fn receive(ur: PtrString, decoder: PtrDecoder) -> *mut URParseMultiResult {
+    if ur.is_null() {
+        return URParseMultiResult::from(RustCError::InvalidData("UR payload is null".to_string()))
+            .c_ptr();
+    }
+    let (is_valid_utf8, ur) = check_recover_c_char_lossy(ur);
+    if !is_valid_utf8 {
+        return URParseMultiResult::from(RustCError::InvalidData(
+            "UR payload is not valid UTF-8".to_string(),
+        ))
+        .c_ptr();
+    }
     let decoder = extract_ptr_with_type!(decoder, KeystoneURDecoder);
-    receive_ur(recover_c_char(ur), decoder).c_ptr()
+    receive_ur(ur, decoder).c_ptr()
 }

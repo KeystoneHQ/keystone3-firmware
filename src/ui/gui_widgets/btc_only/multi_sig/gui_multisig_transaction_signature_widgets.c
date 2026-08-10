@@ -226,9 +226,9 @@ static void GuiMultisigTransactionSignatureContent(lv_obj_t *parent)
     if (g_signStatus != NULL) {
         char signStatus[64] = {0};
         if (strncmp(g_signStatus, "Completed", 9) == 0) {
-            sprintf(signStatus, "#00FF00 %s#", _("multi_signature_completed"));
+            snprintf(signStatus, sizeof(signStatus), "#00FF00 %s#", _("multi_signature_completed"));
         } else {
-            sprintf(signStatus, "#F5870A %s#", g_signStatus);
+            snprintf(signStatus, sizeof(signStatus), "#F5870A %s#", g_signStatus);
         }
         if (g_signStatusView != NULL) {
             lv_obj_del(g_signStatusView);

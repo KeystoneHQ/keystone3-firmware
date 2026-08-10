@@ -256,11 +256,9 @@ impl WrappedPsbt {
 
     fn check_my_wallet_type(&self, input: &Input, context: &ParseContext) -> Result<()> {
         if let Some(config) = &context.multisig_wallet_config {
-            if context
-                .verify_code
-                .as_ref()
-                .is_some_and(|verify_code| verify_code != &config.verify_code)
-            {
+            if context.verify_code.as_ref().is_some_and(|verify_code| {
+                verify_code != &config.verify_code && verify_code != &config.verify_without_mfp
+            }) {
                 return Err(BitcoinError::WalletTypeError(
                     "multisig wallet config does not match verify code".to_string(),
                 ));
@@ -1601,7 +1599,7 @@ mod tests {
             format: "P2WSH-P2SH".to_string(),
             xpub_items,
             verify_code: "test".to_string(),
-            verify_without_mfp: String::new(),
+            verify_without_mfp: "without-mfp".to_string(),
             config_text: String::new(),
             network: MultiSigNetwork::TestNet,
         };
@@ -1613,6 +1611,8 @@ mod tests {
         };
         let wrapper = WrappedPsbt { psbt };
         let input = wrapper.psbt.inputs[0].clone();
+        assert!(wrapper.check_my_wallet_type(&input, &context).is_ok());
+        context.verify_code = Some("without-mfp".to_string());
         assert!(wrapper.check_my_wallet_type(&input, &context).is_ok());
         context.verify_code = Some("wrong".to_string());
         assert!(wrapper.check_my_wallet_type(&input, &context).is_err());

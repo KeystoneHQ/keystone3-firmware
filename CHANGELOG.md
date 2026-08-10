@@ -1,3 +1,28 @@
+## 3.0.4 (2026-08-10)
+
+**Web3:**
+
+### What's new
+
+1. Added support for Solana CLI
+2. Supported managing BTC and ADA assets using Lace Wallet
+
+### Improvements
+
+1. Optimized transaction parsing
+
+**Cypherpunk:**
+
+### Improvements
+
+1. Optimized transaction parsing
+
+**BTC Only:**
+
+### Improvements
+
+1. Optimized transaction parsing
+
 ## 3.0.2 (2026-07-24)
 
 **Cypherpunk:**

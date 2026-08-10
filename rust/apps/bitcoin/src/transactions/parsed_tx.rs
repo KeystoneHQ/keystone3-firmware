@@ -287,7 +287,8 @@ pub trait TxParser {
             from: overview_from,
             to: overview_to,
             network: network.normalize(),
-            fee_larger_than_amount: fee > overview_amount,
+            fee_larger_than_amount: large_fee_policy.warn_fee_larger_than_amount
+                && fee > overview_amount,
             is_large_fee,
             is_multisig: inputs.iter().any(|v| v.is_multisig),
             need_sign: Self::is_need_sign(&inputs),
@@ -561,13 +562,25 @@ mod tests {
             .unwrap();
         assert!(!normal_doge_fee.overview.is_large_fee);
 
+        let normal_small_doge_transfer = DummyParser
+            .normalize(
+                vec![build_input_with_value(23_482_934, 0x01)],
+                vec![build_output(10_000_000)],
+                &Network::Dogecoin,
+                false,
+                Some(200),
+            )
+            .unwrap();
+        assert!(!normal_small_doge_transfer.overview.is_large_fee);
+        assert!(!normal_small_doge_transfer.overview.fee_larger_than_amount);
+
         let high_doge_rate = DummyParser
             .normalize(
-                vec![build_input_with_value(110_000_001, 0x01)],
+                vec![build_input_with_value(120_000_001, 0x01)],
                 vec![build_output(100_000_000)],
                 &Network::Dogecoin,
                 false,
-                Some(1_000),
+                Some(200),
             )
             .unwrap();
         assert!(high_doge_rate.overview.is_large_fee);

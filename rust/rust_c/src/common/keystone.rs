@@ -112,8 +112,7 @@ pub unsafe fn build_check_result(
     match payload_content {
         Some(payload::Content::SignTx(sign_tx_content)) => {
             #[cfg(feature = "bitcoin")]
-            let is_legacy_utxo =
-                app_bitcoin::network::is_legacy_utxo_transaction(&sign_tx_content);
+            let is_legacy_utxo = app_bitcoin::network::is_legacy_utxo_transaction(&sign_tx_content);
             #[cfg(feature = "bitcoin")]
             let is_supported_legacy_utxo =
                 app_bitcoin::network::is_supported_legacy_utxo_transaction(&sign_tx_content);

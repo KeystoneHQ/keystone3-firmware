@@ -1290,7 +1290,7 @@ static lv_obj_t *CreateEthOverviewValueView(lv_obj_t *parent, DisplayETH *eth, l
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
-    label = GuiCreateLittleTitleLabel(container, value);
+    label = GuiCreateLabelWithFont(container, value, GetOverviewAmountFont(value));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 50);
     lv_obj_set_width(label, ETH_COMPONENT_CONTENT_WIDTH);
     lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
@@ -1304,7 +1304,7 @@ static lv_obj_t *CreateEthOverviewValueView(lv_obj_t *parent, DisplayETH *eth, l
     }
 
     GetEthTxFee(value, eth, sizeof(value));
-    nextY = CreateEthOverviewValueRow(container, _("MaxTxnFee"), value, nextY);
+    nextY = CreateEthOverviewValueRow(container, _("Max Txn Fee"), value, nextY);
     lv_obj_set_height(container, nextY + 8);
     lv_obj_update_layout(container);
     return container;
@@ -1502,29 +1502,30 @@ static lv_obj_t *CreateEthDetailsFeeView(lv_obj_t *parent, DisplayETH *eth, lv_o
 
     if (feeMarket) {
         GetEthMaxFee(value, eth, sizeof(value));
-        y = CreateEthDetailsPair(container, _("MaxFee"), value, y, false);
-        y = CreateEthDetailsDescription(container, _("·MaxFeePrice*GasLimit"), y, NULL);
+        y = CreateEthDetailsPair(container, _("Max Fee"), value, y, false);
+        y = CreateEthDetailsDescription(
+            container, "  \xE2\x80\xA2  Max Fee Price * Gas Limit", y, NULL);
 
         GetEthMaxPriority(value, eth, sizeof(value));
-        y = CreateEthDetailsPair(container, _("MaxPriority"), value, y, false);
+        y = CreateEthDetailsPair(container, _("Max Priority Fee"), value, y, false);
         y = CreateEthDetailsDescription(
-            container, _("·MaxPriorityFeePrice*GasLimit"), y, NULL);
+            container, "  \xE2\x80\xA2  Max Priority Fee Price * Gas Limit", y, NULL);
 
         GetEthMaxFeePrice(value, eth, sizeof(value));
-        y = CreateEthDetailsPair(container, _("MaxFeePrice"), value, y, false);
+        y = CreateEthDetailsPair(container, _("Max Fee Price"), value, y, false);
         GetEthMaxPriorityFeePrice(value, eth, sizeof(value));
-        y = CreateEthDetailsPair(container, _("MaxPriorityFeePrice"), value, y, false);
-        y = CreateEthDetailsPair(container, _("GasLimit"), eth->overview->gas_limit, y, false);
+        y = CreateEthDetailsPair(container, _("Max Priority Fee Price"), value, y, false);
+        y = CreateEthDetailsPair(container, _("Gas Limit"), eth->overview->gas_limit, y, false);
     } else {
         GetEthTxFee(value, eth, sizeof(value));
-        y = CreateEthDetailsPair(container, _("MaxTxnFee"), value, y, false);
+        y = CreateEthDetailsPair(container, _("Max Txn Fee"), value, y, false);
         y = CreateEthDetailsDescription(
             container, "  \xE2\x80\xA2  Max Txn Fee = Gas Price * Gas Limit", y,
             &openSansDesc);
         y = CreateEthDetailsPair(
-            container, _("GasPrice"), eth->overview->gas_price, y, false);
+            container, _("Gas Price"), eth->overview->gas_price, y, false);
         y = CreateEthDetailsPair(
-            container, _("GasLimit"), eth->overview->gas_limit, y, false);
+            container, _("Gas Limit"), eth->overview->gas_limit, y, false);
     }
     lv_obj_set_height(container, y + 8);
     return container;

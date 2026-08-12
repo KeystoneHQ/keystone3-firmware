@@ -15,7 +15,7 @@
 
 #ifdef CYPHERPUNK_VERSION
 #ifndef LEGACY_USB_PAD_LEN
-#define LEGACY_USB_PAD_LEN 2U
+#define LEGACY_USB_PAD_LEN 1U
 #endif
 #endif
 

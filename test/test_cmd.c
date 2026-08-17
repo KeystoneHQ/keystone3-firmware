@@ -54,9 +54,15 @@
 #include "presetting.h"
 #include "usb_task.h"
 #include "device_setting.h"
+#include "screen_manager.h"
+#include "power_manager.h"
+#include "user_delay.h"
 
 #define CMD_MAX_ARGC                                16
 #define DEFAULT_TEST_BUFF_LEN                       1024
+#define DIAGNOSTIC_SAMPLE_DEFAULT_DELAY_MS          5
+#define DIAGNOSTIC_SAMPLE_MAX_COUNT                 1000000UL
+#define DIAGNOSTIC_SAMPLE_MAX_DELAY_MS              60000UL
 
 typedef void (*UartTestCmdFunc_t)(int argc, char *argv[]);
 
@@ -75,6 +81,7 @@ static void GetTickFunc(int argc, char *argv[]);
 static void MemoryTestFunc(int argc, char *argv[]);
 static void PsramTestFunc(int argc, char *argv[]);
 static void TrngTestFunc(int argc, char *argv[]);
+static void DiagnosticSampleFunc(int argc, char *argv[]);
 static void HardfaultFunc(int argc, char *argv[]);
 static void TouchFunc(int argc, char *argv[]);
 static void TouchReleaseFunc(int argc, char *argv[]);
@@ -215,6 +222,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"memory test:", MemoryTestFunc},
     {"psram test:", PsramTestFunc},
     {"trng test:", TrngTestFunc},
+    {"diagnostic sample:", DiagnosticSampleFunc},
     {"hardfault:", HardfaultFunc},
     {"touch:", TouchFunc},
     {"touch release", TouchReleaseFunc},
@@ -556,6 +564,63 @@ static void TrngTestFunc(int argc, char *argv[])
     TrngGet(mem, byteNum);
     PrintArray("trng", mem, byteNum);
     SRAM_FREE(mem);
+}
+
+static void DiagnosticSampleFunc(int argc, char *argv[])
+{
+    uint8_t entropy[ENTROPY_MAX_LEN];
+    uint32_t sampleCount;
+    uint32_t delayMs = DIAGNOSTIC_SAMPLE_DEFAULT_DELAY_MS;
+    unsigned long parsedValue;
+    char *end = NULL;
+    bool lockScreenEnable;
+    int32_t ret;
+
+    if ((argc != 2 && argc != 3) || strcmp(argv[0], "output") != 0) {
+        printf("ERR:ARG\r\n");
+        return;
+    }
+
+    parsedValue = strtoul(argv[1], &end, 10);
+    if (end == argv[1] || *end != 0 || parsedValue == 0 || parsedValue > DIAGNOSTIC_SAMPLE_MAX_COUNT) {
+        printf("ERR:COUNT\r\n");
+        return;
+    }
+    sampleCount = (uint32_t)parsedValue;
+
+    if (argc == 3) {
+        parsedValue = strtoul(argv[2], &end, 10);
+        if (end == argv[2] || *end != 0 || parsedValue > DIAGNOSTIC_SAMPLE_MAX_DELAY_MS) {
+            printf("ERR:DELAY\r\n");
+            return;
+        }
+        delayMs = (uint32_t)parsedValue;
+    }
+
+    lockScreenEnable = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    ClearLockScreenTime();
+    ClearShutdownTime();
+
+    for (uint32_t sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
+        ret = GenerateEntropy(entropy, ENTROPY_MAX_LEN, "123456");
+        if (ret != SUCCESS_CODE) {
+            printf("ERR:%d\r\n", ret);
+            break;
+        }
+        for (uint32_t i = 0; i < ENTROPY_MAX_LEN; i++) {
+            printf("%02X", entropy[i]);
+        }
+        printf("\r\n");
+        ClearLockScreenTime();
+        ClearShutdownTime();
+        if (delayMs != 0) {
+            UserDelay(delayMs);
+        }
+    }
+
+    SetLockScreen(lockScreenEnable);
+    CLEAR_ARRAY(entropy);
 }
 
 static void HardfaultFunc(int argc, char *argv[])

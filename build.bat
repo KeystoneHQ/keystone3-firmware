@@ -40,6 +40,7 @@ IF NOT EXIST %BUILD_FOLDER%\padding_bin_file.py (
 )
 
 CALL :EXECUTE_BUILD
+IF ERRORLEVEL 1 EXIT /B 1
 
 ENDLOCAL
 GOTO :EOF
@@ -61,17 +62,25 @@ IF "%build_debug%"=="true" SET "cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true"
 IF "%build_simulator%"=="true" (
     IF NOT EXIST %BUILD_SIMULATOR_FOLDER% mkdir %BUILD_SIMULATOR_FOLDER%
     pushd %BUILD_SIMULATOR_FOLDER%
-    cmake -G "Unix Makefiles" -DBUILD_TYPE=Simulator %cmake_parm% .. 
-    make -j16
+    cmake -G Ninja -DBUILD_TYPE=Simulator %cmake_parm% ..
+    ninja rust_c
+    IF ERRORLEVEL 1 EXIT /B 1
+    ninja -j16
+    IF ERRORLEVEL 1 EXIT /B 1
     popd
 ) ELSE (
     pushd %BUILD_FOLDER%
-    cmake -G "Unix Makefiles" %cmake_parm% ..
+    cmake -G Ninja %cmake_parm% ..
     IF "%build_log%"=="true" (
-        make -j16 > makefile.log 2>&1
+        ninja rust_c > ninja.log 2>&1
+        IF ERRORLEVEL 1 EXIT /B 1
+        ninja -j16 >> ninja.log 2>&1
     ) ELSE (
-        make -j16
+        ninja rust_c
+        IF ERRORLEVEL 1 EXIT /B 1
+        ninja -j16
     )
+    IF ERRORLEVEL 1 EXIT /B 1
     python padding_bin_file.py mh1903.bin
     popd
 )

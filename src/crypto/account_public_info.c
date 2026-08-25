@@ -23,6 +23,9 @@
 #include "log_print.h"
 #include "rsa.h"
 #include "gui_model.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_cmd_server.h"
+#endif
 
 #define PUB_KEY_MAX_LENGTH                  1024 + 1
 #define VERSION_MAX_LENGTH                  64
@@ -875,7 +878,13 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     bool isBip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
     int seedLen = GetCurrentAccountSeedLen();
     do {
+#ifdef COMPILE_SIMULATOR
+        if (!SimulatorCommandServerIsHandlingCommand()) {
+            GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
+        }
+#else
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
+#endif
         char* icarusMasterKey = NULL;
         char* ledgerBitbox02Key = NULL;
         printf("regenerate pub key!\r\n");
@@ -945,7 +954,13 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
             free_simple_response_c_char(cip3_response);
             free_simple_response_c_char(ledger_bitbox02_response);
         }
+#ifdef COMPILE_SIMULATOR
+        if (!SimulatorCommandServerIsHandlingCommand()) {
+            GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        }
+#else
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+#endif
     } while (0);
 
     CLEAR_ARRAY(seed);

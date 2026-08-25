@@ -1,5 +1,8 @@
-set(CMAKE_SYSTEM_NAME Generic)
 cmake_minimum_required(VERSION 3.10)
+
+if(NOT BUILD_TYPE STREQUAL "Simulator")
+    set(CMAKE_SYSTEM_NAME Generic)
+endif()
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
@@ -388,12 +391,24 @@ else()
         target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreFoundation")
         target_link_libraries(${PROJECT_NAME} PRIVATE "-framework CoreGraphics")
         
-        set(CODESIGN_IDENTITY "keystone simulator")
+        set(SIMULATOR_CODESIGN_IDENTITY "keystone simulator" CACHE STRING "Codesign identity for the macOS simulator")
+        execute_process(
+            COMMAND security find-identity -v -p codesigning
+            OUTPUT_VARIABLE CODESIGN_IDENTITIES
+            ERROR_QUIET
+        )
+        string(FIND "${CODESIGN_IDENTITIES}" "${SIMULATOR_CODESIGN_IDENTITY}" CODESIGN_IDENTITY_INDEX)
+        if(CODESIGN_IDENTITY_INDEX EQUAL -1)
+            message(WARNING "Codesign identity '${SIMULATOR_CODESIGN_IDENTITY}' not found; using ad-hoc signing for simulator")
+            set(CODESIGN_IDENTITY "-")
+        else()
+            set(CODESIGN_IDENTITY "${SIMULATOR_CODESIGN_IDENTITY}")
+        endif()
         set(ENTITLEMENTS_FILE "${CMAKE_SOURCE_DIR}/entitlements.plist")
         set(CODESIGN_COMMAND codesign --force --options runtime --entitlements ${ENTITLEMENTS_FILE} --sign "${CODESIGN_IDENTITY}")
         add_custom_command(TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CODESIGN_COMMAND} ${PROJECT_NAME}
+            COMMAND ${CODESIGN_COMMAND} $<TARGET_FILE:${PROJECT_NAME}>
             COMMENT "Signing the executable"
         )
     endif()

@@ -494,10 +494,16 @@ void WipeDevice(void)
     SE_SetAccountStatus(0, ACCOUNT_STATUS_UNKNOWN);
     SE_SetAccountStatus(1, ACCOUNT_STATUS_UNKNOWN);
     SE_SetAccountStatus(2, ACCOUNT_STATUS_UNKNOWN);
+#ifdef COMPILE_SIMULATOR
+    // Simulator storage is file-backed. DestroyAccount above clears the
+    // account files, so scanning the entire 16MB flash image is unnecessary.
+    return;
+#else
     for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
         Gd25FlashBlockErase(addr);
         printf("flash erase address: %#x\n", addr);
     }
+#endif
 }
 
 /// @brief Device settings test.

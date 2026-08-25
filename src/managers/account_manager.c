@@ -505,7 +505,13 @@ void SetWalletIconIndex(uint8_t iconIndex)
 void SetWalletName(const char *walletName)
 {
     memset_s(g_currentAccountInfo.walletName, sizeof(g_currentAccountInfo.walletName), 0, sizeof(g_currentAccountInfo.walletName));
+#ifdef COMPILE_SIMULATOR
+    if (walletName != NULL) {
+        strcpy_s(g_currentAccountInfo.walletName, WALLET_NAME_MAX_LEN + 1, walletName);
+    }
+#else
     strcpy_s(g_currentAccountInfo.walletName, WALLET_NAME_MAX_LEN + 1, walletName);
+#endif
     SaveCurrentAccountInfo();
 }
 
@@ -628,7 +634,11 @@ int32_t DestroyAccount(uint8_t accountIndex)
     if (ret == SUCCESS_CODE) {
         // gen-2: erase this account's SE-side key material, not just the pages zeroed above (gen-1/simulator
         // no-op). Keep DELETING until all per-account cleanup succeeds so boot can resume after power loss.
+#ifdef COMPILE_SIMULATOR
+        ret = SimulatorDestroyAccountSecret(accountIndex);
+#else
         ret = SE_EraseAccount(accountIndex);
+#endif
         if (ret != SUCCESS_CODE) {
             printf("destroy account:erase se account err,0x%X\n", ret);
         } else {

@@ -53,6 +53,13 @@ static int32_t AccountExists(uint8_t accountIndex, bool *exists);
 static void CombineInnerAesKey(uint8_t *aesKey);
 static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char *passphrase, const char *password);
 
+#ifndef BUILD_PRODUCTION
+static void PrepareTestWalletName(void)
+{
+    SecretCacheSetWalletName("");
+}
+#endif
+
 static int32_t AccountExists(uint8_t accountIndex, bool *exists)
 {
     uint8_t iv[32];
@@ -867,8 +874,135 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
+        PrepareTestWalletName();
         ret = CreateNewAccount(index, entropy, entropyLen, argv[3]);
         printf("CreateNewAccount=%d\r\n", ret);
+    } else if (strcmp(argv[0], "dice_entropy") == 0) {
+        VALUE_CHECK(argc, 3);
+        uint32_t wordCnt;
+        uint32_t rollsLen;
+        uint8_t hash[32] = {0};
+        char *mnemonic = NULL;
+        sscanf(argv[1], "%u", &wordCnt);
+        rollsLen = strnlen_s(argv[2], 257);
+        if (wordCnt != 12 && wordCnt != 24) {
+            printf("DiceEntropy=-1\r\n");
+            return;
+        }
+        if (rollsLen > 256 || rollsLen < 50 || (wordCnt == 24 && rollsLen < 100)) {
+            printf("DiceEntropy=-2\r\n");
+            return;
+        }
+        for (uint32_t i = 0; i < rollsLen; i++) {
+            if (argv[2][i] < '1' || argv[2][i] > '6') {
+                printf("DiceEntropy=-3\r\n");
+                return;
+            }
+            if (argv[2][i] == '6') {
+                argv[2][i] = '0';
+            }
+        }
+        sha256((struct sha256 *)hash, argv[2], rollsLen);
+        entropyLen = wordCnt == 24 ? 32 : 16;
+        memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
+        PrintArray("entropy", entropy, entropyLen);
+        ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
+        printf("DiceEntropy=%d\r\n", ret);
+        if (ret == SUCCESS_CODE) {
+            printf("mnemonic=%s\r\n", mnemonic);
+        }
+        if (mnemonic != NULL) {
+            size_t mlen = strnlen_s(mnemonic, MNEMONIC_MAX_LEN);
+            memset_s(mnemonic, mlen, 0, mlen);
+            SRAM_FREE(mnemonic);
+        }
+        CLEAR_ARRAY(hash);
+    } else if (strcmp(argv[0], "slip39_entropy") == 0) {
+        VALUE_CHECK(argc, 5);
+        uint32_t wordCnt, memberCnt, memberThreshold;
+        char *wordsList[SLIP39_MAX_SLICE_COUNT] = {0};
+        uint8_t ems[SLIP39_EMS_LEN] = {0};
+        uint8_t recovered[ENTROPY_MAX_LEN] = {0};
+        uint16_t id = 0;
+        uint8_t ie = 0;
+        bool eb = false;
+        sscanf(argv[1], "%u", &wordCnt);
+        sscanf(argv[2], "%u", &memberCnt);
+        sscanf(argv[3], "%u", &memberThreshold);
+        uint8_t masterLen = wordCnt == SLIP39_MNEMONIC_20_WORDS ? 16 :
+                            wordCnt == SLIP39_MNEMONIC_33_WORDS ? 32 : 0;
+        if (masterLen == 0 || memberCnt == 0 || memberCnt > SLIP39_MAX_SLICE_COUNT ||
+            memberThreshold == 0 || memberThreshold > memberCnt ||
+            strnlen_s(argv[4], PASSWORD_MAX_LEN) == 0) {
+            printf("Slip39Entropy=-1\r\n");
+            return;
+        }
+        ret = GenerateEntropy(entropy, masterLen, argv[4]);
+        if (ret == SUCCESS_CODE) {
+            ret = GetSlip39MnemonicsWords(entropy, ems, (uint8_t)wordCnt, (uint8_t)memberCnt,
+                                          (uint8_t)memberThreshold, wordsList, &id, &eb, &ie);
+        }
+        PrintArray("entropy", entropy, masterLen);
+        PrintArray("slip39Ems", ems, masterLen);
+        printf("slip39Id=%u\r\nslip39Extendable=%u\r\nslip39IterationExponent=%u\r\n",
+               id, eb ? 1 : 0, ie);
+        if (ret == SUCCESS_CODE) {
+            for (uint32_t i = 0; i < memberCnt; i++) {
+                printf("slip39Share[%u]=%s\r\n", i, wordsList[i]);
+            }
+            ret = Slip39GetMasterSecret((uint8_t)memberThreshold, (uint8_t)wordCnt, ems,
+                                        recovered, wordsList, &id, &eb, &ie);
+            PrintArray("recoveredMasterSecret", recovered, masterLen);
+            printf("RecoverSlip39=%d\r\n", ret);
+        }
+        printf("Slip39Entropy=%d\r\n", ret == SUCCESS_CODE ? 0 : ret);
+        for (uint32_t i = 0; i < memberCnt; i++) {
+            if (wordsList[i] != NULL) {
+                SRAM_FREE(wordsList[i]);
+            }
+        }
+        CLEAR_ARRAY(ems);
+        CLEAR_ARRAY(recovered);
+    } else if (strcmp(argv[0], "slip39_dice_entropy") == 0) {
+        VALUE_CHECK(argc, 5);
+        uint32_t wordCnt, memberCnt, memberThreshold;
+        uint32_t rollsLen = strnlen_s(argv[2], 257);
+        uint8_t hash[32] = {0};
+        sscanf(argv[1], "%u", &wordCnt);
+        sscanf(argv[3], "%u", &memberCnt);
+        sscanf(argv[4], "%u", &memberThreshold);
+        if (rollsLen > 256 || rollsLen < 50 || (wordCnt == SLIP39_MNEMONIC_33_WORDS && rollsLen < 100)) {
+            printf("Slip39Entropy=-2\r\n");
+            return;
+        }
+        for (uint32_t i = 0; i < rollsLen; i++) {
+            if (argv[2][i] < '1' || argv[2][i] > '6') {
+                printf("Slip39Entropy=-3\r\n");
+                return;
+            }
+            if (argv[2][i] == '6') argv[2][i] = '0';
+        }
+        sha256((struct sha256 *)hash, argv[2], rollsLen);
+        uint8_t masterLen = wordCnt == SLIP39_MNEMONIC_20_WORDS ? 16 : 32;
+        memcpy_s(entropy, sizeof(entropy), hash, masterLen);
+        char *wordsList[SLIP39_MAX_SLICE_COUNT] = {0};
+        uint8_t ems[SLIP39_EMS_LEN] = {0};
+        uint8_t recovered[ENTROPY_MAX_LEN] = {0};
+        uint16_t id = 0; uint8_t ie = 0; bool eb = false;
+        ret = GetSlip39MnemonicsWords(entropy, ems, (uint8_t)wordCnt, (uint8_t)memberCnt,
+                                      (uint8_t)memberThreshold, wordsList, &id, &eb, &ie);
+        PrintArray("entropy", entropy, masterLen);
+        PrintArray("slip39Ems", ems, masterLen);
+        printf("slip39Id=%u\r\nslip39Extendable=%u\r\nslip39IterationExponent=%u\r\n", id, eb ? 1 : 0, ie);
+        if (ret == SUCCESS_CODE) {
+            for (uint32_t i = 0; i < memberCnt; i++) printf("slip39Share[%u]=%s\r\n", i, wordsList[i]);
+            ret = Slip39GetMasterSecret((uint8_t)memberThreshold, (uint8_t)wordCnt, ems, recovered, wordsList, &id, &eb, &ie);
+            PrintArray("recoveredMasterSecret", recovered, masterLen);
+            printf("RecoverSlip39=%d\r\n", ret);
+        }
+        printf("Slip39Entropy=%d\r\n", ret == SUCCESS_CODE ? 0 : ret);
+        for (uint32_t i = 0; i < memberCnt; i++) if (wordsList[i] != NULL) SRAM_FREE(wordsList[i]);
+        CLEAR_ARRAY(hash); CLEAR_ARRAY(ems); CLEAR_ARRAY(recovered);
     } else if (strcmp(argv[0], "new_slip39_entropy") == 0) {
         VALUE_CHECK(argc, 4);
         sscanf(argv[1], "%d", &index);
@@ -876,6 +1010,7 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
+        PrepareTestWalletName();
         ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, false, 0);
         printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "save_slip39_entropy") == 0) {
@@ -889,6 +1024,7 @@ void KeyStoreTest(int argc, char *argv[])
         }
         PrintArray("entropy", entropy, entropyLen);
         uint8_t ems[32] = {0};
+        PrepareTestWalletName();
         ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, false, 0);
         printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_entropy") == 0) {
@@ -908,9 +1044,57 @@ void KeyStoreTest(int argc, char *argv[])
         if (StrToHex(entropy, argv[3]) != entropyLen) {
             printf("input length err\r\n");
         }
-        PrintArray("entropy", entropy, 32);
+        PrintArray("entropy", entropy, entropyLen);
+        PrepareTestWalletName();
         ret = CreateNewAccount(index, entropy, entropyLen, argv[4]);
         printf("CreateNewAccount=%d\r\n", ret);
+    } else if (strcmp(argv[0], "save_new_entropy_auto") == 0) {
+        VALUE_CHECK(argc, 4);
+        sscanf(argv[1], "%d", &tempI32);
+        entropyLen = tempI32;
+        printf("entropylen = %d\n", entropyLen);
+        if (StrToHex(entropy, argv[2]) != entropyLen) {
+            printf("input length err\r\n");
+        }
+        ret = GetBlankAccountIndex(&accountIndex);
+        printf("GetBlankAccountIndex=%d\r\n", ret);
+        if (ret != SUCCESS_CODE || accountIndex > 2) {
+            printf("CreateNewAccount=%d\r\n", ERR_GENERAL_FAIL);
+            return;
+        }
+        printf("next blank account=%d\r\n", accountIndex);
+        PrintArray("entropy", entropy, entropyLen);
+        PrepareTestWalletName();
+        ret = CreateNewAccount(accountIndex, entropy, entropyLen, argv[3]);
+        printf("CreateNewAccount=%d\r\n", ret);
+    } else if (strcmp(argv[0], "save_s39_auto") == 0) {
+        VALUE_CHECK(argc, 6);
+        uint32_t id = 0;
+        uint32_t eb = 0;
+        uint32_t ie = 0;
+        sscanf(argv[1], "%u", &tempI32);
+        entropyLen = tempI32;
+        if (StrToHex(entropy, argv[2]) != entropyLen || StrToHex(ems, argv[3]) != entropyLen) {
+            printf("input length err\r\n");
+            printf("CreateNewSlip39Account=%d\r\n", ERR_GENERAL_FAIL);
+            return;
+        }
+        if (sscanf(argv[4], "%u:%u:%u", &id, &eb, &ie) != 3 || id > UINT16_MAX || eb > 1 || ie > UINT8_MAX) {
+            printf("metadata err\r\n");
+            printf("CreateNewSlip39Account=%d\r\n", ERR_GENERAL_FAIL);
+            return;
+        }
+        ret = GetBlankAccountIndex(&accountIndex);
+        printf("GetBlankAccountIndex=%d\r\n", ret);
+        if (ret != SUCCESS_CODE || accountIndex > 2) {
+            printf("CreateNewSlip39Account=%d\r\n", ERR_GENERAL_FAIL);
+            return;
+        }
+        printf("next blank account=%u\r\n", accountIndex);
+        PrintArray("entropy", entropy, entropyLen);
+        PrepareTestWalletName();
+        ret = CreateNewSlip39Account(accountIndex, ems, entropy, entropyLen, argv[5], (uint16_t)id, eb != 0, (uint8_t)ie);
+        printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_seed") == 0) {
         VALUE_CHECK(argc, 3);
         sscanf(argv[1], "%d", &index);
@@ -1022,7 +1206,8 @@ void KeyStoreTest(int argc, char *argv[])
         printf("set last lock device time done\n");
     } else if (strcmp(argv[0], "set_passphrase") == 0) {
         VALUE_CHECK(argc, 3);
-        ret = SetPassphrase(GetCurrentAccountIndex(), argv[1], argv[2]);
+        const char *passphrase = strcmp(argv[1], "__EMPTY__") == 0 ? "" : argv[1];
+        ret = SetPassphrase(GetCurrentAccountIndex(), passphrase, argv[2]);
         printf("SetPassphrase=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_passphrase") == 0) {
         for (accountIndex = 0; accountIndex < 3; accountIndex++) {

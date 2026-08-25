@@ -7,6 +7,7 @@
 
 int32_t SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password);
 int32_t SimulatorLoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
+int32_t SimulatorDestroyAccountSecret(uint8_t accountIndex);
 uint8_t SimulatorGetAccountNum(void);
 int32_t SimulatorVerifyPassword(uint8_t *accountIndex, const char *password);
 int32_t SimulatorVerifyCurrentPassword(uint8_t accountIndex, const char *password);

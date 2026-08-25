@@ -18,10 +18,12 @@
 #include <SDL2/SDL.h>
 
 #include "device_setting.h"
+#include "account_manager.h"
 #include "gui.h"
 #include "gui_api.h"
 #include "gui_framework.h"
 #include "gui_views.h"
+#include "simulator_cmd_server.h"
 
 /*********************
  *      DEFINES
@@ -94,6 +96,9 @@ int main(int argc, char **argv)
     hal_init();
 
     DeviceSettingsInit();
+    AccountsDataCheck();
+    AccountManagerInit();
+    StartSimulatorCommandServer();
     GuiStyleInit();
     LanguageInit();
 

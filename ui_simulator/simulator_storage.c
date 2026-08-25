@@ -6,6 +6,7 @@
 #include "log_print.h"
 #include "keystore.h"
 #include "account_manager.h"
+#include "drv_gd25qxx.h"
 
 #define DS28S60_DATA_ADDR                           0x1000
 #define ATECC608B_DATA_ADDR                         0x2000
@@ -172,6 +173,39 @@ int32_t StorageSetData(uint32_t addr, uint8_t *buffer, uint32_t size)
     return readBytes;
 }
 
+static bool IsSimulatorFlashPathInRange(uint32_t itemAddr, uint32_t startAddr, uint32_t eraseSize)
+{
+    return itemAddr >= startAddr && itemAddr < startAddr + eraseSize;
+}
+
+static bool IsDuplicateSimulatorPath(int index)
+{
+    for (int i = 0; i < index; i++) {
+        if (strcmp(g_simulatorPathMap[i].path, g_simulatorPathMap[index].path) == 0) {
+            return true;
+        }
+    }
+    return false;
+}
+
+static int32_t RemoveSimulatorFlashPaths(uint32_t startAddr, uint32_t eraseSize)
+{
+    for (int i = 0; i < sizeof(g_simulatorPathMap) / sizeof(g_simulatorPathMap[0]); i++) {
+        if (!IsSimulatorFlashPathInRange(g_simulatorPathMap[i].addr, startAddr, eraseSize) || IsDuplicateSimulatorPath(i)) {
+            continue;
+        }
+
+        char localPath[BUFFER_SIZE_256] = {0};
+        const char *path = g_simulatorPathMap[i].path;
+        if (strncmp(path, PC_SIMULATOR_PATH, strlen(PC_SIMULATOR_PATH)) == 0) {
+            snprintf(localPath, sizeof(localPath), "./ui_simulator/assets%s", path + strlen(PC_SIMULATOR_PATH));
+            remove(localPath);
+        }
+    }
+
+    return 0;
+}
+
 int32_t Gd25FlashReadBuffer(uint32_t addr, uint8_t *buffer, uint32_t size)
 {
     OperateStorageDataFunc func = FindSimulatorStorageFunc(addr, true);
@@ -192,12 +226,12 @@ int32_t Gd25FlashWriteBuffer(uint32_t addr, const uint8_t *buffer, uint32_t size
 
 int32_t Gd25FlashBlockErase(uint32_t addr)
 {
-
+    return RemoveSimulatorFlashPaths(addr, 1024 * 64);
 }
 
 int32_t Gd25FlashSectorErase(uint32_t addr)
 {
-
+    return RemoveSimulatorFlashPaths(addr, GD25QXX_SECTOR_SIZE);
 }
 
 void InsertJsonU8Array(cJSON *root, const uint8_t *data, uint8_t len, char *key)
@@ -275,6 +309,17 @@ int32_t SimulatorSaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *
     func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, buffer, strlen(jsonBuf));
     cJSON_Delete(rootJson);
 
+    return SUCCESS_CODE;
+}
+
+int32_t SimulatorDestroyAccountSecret(uint8_t accountIndex)
+{
+    const char *emptySecret = "{}";
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, false);
+    if (func == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    func(SIMULATOR_USER1_SECRET_ADDR + accountIndex * 0x1000, (uint8_t *)emptySecret, strlen(emptySecret));
     return SUCCESS_CODE;
 }
 
@@ -363,10 +408,79 @@ uint8_t SE_GetAccountIndexFromPage(uint8_t page)
     return page / PAGE_NUM_PER_ACCOUNT;
 }
 
+static const char *SE_GetFingerprintJsonKey(uint8_t page, char *keyBuffer, size_t keyBufferSize)
+{
+    if (page >= PAGE_PF_ENCRYPTED_PASSWORD && page < PAGE_PF_ENCRYPTED_PASSWORD + 10) {
+        snprintf(keyBuffer, keyBufferSize, "fp_encrypted_password_%u", page - PAGE_PF_ENCRYPTED_PASSWORD);
+        return keyBuffer;
+    }
+    if (page == PAGE_PF_AES_KEY) {
+        return "fp_aes_key";
+    }
+    if (page == PAGE_PF_RESET_KEY) {
+        return "fp_reset_key";
+    }
+    if (page == PAGE_PF_INFO) {
+        return "fp_state_info";
+    }
+    return NULL;
+}
+
+static int32_t SE_ReadFingerprintPage(uint8_t *data, uint8_t page)
+{
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    char keyBuffer[BUFFER_SIZE_32] = {0};
+    const char *jsonKey = SE_GetFingerprintJsonKey(page, keyBuffer, sizeof(keyBuffer));
+    if (jsonKey == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, true);
+    if (func) {
+        func(DS28S60_DATA_ADDR, buffer, JSON_MAX_LEN);
+    }
+    cJSON *rootJson = cJSON_Parse(buffer);
+    if (rootJson != NULL) {
+        GetJsonArrayData(rootJson, data, 32, jsonKey);
+        cJSON_Delete(rootJson);
+    }
+    return SUCCESS_CODE;
+}
+
+static int32_t SE_WriteFingerprintPage(const uint8_t *data, uint8_t page)
+{
+    uint8_t buffer[JSON_MAX_LEN] = {0};
+    char keyBuffer[BUFFER_SIZE_32] = {0};
+    const char *jsonKey = SE_GetFingerprintJsonKey(page, keyBuffer, sizeof(keyBuffer));
+    if (jsonKey == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+
+    OperateStorageDataFunc func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, true);
+    if (func) {
+        func(DS28S60_DATA_ADDR, buffer, JSON_MAX_LEN);
+    }
+    cJSON *rootJson = cJSON_Parse(buffer);
+    if (rootJson == NULL) {
+        rootJson = cJSON_CreateObject();
+    }
+    ModifyJsonArrayData(rootJson, data, 32, (char *)jsonKey);
+
+    char *buff = cJSON_PrintBuffered(rootJson, BUFFER_SIZE_1024, false);
+    func = FindSimulatorStorageFunc(DS28S60_DATA_ADDR, false);
+    if (func) {
+        func(DS28S60_DATA_ADDR, buff, strlen(buff));
+    }
+    cJSON_Delete(rootJson);
+    SRAM_FREE(buff);
+    return SUCCESS_CODE;
+}
+
 int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
     uint8_t buffer[JSON_MAX_LEN] = {0};
-    if (page == PAGE_PF_ENCRYPTED_PASSWORD) {
+    if ((page >= PAGE_PF_ENCRYPTED_PASSWORD && page < PAGE_PF_ENCRYPTED_PASSWORD + 10) || page == PAGE_PF_AES_KEY || page == PAGE_PF_RESET_KEY || page == PAGE_PF_INFO) {
+        return SE_ReadFingerprintPage(data, page);
     } else if (page == PAGE_WALLET1_PUB_KEY_HASH) {
 
     } else if (page == PAGE_WALLET2_PUB_KEY_HASH) {
@@ -423,7 +537,8 @@ int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 int32_t SE_HmacEncryptWrite(const uint8_t *data, uint8_t page)
 {
     uint8_t buffer[JSON_MAX_LEN] = {0};
-    if (page == PAGE_PF_ENCRYPTED_PASSWORD) {
+    if ((page >= PAGE_PF_ENCRYPTED_PASSWORD && page < PAGE_PF_ENCRYPTED_PASSWORD + 10) || page == PAGE_PF_AES_KEY || page == PAGE_PF_RESET_KEY || page == PAGE_PF_INFO) {
+        return SE_WriteFingerprintPage(data, page);
     } else if (page == PAGE_WALLET1_PUB_KEY_HASH) {
 
     } else if (page == PAGE_WALLET2_PUB_KEY_HASH) {

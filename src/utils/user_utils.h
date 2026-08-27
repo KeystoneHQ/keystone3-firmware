@@ -37,5 +37,6 @@ void CutAndFormatFileName(char *out, uint32_t maxLen, const char *fileName, cons
 uint16_t extract_16bit_value(const uint8_t *frame, int offset);
 void insert_16bit_value(uint8_t *frame, int offset, uint16_t value);
 void ReplaceStringInBuffer(char *str, const char *old_str, const char *new_str);
+void Uint64ToDecStr(uint64_t value, char *out, uint32_t maxLen);
 
 #endif /* _USER_UTILS_H */

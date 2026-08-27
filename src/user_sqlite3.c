@@ -630,14 +630,16 @@ bool GetEnsName(const char *addr, char *name)
     return strnlen_s(name, SQL_ENS_NAME_MAX_LEN) ? true : false;
 }
 
-bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
+bool GetDBContract(const char* address, const char *selector, const uint64_t chainId, char *functionABIJson, char *contractName)
 {
     assert(strnlen_s(address, SQL_ADDR_MAX_LEN) == SQL_ADDR_MAX_LEN - 1);
     sqlite3 *db;
     char index = address[2]; // [0,f]
 
+    char chainIdStr[21] = {0};
+    Uint64ToDecStr(chainId, chainIdStr, sizeof(chainIdStr));
     char contractDBPath[BUFFER_SIZE_128] = {0};
-    snprintf_s(contractDBPath, BUFFER_SIZE_128, "0:contracts/%u_%c_contracts.db", chainId, index);
+    snprintf_s(contractDBPath, BUFFER_SIZE_128, "0:contracts/%s_%c_contracts.db", chainIdStr, index);
     if (OpenDb(contractDBPath, &db)) {
         return NULL;
     }

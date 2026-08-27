@@ -324,3 +324,28 @@ void insert_16bit_value(uint8_t *frame, int offset, uint16_t value)
     frame[offset] = (uint8_t)(value >> 8);
     frame[offset + 1] = (uint8_t)(value & 0xFF);
 }
+
+// Format a uint64_t as a decimal string without going through printf.
+// newlib-nano's formatted IO (used on the device) has no long long support,
+// so "%llu"/PRIu64 would silently truncate to 32 bits.
+void Uint64ToDecStr(uint64_t value, char *out, uint32_t maxLen)
+{
+    char tmp[21] = {0}; // max uint64_t is 20 digits + NUL
+    uint32_t len = 0;
+    if (out == NULL || maxLen == 0) {
+        return;
+    }
+    do {
+        tmp[len++] = (char)('0' + (value % 10));
+        value /= 10;
+    } while (value > 0 && len < sizeof(tmp) - 1);
+    if (len >= maxLen) {
+        // Never emit a silently truncated number; an empty string is safer.
+        out[0] = '\0';
+        return;
+    }
+    for (uint32_t i = 0; i < len; i++) {
+        out[i] = tmp[len - 1 - i];
+    }
+    out[len] = '\0';
+}

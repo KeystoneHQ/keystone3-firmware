@@ -7,9 +7,11 @@
 #include "gui_qr_hintbox.h"
 #include "screen_manager.h"
 #include "user_sqlite3.h"
+#include "user_utils.h"
 #include "account_manager.h"
 #include "math.h"
 #include "stdio.h"
+#include "stdlib.h"
 #include "string.h"
 #include "drv_mpu.h"
 #include "device_setting.h"
@@ -1005,7 +1007,7 @@ void GetEthTypedDataDomianChainId(void *indata, void *param, uint32_t maxLen)
 {
     DisplayETHTypedData *message = (DisplayETHTypedData *)param;
     if (message->chain_id != NULL) {
-        snprintf_s((char *)indata, maxLen, "%s (%s)", message->chain_id, FindEvmNetwork(atoi(message->chain_id)).name);
+        snprintf_s((char *)indata, maxLen, "%s (%s)", message->chain_id, FindEvmNetwork(strtoull(message->chain_id, NULL, 10)).name);
     } else {
         strcpy_s((char *)indata, maxLen, "");
     }
@@ -1766,7 +1768,11 @@ static void GetEthNetWork(void *indata, void *param, uint32_t maxLen)
     DisplayETH *eth = (DisplayETH *)param;
     EvmNetwork_t network = FindEvmNetwork(eth->chain_id);
     if (network.chainId == 0) {
-        snprintf_s((char *)indata,  maxLen, "ID: %lu", eth->chain_id);
+        // chain_id is a uint64_t; "%lu" is only 32 bits on the device (and
+        // newlib-nano has no "%llu"), so format it manually.
+        char chainIdStr[21] = {0};
+        Uint64ToDecStr(eth->chain_id, chainIdStr, sizeof(chainIdStr));
+        snprintf_s((char *)indata,  maxLen, "ID: %s", chainIdStr);
         return;
     }
     strcpy_s((char *)indata, maxLen, network.name);

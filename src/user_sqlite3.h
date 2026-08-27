@@ -15,6 +15,6 @@
 void Sqlite3Test(int argc, char *argv[]);
 void UserSqlite3Init(void);
 bool GetEnsName(const char *addr, char *name);
-bool GetDBContract(const char* address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName);
+bool GetDBContract(const char* address, const char *selector, const uint64_t chainId, char *functionABIJson, char *contractName);
 
 #endif

@@ -416,7 +416,7 @@ uint8_t GetFingerUnlockFlag(void)
     return 1;
 }
 
-bool GetDBContract(const char *address, const char *selector, const uint32_t chainId, char *functionABIJson, char *contractName)
+bool GetDBContract(const char *address, const char *selector, const uint64_t chainId, char *functionABIJson, char *contractName)
 {
     return false;
 }

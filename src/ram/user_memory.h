@@ -24,6 +24,10 @@ void PrintHeapInfo(void);
 
 #ifdef COMPILE_SIMULATOR
 #include <stdlib.h>
+#ifndef _ERRNO_T_DEFINED
+#define _ERRNO_T_DEFINED
+typedef int errno_t;
+#endif
 #ifndef snprintf_s
 #define snprintf_s                          snprintf
 #endif

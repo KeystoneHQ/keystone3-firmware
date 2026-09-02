@@ -15,6 +15,27 @@ use app_zcash::pczt::structs::{
 #[cfg(feature = "cypherpunk")]
 use app_zcash::CheckedBatchPcztSignability;
 use cstr_core;
+use zcash_vendor::zcash_protocol::consensus::Network;
+
+/// Which Zcash network the device is operating on.
+///
+/// Mirrors `zcash_protocol`’s `Network` across the FFI boundary, so C can pick a
+/// network without depending on the Rust type.
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum NetworkType {
+    MainNet,
+    TestNet,
+}
+
+impl From<NetworkType> for Network {
+    fn from(value: NetworkType) -> Self {
+        match value {
+            NetworkType::MainNet => Network::MainNetwork,
+            NetworkType::TestNet => Network::TestNetwork,
+        }
+    }
+}
 
 #[repr(C)]
 pub struct DisplayPczt {
@@ -282,6 +303,9 @@ impl BatchDisplayCache {
 #[repr(C)]
 pub struct ZcashCheckedPczt {
     pub data: Ptr<VecFFI<u8>>,
+    /// The network the check ran against. Parsing and signing read it back from
+    /// here rather than taking it again, so they cannot disagree with the check.
+    pub network: NetworkType,
     /// Opaque batch display cache (null for the single-tx / multi-coins flows).
     /// C never dereferences this.
     #[cfg(feature = "cypherpunk")]
@@ -291,9 +315,10 @@ pub struct ZcashCheckedPczt {
 impl ZcashCheckedPczt {
     /// Wraps bytes verified during check. The display cache is null; the batch
     /// flow uses [`Self::new_with_display`] instead.
-    pub fn new(data: Vec<u8>) -> Self {
+    pub fn new(data: Vec<u8>, network: NetworkType) -> Self {
         Self {
             data: VecFFI::from(data).c_ptr(),
+            network,
             #[cfg(feature = "cypherpunk")]
             display: null_mut(),
         }
@@ -304,8 +329,12 @@ impl ZcashCheckedPczt {
     /// re-decrypting every output. The cache is freed with the container in
     /// [`Free::free`].
     #[cfg(feature = "cypherpunk")]
-    pub fn new_with_display(data: Vec<u8>, display: BatchDisplayCache) -> Self {
-        let mut checked = Self::new(data);
+    pub fn new_with_display(
+        data: Vec<u8>,
+        network: NetworkType,
+        display: BatchDisplayCache,
+    ) -> Self {
+        let mut checked = Self::new(data, network);
         checked.display = alloc::boxed::Box::into_raw(alloc::boxed::Box::new(display));
         checked
     }
@@ -346,10 +375,23 @@ mod tests {
 
     #[test]
     fn test_checked_pczt_bytes_round_trip() {
-        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec());
+        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec(), NetworkType::MainNet);
         let bytes = unsafe { checked.checked_bytes() }.unwrap();
         assert_eq!(bytes, b"normalized-bytes");
         unsafe { checked.free() };
+    }
+
+    #[test]
+    fn test_checked_pczt_remembers_its_network() {
+        let checked = ZcashCheckedPczt::new(b"normalized-bytes".to_vec(), NetworkType::TestNet);
+        assert_eq!(checked.network, NetworkType::TestNet);
+        unsafe { checked.free() };
+    }
+
+    #[test]
+    fn test_network_type_maps_to_consensus_network() {
+        assert_eq!(Network::from(NetworkType::MainNet), Network::MainNetwork);
+        assert_eq!(Network::from(NetworkType::TestNet), Network::TestNetwork);
     }
 
     #[cfg(feature = "cypherpunk")]

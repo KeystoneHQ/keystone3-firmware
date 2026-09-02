@@ -350,7 +350,7 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 #ifdef CYPHERPUNK_VERSION
     char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), &g_checkedPczt);
+    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), MainNet, &g_checkedPczt);
 #endif
 }
 

@@ -37,7 +37,7 @@ void GuiZcashVerifyResultWidgetsInit(const char *address)
     const uint8_t accountIndex = GetCurrentAccountIndex();
     if (address != NULL && accountIndex <= 2 && IsZcashSupportedForCurrentMnemonic() &&
             GetZcashUFVK(accountIndex, ufvk) == SUCCESS_CODE && ufvk[0] != '\0') {
-        result = verify_zcash_address(ufvk, (char *)address);
+        result = verify_zcash_address(ufvk, (char *)address, MainNet);
     }
     CLEAR_ARRAY(ufvk);
     const char *message;

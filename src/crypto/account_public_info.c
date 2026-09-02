@@ -1202,7 +1202,8 @@ static SimpleResponse_c_char *DeriveEncryptedZcashUFVKV3WithCacheKey(
     uint32_t ufvkOutLen)
 {
     SimpleResponse_c_char *ufvkResponse = derive_zcash_ufvk(
-            (uint8_t *)seed, seedLen, g_chainTable[ZCASH_UFVK_ENCRYPTED_0].path, MainNet);
+            (uint8_t *)seed, seedLen, g_chainTable[ZCASH_UFVK_ENCRYPTED_0].path,
+            GetNetworkType(HOME_WALLET_CARD_ZEC));
     if (ufvkResponse == NULL || ufvkResponse->error_code != 0) {
         return ufvkResponse;
     }

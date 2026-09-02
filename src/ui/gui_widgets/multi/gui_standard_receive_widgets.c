@@ -954,7 +954,7 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
         if (GetZcashUFVK(GetCurrentAccountIndex(), ufvk) == SUCCESS_CODE && ufvk[0] != '\0') {
-            result = generate_zcash_default_address(ufvk, MainNet);
+            result = generate_zcash_default_address(ufvk, GetNetworkType(HOME_WALLET_CARD_ZEC));
         }
         memset_s(ufvk, sizeof(ufvk), 0, sizeof(ufvk));
     }

@@ -8,6 +8,7 @@ void *GuiGetZcashGUIData(void);
 void GuiZcashOverviewWithDataAndHeight(lv_obj_t *parent, DisplayPczt *data, lv_coord_t height);
 void GuiZcashOverview(lv_obj_t *parent, void *totalData);
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void);
+NetworkType GetZcashNetworkType(void);
 #ifdef CYPHERPUNK_VERSION
 typedef UREncodeResult *(*ZcashCypherpunkSignFunc)(void *data,
     PtrBytes seedFingerprint,

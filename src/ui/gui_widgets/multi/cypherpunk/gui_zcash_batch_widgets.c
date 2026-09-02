@@ -185,7 +185,7 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
 
     GetExistAccountNum(&accountNum);
     if (accountNum <= 0) {
-        return check_zcash_batch_tx_cypherpunk(data, ufvk, sfp, zcashAccountIndex, true, MainNet, &g_checkedBatch);
+        return check_zcash_batch_tx_cypherpunk(data, ufvk, sfp, zcashAccountIndex, true, GetZcashNetworkType(), &g_checkedBatch);
     }
 
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
@@ -196,7 +196,7 @@ PtrT_TransactionCheckResult GuiGetZcashBatchCheckResult(void)
                sfp,
                zcashAccountIndex,
                !IsZcashSupportedForCurrentMnemonic(),
-               MainNet,
+               GetZcashNetworkType(),
                &g_checkedBatch);
 }
 #endif

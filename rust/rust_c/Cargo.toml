@@ -141,6 +141,8 @@ default = ["debug-cypherpunk"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }
+pczt = { version = "0.8.0-rc.1", default-features = false, features = ["zcp-builder"] }
+zcash_primitives = { version = "0.29.0", default-features = false }
 
 [build-dependencies]
 cbindgen = "0.27.0"

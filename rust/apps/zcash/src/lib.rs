@@ -36,6 +36,11 @@ use zcash_vendor::sha2::{Digest, Sha256};
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::zcash_protocol::consensus::NetworkConstants;
 
+/// Maximum serialized growth of one compact Orchard action when
+/// [`Pczt::resolve_fields`] restores redacted fields.
+#[cfg(feature = "cypherpunk")]
+pub const COMPACT_PCZT_MAX_RESOLVED_ACTION_GROWTH: usize = 645;
+
 /// Generates a Zcash address from a Unified Full Viewing Key (UFVK).
 ///
 /// # Parameters
@@ -3487,6 +3492,88 @@ mod tests {
             .actions()
             .iter()
             .any(|action| action.spend().spend_auth_sig().is_some()));
+    }
+
+    #[test]
+    fn test_compact_orchard_action_resolution_growth_is_bounded() {
+        use zcash_vendor::pczt::roles::redactor::Redactor;
+
+        fn assert_pool_growth(
+            sample: pczt::test_support::SamplePczt,
+            pool: pczt::ShieldedPool,
+            note_version: zcash_vendor::orchard::note::NoteVersion,
+        ) {
+            let pczt = Pczt::parse(&sample.bytes).unwrap();
+            let action_index = match pool {
+                pczt::ShieldedPool::Orchard => pczt.orchard().actions(),
+                pczt::ShieldedPool::Ironwood => pczt.ironwood().actions(),
+            }
+            .iter()
+            .position(|action| matches!(action.output().value(), Some(value) if *value != 0))
+            .unwrap();
+
+            let compact = match pool {
+                pczt::ShieldedPool::Orchard => Redactor::new(pczt).redact_orchard_with(|mut r| {
+                    r.redact_action(action_index, |mut ar| {
+                        ar.replace_enc_ciphertext_with_decrypted_memo_plaintext(note_version);
+                        ar.clear_cv_net();
+                        ar.clear_cmx();
+                    });
+                }),
+                pczt::ShieldedPool::Ironwood => {
+                    Redactor::new(pczt).redact_ironwood_with(|mut r| {
+                        r.redact_action(action_index, |mut ar| {
+                            ar.replace_enc_ciphertext_with_decrypted_memo_plaintext(note_version);
+                            ar.clear_cv_net();
+                            ar.clear_cmx();
+                        });
+                    })
+                }
+            }
+            .finish()
+            .serialize()
+            .unwrap();
+
+            let mut resolved = Pczt::parse(&compact).unwrap();
+            let compact_action = match pool {
+                pczt::ShieldedPool::Orchard => &resolved.orchard().actions()[action_index],
+                pczt::ShieldedPool::Ironwood => &resolved.ironwood().actions()[action_index],
+            };
+            assert!(compact_action.cv_net().is_none());
+            assert!(compact_action.output().cmx().is_none());
+            assert!(matches!(
+                compact_action.output().enc_ciphertext(),
+                ::pczt::orchard::EncCiphertext::MemoPlaintext(_)
+            ));
+            resolved.resolve_fields().unwrap();
+            let resolved_action = match pool {
+                pczt::ShieldedPool::Orchard => &resolved.orchard().actions()[action_index],
+                pczt::ShieldedPool::Ironwood => &resolved.ironwood().actions()[action_index],
+            };
+            assert!(resolved_action.cv_net().is_some());
+            assert!(resolved_action.output().cmx().is_some());
+            assert!(matches!(
+                resolved_action.output().enc_ciphertext(),
+                ::pczt::orchard::EncCiphertext::Encrypted(_)
+            ));
+            let resolved = resolved.serialize().unwrap();
+            assert!(
+                resolved.len() > compact.len()
+                    && resolved.len() - compact.len() <= COMPACT_PCZT_MAX_RESOLVED_ACTION_GROWTH,
+                "action resolution exceeded the firmware size bound",
+            );
+        }
+
+        assert_pool_growth(
+            pczt::test_support::sample_orchard_change_pczt(),
+            pczt::ShieldedPool::Orchard,
+            zcash_vendor::orchard::note::NoteVersion::V2,
+        );
+        assert_pool_growth(
+            pczt::test_support::sample_ironwood_pczt(),
+            pczt::ShieldedPool::Ironwood,
+            zcash_vendor::orchard::note::NoteVersion::V3,
+        );
     }
 
     #[test]

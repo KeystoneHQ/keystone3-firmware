@@ -1,3 +1,11 @@
+## Unreleased
+
+**Cypherpunk:**
+
+### Bug Fixes
+
+1. Added an aggregate resource budget and a 96-Orchard-action response cap for Zcash batch signing so oversized requests fail before field resolution and signing.
+
 ## 3.0.4 (2026-08-10)
 
 **Web3:**

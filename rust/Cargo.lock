@@ -3876,6 +3876,7 @@ dependencies = [
  "keystore",
  "minicbor",
  "no_std_io2",
+ "pczt",
  "postcard",
  "rand_core 0.6.4",
  "rsa",
@@ -3887,6 +3888,7 @@ dependencies = [
  "thiserror-core",
  "ur-parse-lib",
  "ur-registry",
+ "zcash_primitives",
  "zcash_vendor",
  "zeroize",
 ]

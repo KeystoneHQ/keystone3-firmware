@@ -62,9 +62,11 @@ def build_firmware(environment, options, bin_type):
     if cmd_result != 0:
         return cmd_result
     make_result = os.system('make -j')
-    if make_result != 0:
-        return make_result
-    return os.system('python3 padding_bin_file.py mh1903.bin')
+    if make_result == 0 and "simulator" not in options:
+        # A simulator build produces `build/simulator` rather than a firmware
+        # image, so there is nothing to pad.
+        make_result = os.system('python3 padding_bin_file.py mh1903.bin')
+    return make_result
 
 
 def ota_maker():
@@ -143,8 +145,9 @@ if __name__ == '__main__':
     build_result = build_firmware(env, options, bin_type)
     if build_result != 0:
         exit(1)
-    if platform.system() == 'Darwin':
-        ota_maker()
-    purpose = args.purpose
-    if purpose == "debug" and platform.system() == 'Darwin':
-        ota_maker()
+    if "simulator" not in options:
+        if platform.system() == 'Darwin':
+            ota_maker()
+        purpose = args.purpose
+        if purpose == "debug" and platform.system() == 'Darwin':
+            ota_maker()

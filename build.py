@@ -22,6 +22,7 @@ def build_firmware(environment, options, bin_type):
     is_release = environment == "production"
     is_btc_only = bin_type == "btc_only"
     is_cypherpunk = bin_type == "cypherpunk"
+    is_simulator = "simulator" in options
     if not os.path.exists(build_dir):
         os.makedirs(build_dir)
 
@@ -62,7 +63,7 @@ def build_firmware(environment, options, bin_type):
     if cmd_result != 0:
         return cmd_result
     make_result = os.system('make -j')
-    if make_result != 0:
+    if is_simulator or make_result != 0:
         return make_result
     return os.system('python3 padding_bin_file.py mh1903.bin')
 
@@ -143,9 +144,10 @@ if __name__ == '__main__':
     build_result = build_firmware(env, options, bin_type)
     if build_result != 0:
         exit(1)
-    if platform.system() == 'Darwin':
-        ota_maker()
-    purpose = args.purpose
-    if purpose and purpose == "debug":
-        ota_maker()
+    if "simulator" not in options:
+        if platform.system() == 'Darwin':
+            ota_maker()
+        purpose = args.purpose
+        if purpose and purpose == "debug":
+            ota_maker()
 

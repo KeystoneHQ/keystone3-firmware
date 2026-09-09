@@ -60,7 +60,7 @@ python3 build.py
 
 ```bash
 # Run the build script at the root of the project.
-python build.py -t btc_only
+python3 build.py -t btc_only
 ```
 
 #### Building img to C file
@@ -75,7 +75,7 @@ The first way is to execute the command below.
 
 ```bash
 # Run the build script at the root of the project.
-python img_converter.py
+python3 img_converter.py
 ```
 
 The second way is already integrated in the "build.py" file, so you can simply use it.
@@ -84,7 +84,7 @@ The second way is already integrated in the "build.py" file, so you can simply u
 python3 build.py
 
 # or
-python build.py -t btc_only
+python3 build.py -t btc_only
 ```
 
 ## Code Structure

@@ -10,8 +10,6 @@ RUN apt-get install -y \
     cmake \
     make \
     build-essential --fix-missing \
-    && cd /usr/local/bin \
-    && ln -s /usr/bin/python3 python \
     && rm -rf /var/lib/apt/lists/*
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain nightly -y
 ENV PATH=/root/.cargo/bin:$PATH

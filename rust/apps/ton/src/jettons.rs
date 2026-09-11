@@ -31,7 +31,7 @@ lazy_static! {
             symbol: "NOT".to_string(),
         },
         JettonData {
-            contract_address: "0".to_string(),
+            contract_address: "EQCxE6mUtQJKFnGfaROTKOt1lZbDiiX1kCixRv7Nw2Id_sDs".to_string(),
             decimal: 6,
             symbol: "USDT".to_string(),
         },

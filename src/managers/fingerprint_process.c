@@ -9,6 +9,7 @@
 #include "drv_motor.h"
 #include "drv_trng.h"
 #include "user_memory.h"
+#include "crc.h"
 #include "ctaes.h"
 #include "keystore.h"
 #include "account_manager.h"

@@ -907,6 +907,12 @@ static lv_obj_t *GuiShowSolTxGeneralOverview(
 
     for (int i = 0; i < general->size; i++) {
         char *program = general->data[i].program;
+        if (strcmp(program, "TransactionConfig") == 0) {
+            lastView = CreateTransactionItemViewWithWidth(
+                parent, "Transaction Config (V1)", general->data[i].memo,
+                lastView, SOL_COMPONENT_WIDTH);
+            continue;
+        }
         char order[BUFFER_SIZE_16] = {0};
         snprintf_s(order, BUFFER_SIZE_16, "#%u", (unsigned int)general->data[i].instruction_index);
         const char *method = strlen(general->data[i].method) > 0

@@ -31,6 +31,8 @@ pub struct ProgramDetailSystemTransfer {
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ProgramDetailComputeBudget {
     #[serde(skip_serializing_if = "String::is_empty")]
+    pub priority_fee_lamports: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub compute_unit_limit: String,
     #[serde(skip_serializing_if = "String::is_empty")]
     pub compute_unit_price_micro_lamports: String,

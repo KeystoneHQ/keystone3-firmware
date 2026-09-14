@@ -24,7 +24,7 @@ unsafe fn build_sign_result(ptr: PtrUR, seed: &[u8]) -> Result<SolSignature, Sol
         app_solana::SolanaPayloadType::Message => false,
         app_solana::SolanaPayloadType::MalformedTransaction => {
             return Err(SolanaError::InvalidData(
-                "transaction contains hidden trailing data".to_string(),
+                "invalid or unsupported transaction data".to_string(),
             ));
         }
     };
@@ -78,7 +78,7 @@ pub unsafe extern "C" fn solana_check(
         app_solana::SolanaPayloadType::MalformedTransaction
     ) {
         return TransactionCheckResult::from(SolanaError::InvalidData(
-            "transaction contains hidden trailing data".to_string(),
+            "invalid or unsupported transaction data".to_string(),
         ))
         .c_ptr();
     }
@@ -109,7 +109,7 @@ pub unsafe extern "C" fn solana_parse_tx(
         app_solana::SolanaPayloadType::MalformedTransaction
     ) {
         return TransactionParseResult::from(SolanaError::InvalidData(
-            "transaction contains hidden trailing data".to_string(),
+            "invalid or unsupported transaction data".to_string(),
         ))
         .c_ptr();
     }
@@ -131,7 +131,7 @@ pub unsafe extern "C" fn solana_parse_tx_with_pubkey(
         app_solana::SolanaPayloadType::MalformedTransaction
     ) {
         return TransactionParseResult::from(SolanaError::InvalidData(
-            "transaction contains hidden trailing data".to_string(),
+            "invalid or unsupported transaction data".to_string(),
         ))
         .c_ptr();
     }
@@ -199,7 +199,7 @@ pub unsafe extern "C" fn solana_parse_message(
         }
         app_solana::SolanaPayloadType::MalformedTransaction => {
             return TransactionParseResult::from(SolanaError::InvalidData(
-                "transaction contains hidden trailing data".to_string(),
+                "invalid or unsupported transaction data".to_string(),
             ))
             .c_ptr();
         }

@@ -9,6 +9,7 @@ use bitcoin::base58;
 use crate::compact::Compact;
 use crate::errors::{Result, SolanaError};
 use crate::instruction::Instruction;
+pub use crate::message_v1::TransactionConfig;
 use crate::parser::detail::{CommonDetail, ProgramDetail, ProgramDetailInstruction, SolanaDetail};
 use crate::read::Read;
 
@@ -61,6 +62,7 @@ impl Read<BlockHash> for BlockHash {
 
 #[derive(Clone)]
 pub struct Message {
+    pub transaction_config: Option<TransactionConfig>,
     pub is_versioned: bool,
     pub header: MessageHeader,
     pub accounts: Vec<Account>,
@@ -71,6 +73,9 @@ pub struct Message {
 
 impl Read<Message> for Message {
     fn read(raw: &mut Vec<u8>) -> Result<Message> {
+        if raw.first() == Some(&0x81) {
+            return Self::read_v1(raw);
+        }
         let first_byte = raw.first().copied();
         let is_versioned = match first_byte {
             Some(0x80) => true,
@@ -94,6 +99,7 @@ impl Read<Message> for Message {
             false => None,
         };
         let message = Message {
+            transaction_config: None,
             is_versioned,
             header,
             accounts,
@@ -135,7 +141,7 @@ impl Message {
         ))
     }
 
-    fn validate_structure(&self) -> Result<()> {
+    pub(crate) fn validate_structure(&self) -> Result<()> {
         let static_account_count = self.accounts.len();
         let required_signatures = self.header.num_required_signatures as usize;
         let readonly_signed = self.header.num_readonly_signed_accounts as usize;
@@ -191,7 +197,8 @@ impl Message {
 
     pub fn to_program_details(&self) -> Result<Vec<SolanaDetail>> {
         let resolved_accounts = self.prepare_accounts();
-        self.instructions
+        let mut details = self
+            .instructions
             .iter()
             .map(|instruction| {
                 let instruction_accounts = instruction
@@ -212,6 +219,23 @@ impl Message {
                         )
                     })?
                     .to_string();
+                // V1 compute-budget instructions are successful no-ops, even
+                // when their data is invalid. Never display them as active fees.
+                if self.transaction_config.is_some()
+                    && program_account == "ComputeBudget111111111111111111111111111111"
+                {
+                    return Ok(SolanaDetail {
+                        common: CommonDetail {
+                            program: "ComputeBudget".to_string(),
+                            method: "IgnoredInV1".to_string(),
+                        },
+                        kind: ProgramDetail::Instruction(ProgramDetailInstruction {
+                            data: base58::encode(&instruction.data),
+                            accounts: instruction_accounts,
+                            program_account,
+                        }),
+                    });
+                }
                 // parse instruction data
                 match instruction.parse(&program_account, instruction_accounts.clone()) {
                     Ok(value) => Ok(value),
@@ -228,7 +252,11 @@ impl Message {
                     }),
                 }
             })
-            .collect::<Result<Vec<SolanaDetail>>>()
+            .collect::<Result<Vec<SolanaDetail>>>()?;
+        if let Some(config) = &self.transaction_config {
+            details.push(config.to_detail());
+        }
+        Ok(details)
     }
 
     pub fn validate(raw: &mut Vec<u8>) -> bool {

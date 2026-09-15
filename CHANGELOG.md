@@ -1,3 +1,11 @@
+## 3.0.8 (2026-09-15)
+
+**Web3:**
+
+### What's new
+1. Added support for Solana v1 transactions
+
+
 ## 3.0.6 (2026-09-14)
 
 **Web3:**

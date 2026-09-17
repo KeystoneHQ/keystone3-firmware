@@ -147,7 +147,7 @@ void PrintU32Array(const char *name, const uint32_t *data, uint16_t length)
         if (i % 8 == 0 && i != 0) {
             printf("\r\n");
         }
-        printf("%8X ", data[i]);
+        printf("%8X ", (unsigned int)data[i]);
     }
     printf("\r\n");
 }
@@ -176,7 +176,11 @@ void LogRustPanic(char* panic_info)
 #else
 
 #include "draw_on_lcd.h"
+#include "hal_lcd.h"
+#include "drv_button.h"
+#include "user_delay.h"
 #include "mhscpu.h"
+#include "cmsis_os.h"
 #include "presetting.h"
 #include "version.h"
 #include "hardware_version.h"
@@ -184,23 +188,45 @@ void LogRustPanic(char* panic_info)
 
 LV_FONT_DECLARE(openSans_20);
 
+#define RESTART_COUNTDOWN_SECONDS 5
+#define RESTART_POLL_INTERVAL_MS  100
+#define RESTART_COUNTDOWN_LINE_Y  (LCD_DISPLAY_HEIGHT - 100)
+
+void RestartCountdownOnLcd(void)
+{
+    char line[BUFFER_SIZE_32];
+
+    for (int secondsLeft = RESTART_COUNTDOWN_SECONDS; secondsLeft > 0; secondsLeft--) {
+        snprintf_s(line, sizeof(line), "Restart in %ds", secondsLeft);
+        RedrawCenteredLineOnLcd(RESTART_COUNTDOWN_LINE_Y, line, 0x21F4U, &openSans_20);
+        for (int waited = 0; waited < 1000; waited += RESTART_POLL_INTERVAL_MS) {
+            if (ButtonPress()) {
+                NVIC_SystemReset();
+            }
+            UserDelay(RESTART_POLL_INTERVAL_MS);
+        }
+    }
+    NVIC_SystemReset();
+}
+
 void LogRustPanic(char* panic_info)
 {
+    osKernelLock();
     // Show only a fixed, user-facing error message on the LCD.
     PrintOnLcd(&openSans_20, 0xFFFF, "The error was caused by a failed data request.\nYour assets remain safe.\n");
     PrintErrorInfoOnLcd();
-    NVIC_SystemReset();
+    RestartCountdownOnLcd();
 }
 
 void PrintErrorInfoOnLcd(void)
 {
     char serialNumber[SERIAL_NUMBER_MAX_LEN];
     char line[BUFFER_SIZE_128];
-    PrintOnLcd(&openSans_20, 0xFFFF, "Request failed. Restart by long-pressing power\nbutton for 12 secs.\n");
-    PrintOnLcd(&openSans_20, 0xFFFF, "If issue persists, please contact\n");
+    PrintOnLcd(&openSans_20, 0xFFFF, "Press the power button to restart and try again.\n");
+    PrintOnLcd(&openSans_20, 0xFFFF, "If the issue persists, please contact\n");
     PrintOnLcd(&openSans_20, 0x1927, "support@Keyst.one\n");
     GetSerialNumber(serialNumber);
-    snprintf_s(line, sizeof(line), "Serial No.%s\n", serialNumber);
+    snprintf_s(line, sizeof(line), "No.%s\n", serialNumber);
     PrintOnLcd(&openSans_20, 0xFFFF, line);
     snprintf_s(line, sizeof(line), "Software:%s\n", GetSoftwareVersionString());
     PrintOnLcd(&openSans_20, 0xFFFF, line);

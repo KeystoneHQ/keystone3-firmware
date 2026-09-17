@@ -5,6 +5,7 @@
 #include "portmacro.h"
 #include "cmsis_os2.h"
 #include "string.h"
+#include "user_memory.h"
 
 volatile uint32_t FreeRTOSRunTimeTicks;
 uint32_t FreeRTOSRunTimeTicksBak;
@@ -36,7 +37,7 @@ void PrintTasksStatus(void)
 
         printf("    TaskName\t   Task Prio\t   CurrentState\t   SizeStk\t MinStk\t   FreeStkPercent\tCPUUsedPercent\n");
         for (uint8_t i = 0; i < arraySize; i++) {
-            sizeOfStack = vTaskGetStackSize(xTaskGetHandle(statusArray[i].pcTaskName));
+            sizeOfStack = (UBaseType_t)(statusArray[i].pxEndOfStack - statusArray[i].pxStackBase + 1U);
             totalSizeofStack += sizeOfStack * 4;
             taskRunTime = FindIndexFromName(statusArray[i].pcTaskName);
             millionPercent = (uint64_t)(statusArray[i].ulRunTimeCounter - taskRunTime) * 1000000 / (uint64_t)(totalRunTime - FreeRTOSRunTimeTicksBak);

@@ -2,15 +2,16 @@
 #include "gui_chain_components.h"
 #include "rsa.h"
 #include "user_utils.h"
+#include "gui_api.h"
 
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static ArweaveRequestType g_requestType = ArweaveRequestTypeTransaction;
 static void *g_parseResult = NULL;
+static char g_messageAddress[44];
 static bool g_isAoTransfer = false;
 
-#define ARWEAVE_XPUB_HEX_LEN 1024
 #define AR_COMPONENT_WIDTH 376
 #define AR_COMPONENT_CONTENT_WIDTH (AR_COMPONENT_WIDTH - 48)
 
@@ -47,12 +48,6 @@ static void ParseRequestType()
     g_requestType = *requestType->data;
 }
 
-bool IsArweaveSetupComplete(void)
-{
-    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-    return IsHexStringWithLen(xPub, ARWEAVE_XPUB_HEX_LEN);
-}
-
 PtrT_TransactionCheckResult GuiGetArCheckResult(void)
 {
     uint8_t mfp[4];
@@ -61,28 +56,29 @@ PtrT_TransactionCheckResult GuiGetArCheckResult(void)
     return ar_check_tx(data, mfp, sizeof(mfp));
 }
 
+void GuiArSetMessageAddress(const char *address)
+{
+    CLEAR_ARRAY(g_messageAddress);
+    if (address != NULL) {
+        strcpy_s(g_messageAddress, sizeof(g_messageAddress), address);
+    }
+}
+
 static void GuiArGetMessageAddress(char *address, uint32_t maxLen)
 {
-    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-    ASSERT(xPub != NULL);
-
-    SimpleResponse_c_char *result = arweave_get_address(xPub);
+    SimpleResponse_c_char *result = fix_arweave_address(g_messageAddress);
     if (result == NULL) {
         return;
     }
-
-    if (result->error_code == 0) {
-        SimpleResponse_c_char *fixedAddress = fix_arweave_address(result->data);
-        if (fixedAddress->error_code == 0) {
-            strcpy_s(address, maxLen, fixedAddress->data);
-        }
-        free_simple_response_c_char(fixedAddress);
+    if (result->error_code == SUCCESS_CODE && result->data != NULL) {
+        strcpy_s(address, maxLen, result->data);
     }
     free_simple_response_c_char(result);
 }
 
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi)
 {
+    GuiArSetMessageAddress(NULL);
     g_urResult = urResult;
     g_urMultiResult = urMultiResult;
     g_isMulti = multi;
@@ -127,6 +123,7 @@ void *GuiGetArData(void)
 
 void FreeArMemory(void)
 {
+    GuiArSetMessageAddress(NULL);
     CHECK_FREE_UR_RESULT(g_urResult, false);
     CHECK_FREE_UR_RESULT(g_urMultiResult, true);
     CHECK_FREE_PARSE_RESULT(g_parseResult);
@@ -284,10 +281,10 @@ UREncodeResult *GuiGetArweaveSignQrCodeData(void)
     Rsa_primes_t *primes = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     do {
-        primes = FlashReadRsaPrimes();
-        if (primes == NULL) {
-            printf("Failed to read RSA primes\n");
-            ASSERT(false);
+        int32_t ret = LoadAndValidateArKey(SecretCacheGetPassword(), &primes, NULL);
+        if (ret != SUCCESS_CODE) {
+            GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WRITE_FAIL, &ret, sizeof(ret));
+            break;
         }
         encodeResult = ar_sign_tx(data, primes->p, SPI_FLASH_RSA_PRIME_SIZE, primes->q, SPI_FLASH_RSA_PRIME_SIZE);
         CHECK_CHAIN_BREAK(encodeResult);

@@ -201,10 +201,12 @@ void GuiShowXmrOutputsDetails(lv_obj_t *parent, void *totalData)
     DisplayMoneroOutput *data = (DisplayMoneroOutput *)totalData;
 
     lv_obj_set_width(parent, 408);
-    lv_obj_set_height(parent, 200);
+    lv_obj_set_height(parent, LV_SIZE_CONTENT);
+    lv_obj_set_style_pad_bottom(parent, 24, LV_PART_MAIN);
 
-    lv_obj_t * infoContainer = GuiCreateContainerWithParent(parent, 408, 100);
+    lv_obj_t * infoContainer = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
     SetContainerDefaultStyle(infoContainer);
+    lv_obj_set_style_pad_bottom(infoContainer, 16, LV_PART_MAIN);
     lv_obj_t *label = GuiCreateIllustrateLabel(infoContainer, "Number of TXOs");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
@@ -216,20 +218,22 @@ void GuiShowXmrOutputsDetails(lv_obj_t *parent, void *totalData)
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 53);
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
-    label = GuiCreateIllustrateLabel(infoContainer, data->total_amount);
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 195, 53);
-    lv_obj_set_width(label, 180);
-
     lv_obj_t *infoIcon = GuiCreateImg(infoContainer, &imgInfo);
-    lv_obj_align(infoIcon, LV_ALIGN_DEFAULT, 360, 57);
+    lv_obj_align_to(infoIcon, label, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
     lv_obj_add_flag(infoIcon, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(infoIcon, ShowHintBox, LV_EVENT_CLICKED, NULL);
 
-    lv_obj_t * hintContainer = GuiCreateContainerWithParent(parent, 408, 60);
-    lv_obj_align(hintContainer, LV_ALIGN_DEFAULT, 0, 116);
+    lv_obj_t *amountLabel = GuiCreateIllustrateLabel(infoContainer, data->total_amount);
+    lv_obj_set_width(amountLabel, 360);
+    lv_label_set_long_mode(amountLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_align_to(amountLabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
+
+    lv_obj_t * hintContainer = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
+    lv_obj_align_to(hintContainer, infoContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     lv_obj_t *hint = GuiCreateIllustrateLabel(hintContainer, "Sign each TXO to generate Key Image for transaction construction.");
     lv_obj_align(hint, LV_ALIGN_DEFAULT, 24, 0);
     lv_obj_set_width(hint, 360);
+    lv_label_set_long_mode(hint, LV_LABEL_LONG_WRAP);
     lv_obj_set_style_text_opa(hint, 144, LV_PART_MAIN);
 }
 
@@ -276,7 +280,7 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
         bool is_change = data->outputs->data[i].is_change;
         uint32_t addressY = 18 + 38 + i * 120 + addressOffset;
         char outputIndex[BUFFER_SIZE_16] = {0};
-        snprintf(outputIndex, sizeof(outputIndex), "%zu", i + 1);
+        snprintf(outputIndex, sizeof(outputIndex), "%u", (unsigned int)(i + 1));
         label = GuiCreateIllustrateLabel(detilsContainer, outputIndex);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, addressY);
         lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
@@ -348,8 +352,8 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
     lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN);
 
     for (size_t i = 0; i < data->inputs->size; i++) {
-        char inputIndex[BUFFER_SIZE_16] = {0};
-        snprintf(inputIndex, sizeof(inputIndex), "Pubkey %zu", i + 1);
+        char inputIndex[BUFFER_SIZE_32] = {0};
+        snprintf(inputIndex, sizeof(inputIndex), "Pubkey %u", (unsigned int)(i + 1));
         lv_obj_t *titleLabel = GuiCreateIllustrateLabel(inputsContainer, inputIndex);
         lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 24, 54 + i * 120);
         lv_obj_set_style_text_opa(titleLabel, 144, LV_PART_MAIN);
@@ -375,8 +379,8 @@ void GuiShowXmrTransactionDetails(lv_obj_t *parent, void *totalData)
 
     for (size_t i = 0; i < data->outputs->size; i++) {
         bool is_change = data->outputs->data[i].is_change;
-        char outputIndex[BUFFER_SIZE_16] = {0};
-        snprintf(outputIndex, sizeof(outputIndex), "Address %zu", i + 1);
+        char outputIndex[BUFFER_SIZE_32] = {0};
+        snprintf(outputIndex, sizeof(outputIndex), "Address %u", (unsigned int)(i + 1));
         lv_obj_t *titleLabel = GuiCreateIllustrateLabel(outputsContainer, outputIndex);
         lv_obj_align(titleLabel, LV_ALIGN_DEFAULT, 24, 54 + i * 150);
         lv_obj_set_style_text_opa(titleLabel, 144, LV_PART_MAIN);

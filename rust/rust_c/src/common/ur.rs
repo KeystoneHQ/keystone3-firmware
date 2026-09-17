@@ -8,10 +8,7 @@ use ur_registry::ethereum::eth_batch_sign_requests::EthBatchSignRequest;
 use cstr_core::CString;
 use cty::c_char;
 use keystore::errors::KeystoreError;
-use ur_parse_lib::keystone_ur_decoder::{
-    probe_decode, KeystoneURDecoder, MultiURParseResult as InnerMultiParseResult,
-    URParseResult as InnerParseResult,
-};
+use ur_parse_lib::keystone_ur_decoder::{probe_decode, URParseResult as InnerParseResult};
 use ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
 use ur_registry::error::{URError, URResult};
 use ur_registry::extend::crypto_multi_accounts::CryptoMultiAccounts;
@@ -79,6 +76,75 @@ use ur_registry::zcash::zcash_sign_batch::ZcashSignBatch;
 use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
 use super::types::{PtrDecoder, PtrEncoder, PtrString, PtrUR};
+
+#[cfg(all(not(test), not(feature = "simulator")))]
+unsafe extern "C" {
+    fn MpuSandboxValidateCbor(
+        input: *const u8,
+        input_length: usize,
+        validation_status: *mut u32,
+    ) -> bool;
+}
+
+struct KeystoneURDecoder {
+    decoder: ur::Decoder,
+}
+
+impl KeystoneURDecoder {
+    fn from_first_part(part: &str) -> Result<Self, URError> {
+        let mut decoder = ur::Decoder::default();
+        decoder
+            .receive(part)
+            .map_err(|error| URError::UrDecodeError(error.to_string()))?;
+        Ok(Self { decoder })
+    }
+
+    fn receive(&mut self, part: &str) -> Result<(), URError> {
+        self.decoder
+            .receive(part)
+            .map_err(|error| URError::UrDecodeError(error.to_string()))
+    }
+
+    fn complete(&self) -> bool {
+        self.decoder.complete()
+    }
+
+    fn progress(&self) -> u8 {
+        self.decoder.progress()
+    }
+
+    fn message(&self) -> Result<Vec<u8>, URError> {
+        self.decoder
+            .message()
+            .map_err(|error| URError::UrDecodeError(error.to_string()))?
+            .ok_or_else(|| URError::UrDecodeError("cbor is none".to_string()))
+    }
+}
+
+fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
+    #[cfg(all(not(test), not(feature = "simulator")))]
+    let status = {
+        let mut status = sandbox_parser::ValidationStatus::InvalidInput as u32;
+        let available = unsafe { MpuSandboxValidateCbor(cbor.as_ptr(), cbor.len(), &mut status) };
+        if !available {
+            return Err(URError::CborDecodeError(
+                "sandbox CBOR validation unavailable".to_string(),
+            ));
+        }
+        status
+    };
+
+    #[cfg(any(test, feature = "simulator"))]
+    let status = sandbox_parser::validate_cbor(cbor) as u32;
+
+    if status == sandbox_parser::ValidationStatus::Ok as u32 {
+        Ok(())
+    } else {
+        Err(URError::CborDecodeError(format!(
+            "sandbox rejected reconstructed CBOR with status {status}"
+        )))
+    }
+}
 use super::ur_ext::InferViewType;
 use super::utils::{check_recover_c_char_lossy, convert_c_char, recover_c_char};
 use crate::{
@@ -779,6 +845,46 @@ mod tests {
             zcash_batch_sig_result.free();
         }
     }
+
+    #[test]
+    fn single_part_cbor_must_consume_the_entire_payload() {
+        let valid = ur::encode(&[0xa0], "bytes");
+        assert!(validate_single_part_cbor(&valid).is_ok());
+
+        let trailing = ur::encode(&[0xa0, 0x00], "bytes");
+        let error = validate_single_part_cbor(&trailing).unwrap_err();
+        assert!(matches!(error, URError::CborDecodeError(_)));
+        assert!(error.to_string().contains("trailing data"));
+    }
+
+    #[test]
+    fn single_part_cbor_enforces_complexity_budgets() {
+        let mut at_depth_limit = vec![0x81; sandbox_parser::MAX_NESTING_DEPTH as usize];
+        at_depth_limit.push(0xf6);
+        assert!(validate_single_part_cbor(&ur::encode(&at_depth_limit, "bytes")).is_ok());
+
+        let mut over_depth_limit = vec![0x81; sandbox_parser::MAX_NESTING_DEPTH as usize + 1];
+        over_depth_limit.push(0xf6);
+        let error = validate_single_part_cbor(&ur::encode(&over_depth_limit, "bytes")).unwrap_err();
+        assert!(error.to_string().contains("nesting limit"));
+
+        let mut over_item_limit = vec![0x99, 0x04, 0x00];
+        over_item_limit.extend(core::iter::repeat(0xf6).take(sandbox_parser::MAX_ITEMS as usize));
+        let error = validate_single_part_cbor(&ur::encode(&over_item_limit, "bytes")).unwrap_err();
+        assert!(error.to_string().contains("item limit"));
+    }
+
+    #[test]
+    fn reconstructed_cbor_uses_sandbox_complexity_budgets() {
+        let mut at_depth_limit = vec![0x81; 32];
+        at_depth_limit.push(0xf6);
+        assert!(validate_reassembled_cbor(&at_depth_limit).is_ok());
+
+        let mut over_depth_limit = vec![0x81; 33];
+        over_depth_limit.push(0xf6);
+        let error = validate_reassembled_cbor(&over_depth_limit).unwrap_err();
+        assert!(error.to_string().contains("status 11"));
+    }
 }
 
 fn get_ur_type(ur: &String) -> Result<QRCodeType, URError> {
@@ -786,43 +892,78 @@ fn get_ur_type(ur: &String) -> Result<QRCodeType, URError> {
     QRCodeType::from(&t)
 }
 
+fn sandbox_cbor_error(status: sandbox_parser::ValidationStatus) -> URError {
+    let reason = match status {
+        sandbox_parser::ValidationStatus::InvalidInput => "invalid input".to_string(),
+        sandbox_parser::ValidationStatus::CborUnexpectedEof => "end of input bytes".to_string(),
+        sandbox_parser::ValidationStatus::CborInvalid => "invalid CBOR".to_string(),
+        sandbox_parser::ValidationStatus::CborNestingLimit => format!(
+            "nesting limit {} exceeded",
+            sandbox_parser::MAX_NESTING_DEPTH
+        ),
+        sandbox_parser::ValidationStatus::CborItemLimit => {
+            format!("item limit {} exceeded", sandbox_parser::MAX_ITEMS)
+        }
+        sandbox_parser::ValidationStatus::CborTrailingData => "trailing data".to_string(),
+        _ => format!("CBOR validation failed with status {}", status as u32),
+    };
+    URError::CborDecodeError(reason)
+}
+
+fn validate_single_part_cbor(value: &str) -> Result<(), URError> {
+    let (kind, cbor) =
+        ur::decode(value).map_err(|error| URError::UrDecodeError(error.to_string()))?;
+    if kind != ur::ur::Kind::SinglePart {
+        return Ok(());
+    }
+
+    let status = sandbox_parser::validate_cbor(&cbor);
+    if status != sandbox_parser::ValidationStatus::Ok {
+        return Err(sandbox_cbor_error(status));
+    }
+    Ok(())
+}
+
 fn _decode_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewType>(
     ur: String,
     u: QRCodeType,
 ) -> URParseResult {
+    match ur::decode(&ur) {
+        Ok((ur::ur::Kind::MultiPart, _)) => {
+            return match KeystoneURDecoder::from_first_part(&ur) {
+                Ok(decoder) => URParseResult::multi(
+                    decoder.progress() as u32,
+                    ViewType::ViewTypeUnKnown,
+                    u,
+                    decoder,
+                ),
+                Err(error) => URParseResult::from(error),
+            };
+        }
+        Ok((ur::ur::Kind::SinglePart, _)) => {}
+        Err(error) => {
+            return URParseResult::from(URError::UrDecodeError(error.to_string()));
+        }
+    }
+
     let result: URResult<InnerParseResult<T>> = probe_decode(ur);
     match result {
-        Ok(parse_result) => {
-            if parse_result.is_multi_part {
-                match parse_result.decoder {
-                    Some(decoder) => URParseResult::multi(
-                        parse_result.progress as u32,
-                        ViewType::ViewTypeUnKnown,
-                        u,
-                        decoder,
-                    ),
-                    None => URParseResult::from(RustCError::UnexpectedError(
-                        "ur decoder is none".to_string(),
-                    )),
-                }
-            } else {
-                match parse_result.data {
-                    Some(data) => match InferViewType::infer(&data) {
-                        Ok(t) => URParseResult::single(t, u, data),
-                        Err(e) => URParseResult::from(e),
-                    },
-                    None => URParseResult::from(RustCError::UnexpectedError(
-                        "ur data is none".to_string(),
-                    )),
-                }
-            }
-        }
+        Ok(parse_result) => match parse_result.data {
+            Some(data) => match InferViewType::infer(&data) {
+                Ok(t) => URParseResult::single(t, u, data),
+                Err(e) => URParseResult::from(e),
+            },
+            None => URParseResult::from(RustCError::UnexpectedError("ur data is none".to_string())),
+        },
         Err(e) => URParseResult::from(e),
     }
 }
 
 pub fn decode_ur(ur: String) -> URParseResult {
     let ur = ur.trim().to_lowercase();
+    if let Err(error) = validate_single_part_cbor(&ur) {
+        return URParseResult::from(error);
+    }
     let ur_type = get_ur_type(&ur);
     let ur_type = match ur_type {
         Ok(t) => t,
@@ -909,24 +1050,26 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
     u: QRCodeType,
     decoder: &mut KeystoneURDecoder,
 ) -> URParseMultiResult {
-    let result: URResult<InnerMultiParseResult<T>> = decoder.parse_ur(ur);
-    match result {
-        Ok(parse_result) => {
-            if parse_result.is_complete {
-                match parse_result.data {
-                    Some(data) => match InferViewType::infer(&data) {
-                        Ok(t) => URParseMultiResult::success(t, u, data),
-                        Err(e) => URParseMultiResult::from(e),
-                    },
-                    None => URParseMultiResult::from(RustCError::UnexpectedError(
-                        "UR parsed completely but data is none".to_string(),
-                    )),
-                }
-            } else {
-                URParseMultiResult::un_complete(ViewType::ViewTypeUnKnown, u, parse_result.progress)
-            }
-        }
-        Err(e) => URParseMultiResult::from(e),
+    if let Err(error) = decoder.receive(&ur) {
+        return URParseMultiResult::from(error);
+    }
+    if !decoder.complete() {
+        return URParseMultiResult::un_complete(ViewType::ViewTypeUnKnown, u, decoder.progress());
+    }
+
+    let cbor = match decoder.message() {
+        Ok(cbor) => cbor,
+        Err(error) => return URParseMultiResult::from(error),
+    };
+    if let Err(error) = validate_reassembled_cbor(&cbor) {
+        return URParseMultiResult::from(error);
+    }
+    match T::try_from(cbor) {
+        Ok(data) => match InferViewType::infer(&data) {
+            Ok(t) => URParseMultiResult::success(t, u, data),
+            Err(error) => URParseMultiResult::from(error),
+        },
+        Err(error) => URParseMultiResult::from(error),
     }
 }
 

@@ -19,6 +19,7 @@ typedef enum {
     CREATE_WALLET_SETPIN = 0,
     CREATE_WALLET_REPEATPIN,
     CREATE_WALLET_NAMEWALLET,
+    CREATE_WALLET_NOTICE,
     CREATE_WALLET_BACKUPFROM,
 
     CREATE_WALLET_BUTT,
@@ -34,6 +35,9 @@ typedef struct CreateWalletWidget {
     lv_obj_t *repeatPin;
     lv_obj_t *nameWallet;
     lv_obj_t *backupForm;
+    lv_obj_t *notice;
+    lv_obj_t *noticeChecks[3];
+    lv_obj_t *noticeConfirm;
     lv_obj_t *diceRollsHint;
 } CreateWalletWidget_t;
 static CreateWalletWidget_t g_createWalletTileView;
@@ -53,6 +57,43 @@ static GuiEnterPasscodeItem_t *g_repeatPassCode = NULL;
 static lv_obj_t *g_setPinTile = NULL;
 static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
+
+static void SetNoticeConfirmButtonState(lv_obj_t *button, bool enabled)
+{
+    if (enabled) {
+        lv_obj_clear_state(button, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_100, LV_PART_MAIN);
+    } else {
+        lv_obj_add_state(button, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN | LV_STATE_DISABLED);
+        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN | LV_STATE_DISABLED);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_60, LV_PART_MAIN | LV_STATE_DISABLED);
+    }
+}
+
+static void NoticeCheckHandler(lv_event_t *e)
+{
+    lv_obj_t *checkBox = lv_event_get_user_data(e);
+    if (checkBox != NULL) {
+        if (lv_obj_has_state(checkBox, LV_STATE_CHECKED)) {
+            lv_obj_clear_state(checkBox, LV_STATE_CHECKED);
+        } else {
+            lv_obj_add_state(checkBox, LV_STATE_CHECKED);
+        }
+    }
+
+    bool allChecked = true;
+
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_createWalletTileView.noticeChecks); i++) {
+        if (!lv_obj_has_state(g_createWalletTileView.noticeChecks[i], LV_STATE_CHECKED)) {
+            allChecked = false;
+            break;
+        }
+    }
+    SetNoticeConfirmButtonState(g_createWalletTileView.noticeConfirm, allChecked);
+}
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
 static PageWidget_t *g_changeEntropyPage;
@@ -145,18 +186,82 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 
 static void OpenNoticeHandler(lv_event_t *e)
 {
-    g_noticeWindow = GuiCreateConfirmHintBox(&imgRedEye, _("single_backup_notice_title"), _("single_backup_notice_desc1"), _("single_backup_notice_desc2"), USR_SYMBOL_CHECK, ORANGE_COLOR);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgRedEye,
+                                             _("single_backup_notice_title"),
+                                             _("single_backup_notice_desc1"),
+                                             _("single_backup_notice_desc2"),
+                                             USR_SYMBOL_CHECK, ORANGE_COLOR);
+    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler,
+                        LV_EVENT_CLICKED, &g_noticeWindow);
 
     lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
     lv_obj_set_width(btn, 96);
     lv_obj_set_style_text_font(lv_obj_get_child(btn, 0), &buttonFont, 0);
-    lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_add_event_cb(btn, CloseParentAndNextHandler, LV_EVENT_CLICKED,
+                        &g_noticeWindow);
 
     lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED,
+                        &g_noticeWindow);
+    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT,
+                    -36, 36);
+}
+
+static void NoticeConfirmHandler(lv_event_t *e)
+{
+    GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
+}
+
+static void GuiResetNoticeConfirmation(void)
+{
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_createWalletTileView.noticeChecks); i++) {
+        lv_obj_clear_state(g_createWalletTileView.noticeChecks[i], LV_STATE_CHECKED);
+    }
+    SetNoticeConfirmButtonState(g_createWalletTileView.noticeConfirm, false);
+}
+
+static void GuiCreateNoticeWidget(lv_obj_t *parent)
+{
+    lv_obj_t *label = GuiCreateTitleLabel(parent, _("single_backup_notice_page_title"));
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
+
+    label = GuiCreateIllustrateLabel(parent, _("single_backup_notice_page_desc"));
+    lv_obj_set_width(label, 408);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 216 - GUI_MAIN_AREA_OFFSET);
+
+    static const char *noticeItems[] = {
+        "single_backup_notice_item1",
+        "single_backup_notice_item2",
+        "single_backup_notice_item3",
+    };
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_createWalletTileView.noticeChecks); i++) {
+        lv_obj_t *row = GuiCreateContainerWithParent(parent, 408, 96);
+        lv_obj_set_style_bg_opa(row, LV_OPA_0, LV_PART_MAIN);
+        lv_obj_add_flag(row, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_align(row, LV_ALIGN_DEFAULT, 36, 326 - GUI_MAIN_AREA_OFFSET + (int16_t)(i * 96));
+
+        lv_obj_t *checkBox = GuiCreateSingleCheckBox(row, "");
+        lv_obj_set_size(checkBox, 36, 36);
+        lv_obj_align(checkBox, LV_ALIGN_TOP_LEFT, 0, 0);
+        lv_obj_clear_flag(checkBox, LV_OBJ_FLAG_CLICKABLE);
+
+        lv_obj_t *itemLabel = GuiCreateIllustrateLabel(row, _(noticeItems[i]));
+        lv_obj_set_width(itemLabel, 348);
+        lv_label_set_long_mode(itemLabel, LV_LABEL_LONG_WRAP);
+        lv_obj_align(itemLabel, LV_ALIGN_TOP_LEFT, 45, 0);
+        lv_obj_add_event_cb(row, NoticeCheckHandler, LV_EVENT_CLICKED, checkBox);
+        g_createWalletTileView.noticeChecks[i] = checkBox;
+    }
+
+    lv_obj_t *button = GuiCreateTextBtn(parent, _("wallet_setting_add_wallet_confirm"));
+    lv_obj_set_size(button, 384, 66);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
+    lv_obj_add_event_cb(button, NoticeConfirmHandler, LV_EVENT_CLICKED, NULL);
+    g_createWalletTileView.noticeConfirm = button;
+    SetNoticeConfirmButtonState(button, false);
 }
 
 static void OpenSecretShareHandler(lv_event_t *e)
@@ -346,6 +451,10 @@ void GuiCreateWalletInit(uint8_t walletMethod)
     g_createWalletTileView.nameWallet = tile;
     GuiCreateNameWalletWidget(tile);
 
+    tile = lv_tileview_add_tile(tileView, CREATE_WALLET_NOTICE, 0, LV_DIR_HOR);
+    g_createWalletTileView.notice = tile;
+    GuiCreateNoticeWidget(tile);
+
     tile = lv_tileview_add_tile(tileView, CREATE_WALLET_BACKUPFROM, 0, LV_DIR_HOR);
     g_createWalletTileView.backupForm = tile;
     if (walletMethod == WALLET_METHOD_CREATE) {
@@ -379,10 +488,12 @@ int8_t GuiCreateWalletNextTile(void)
             uint8_t index = SEED_TYPE_BIP39;
             return GuiFrameOpenViewWithParam(&g_diceRollsView, &index, sizeof(index));
         }
+    case CREATE_WALLET_NOTICE:
         break;
     case CREATE_WALLET_NAMEWALLET:
         SecretCacheSetWalletIndex(GuiGetEmojiIconIndex());
         SecretCacheSetWalletName(GetCurrentKbWalletName());
+        GuiResetNoticeConfirmation();
         break;
     case CREATE_WALLET_SETPIN:
         if (g_repeatPassCode == NULL) {
@@ -421,6 +532,9 @@ int8_t GuiCreateWalletPrevTile(void)
         g_setPassCode = GuiCreateEnterPasscode(g_setPinTile, NULL, NULL, ENTER_PASSCODE_SET_PIN);
         break;
     case CREATE_WALLET_BACKUPFROM:
+        break;
+    case CREATE_WALLET_NOTICE:
+        GuiResetNoticeConfirmation();
         break;
     }
 
@@ -646,11 +760,13 @@ static void CreateChangeEntropyView(void)
     lv_label_set_recolor(label, true);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
     lv_obj_set_width(label, 344);
-    height = lv_obj_get_self_height(label) + 12;
+    lv_obj_update_layout(label);
+    lv_obj_t *firstDetailLabel = label;
 
     label = GuiCreateIllustrateLabel(descCont, "·");
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align_to(label, dot, LV_ALIGN_OUT_BOTTOM_LEFT, 0, height);
+    lv_obj_align_to(label, firstDetailLabel, LV_ALIGN_OUT_BOTTOM_LEFT,
+                    -lv_obj_get_width(dot) - 10, 12);
 
     label = GuiCreateIllustrateLabel(descCont, _("change_entropy_dice_detail_desc_2"));
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_RIGHT_TOP, 10, 0);
@@ -745,4 +861,3 @@ bool GuiCreateWalletNeedPassphrase(void)
     }
     return !lv_obj_has_flag(g_warningCont, LV_OBJ_FLAG_HIDDEN);
 }
-

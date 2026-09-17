@@ -24,6 +24,7 @@
 #include "drv_motor.h"
 #include "hal_lcd.h"
 #include "cmsis_os.h"
+#include "task.h"
 #include "user_msg.h"
 #include "cmd_task.h"
 #include "ui_display_task.h"
@@ -42,6 +43,8 @@
 #include "log.h"
 #include "fingerprint_process.h"
 #include "fingerprint_task.h"
+#include "mpu_sandbox_task.h"
+#include "watchdog_task.h"
 #include "low_power.h"
 #include "draw_on_lcd.h"
 #include "device_setting.h"
@@ -95,6 +98,10 @@ int main(void)
 
     PrintSystemInfo();
     osKernelInitialize();
+    if (!MpuSandboxTaskCreate()) {
+        printf("mpu sandbox task creation failed\r\n");
+        while (1);
+    }
     CreateFingerprintTask();
 #ifndef BUILD_PRODUCTION
     CreateCmdTask();
@@ -107,6 +114,10 @@ int main(void)
     CreateBackgroundTask();
     CreateLogTask();
     CreateUsbTask();
+    if (!WatchdogTaskCreate()) {
+        printf("watchdog task creation failed\r\n");
+        while (1);
+    }
 
     printf("start FreeRTOS scheduler\r\n");
     osKernelStart();
@@ -150,7 +161,15 @@ void assert_failed(uint8_t* file, uint32_t line)
      ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
 
     /* Infinite loop */
-    printf("err,file=%s,line=%d\r\n", (char *)file, line);
+    printf("err,file=%s,line=%d\r\n", (char *)file, (int)line);
     while (1);
 }
 #endif
+
+void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
+{
+    (void)xTask;
+    (void)pcTaskName;
+    cm_backtrace_assert(cmb_get_sp());
+    NVIC_SystemReset();
+}

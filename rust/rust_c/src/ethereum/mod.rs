@@ -34,6 +34,46 @@ pub mod address;
 pub mod structs;
 pub(crate) mod util;
 
+#[cfg(all(not(test), not(feature = "simulator")))]
+unsafe extern "C" {
+    fn MpuSandboxValidateEip712Json(
+        input: *const u8,
+        input_length: usize,
+        validation_status: *mut u32,
+    ) -> bool;
+}
+
+fn validate_eip712_json_in_sandbox(input: &[u8]) -> Result<(), EthereumError> {
+    #[cfg(all(not(test), not(feature = "simulator")))]
+    let status = {
+        let mut status = sandbox_parser::ValidationStatus::InvalidInput as u32;
+        let available =
+            unsafe { MpuSandboxValidateEip712Json(input.as_ptr(), input.len(), &mut status) };
+        if !available {
+            return Err(EthereumError::InvalidTypedData(
+                "sandbox JSON validation unavailable".to_string(),
+                String::new(),
+            ));
+        }
+        status
+    };
+
+    #[cfg(any(test, feature = "simulator"))]
+    let status = {
+        let mut input = input.to_vec();
+        sandbox_parser::validate_eip712_json(&mut input) as u32
+    };
+
+    if status == sandbox_parser::ValidationStatus::Ok as u32 {
+        Ok(())
+    } else {
+        Err(EthereumError::InvalidTypedData(
+            format!("sandbox rejected EIP-712 JSON with status {status}"),
+            String::new(),
+        ))
+    }
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn eth_check(
     ptr: PtrUR,
@@ -411,7 +451,9 @@ pub unsafe extern "C" fn eth_parse_typed_data(
 
     match transaction_type {
         TransactionType::TypedData => {
-            let tx = parse_typed_data_message(&crypto_eth.get_sign_data(), pubkey);
+            let sign_data = crypto_eth.get_sign_data();
+            let tx = validate_eip712_json_in_sandbox(&sign_data)
+                .and_then(|_| parse_typed_data_message(&sign_data, pubkey));
             match tx {
                 Ok(t) => match DisplayETHTypedData::try_from(t) {
                     Ok(display) => TransactionParseResult::success(display.c_ptr()).c_ptr(),
@@ -462,9 +504,8 @@ pub unsafe extern "C" fn eth_sign_tx_dynamic(
         TransactionType::PersonalMessage => {
             app_ethereum::sign_personal_message(&sign_data, seed, &path)
         }
-        TransactionType::TypedData => {
-            app_ethereum::sign_typed_data_message(&sign_data, seed, &path)
-        }
+        TransactionType::TypedData => validate_eip712_json_in_sandbox(&sign_data)
+            .and_then(|_| app_ethereum::sign_typed_data_message(&sign_data, seed, &path)),
     };
     seed.zeroize();
     match signature {

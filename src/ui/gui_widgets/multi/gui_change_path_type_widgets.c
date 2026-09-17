@@ -430,7 +430,7 @@ static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t 
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
     xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(g_selectType, index));
-    snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
+    snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", (unsigned int)index);
     switch (type) {
     case 1:
         result = cardano_get_enterprise_address(xPub, 0, 1);

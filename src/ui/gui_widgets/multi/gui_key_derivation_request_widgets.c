@@ -595,6 +595,8 @@ static UREncodeResult *ModelGenerateSyncUR(void)
         GetAccountSeed(GetCurrentAccountIndex(), seed, password);
         ExtendedPublicKey xpubs[MAX_KEY_DERIVATION_SCHEMAS] = {0};
         SimpleResponse_c_char *pubkey[MAX_KEY_DERIVATION_SCHEMAS] = {0};
+        char *icarusMasterKey = NULL;
+        SimpleResponse_c_char *icarusMasterKeyResponse = NULL;
         for (size_t i = 0; i < schemaCount; i++) {
             uint8_t derivationType = GetDerivationTypeByCurveAndDeriveAlgo(g_callData->key_derivation->schemas->data[i].curve, g_callData->key_derivation->schemas->data[i].algo);
             char *path = g_callData->key_derivation->schemas->data[i].key_path;
@@ -611,21 +613,37 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                     if (isSlip39) {
                         pubkey[i] = cardano_get_pubkey_by_slip23(seed, seedLen, path);
                     } else {
-                        uint8_t entropyLen = 0;
-                        uint8_t entropy[64];
-                        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
-                        SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
-                        char* icarusMasterKey = cip3_response->data;
-                        pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                        if (icarusMasterKey == NULL) {
+                            uint8_t entropyLen = 0;
+                            uint8_t entropy[64];
+                            GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                            icarusMasterKeyResponse = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
+                            memset_s(entropy, sizeof(entropy), 0, sizeof(entropy));
+                            if (icarusMasterKeyResponse != NULL && icarusMasterKeyResponse->error_code == 0 &&
+                                    icarusMasterKeyResponse->data != NULL) {
+                                icarusMasterKey = icarusMasterKeyResponse->data;
+                            }
+                        }
+                        if (icarusMasterKey != NULL) {
+                            pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                        }
                     }
 #endif
 #ifdef CYPHERPUNK_VERSION
-                    uint8_t entropyLen = 0;
-                    uint8_t entropy[64];
-                    GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
-                    SimpleResponse_c_char* cip3_response = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
-                    char* icarusMasterKey = cip3_response->data;
-                    pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                    if (icarusMasterKey == NULL) {
+                        uint8_t entropyLen = 0;
+                        uint8_t entropy[64];
+                        GetAccountEntropy(GetCurrentAccountIndex(), entropy, &entropyLen, password);
+                        icarusMasterKeyResponse = get_icarus_master_key(entropy, entropyLen, GetPassphrase(GetCurrentAccountIndex()));
+                        memset_s(entropy, sizeof(entropy), 0, sizeof(entropy));
+                        if (icarusMasterKeyResponse != NULL && icarusMasterKeyResponse->error_code == 0 &&
+                                icarusMasterKeyResponse->data != NULL) {
+                            icarusMasterKey = icarusMasterKeyResponse->data;
+                        }
+                    }
+                    if (icarusMasterKey != NULL) {
+                        pubkey[i] = derive_bip32_ed25519_extended_pubkey(icarusMasterKey, path);
+                    }
 #endif
                 } else if (g_adaDerivationAlgo == HD_LEDGER_BITBOX_ADA || g_isUsb) {
                     // seed -> mnemonic --> master key(m) -> derive key
@@ -637,6 +655,12 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                     SimpleResponse_c_char *ledger_bitbox02_response  = get_ledger_bitbox02_master_key(mnemonic, GetPassphrase(GetCurrentAccountIndex()));
                     char* ledgerBitbox02Key = ledger_bitbox02_response->data;
                     pubkey[i] = derive_bip32_ed25519_extended_pubkey(ledgerBitbox02Key, path);
+                    memset_s(entropy, sizeof(entropy), 0, sizeof(entropy));
+                    if (mnemonic != NULL) {
+                        ClearSensitiveCString(mnemonic);
+                        SRAM_FREE(mnemonic);
+                    }
+                    free_simple_response_c_char(ledger_bitbox02_response);
                 }
                 break;
             default:
@@ -648,12 +672,20 @@ static UREncodeResult *ModelGenerateSyncUR(void)
                         free_simple_response_c_char(pubkey[j]);
                     }
                 }
+                if (icarusMasterKeyResponse != NULL) {
+                    ClearSensitiveCString(icarusMasterKeyResponse->data);
+                    free_simple_response_c_char(icarusMasterKeyResponse);
+                }
                 memset_s(seed, sizeof(seed), 0, sizeof(seed));
                 SetLockScreen(enable);
                 return NULL;
             }
             xpubs[i].path = path;
             xpubs[i].xpub = pubkey[i]->data;
+        }
+        if (icarusMasterKeyResponse != NULL) {
+            ClearSensitiveCString(icarusMasterKeyResponse->data);
+            free_simple_response_c_char(icarusMasterKeyResponse);
         }
         keys.data = xpubs;
         keys.size = schemaCount;

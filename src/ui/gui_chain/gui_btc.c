@@ -259,6 +259,7 @@ static UREncodeResult *GetBtcSignDataDynamic(bool unLimit)
         char *xPub = NULL;
 #ifdef WEB3_VERSION
         if (0 != GuiGetUtxoPubKeyAndHdPath(viewType, &xPub, &hdPath)) {
+            memset_s(seed, sizeof(seed), 0, sizeof(seed));
             return NULL;
         }
         encodeResult = utxo_sign_keystone(data, urType, mfp, sizeof(mfp), xPub, SOFTWARE_VERSION, seed, len);
@@ -797,7 +798,7 @@ static void OpenInputRefQrCode(lv_event_t *e)
     char outpoint[160] = {0};
     snprintf_s(url, sizeof(url), "https://mempool.space/tx/%s", inputData->input_txid);
     snprintf_s(outpoint, sizeof(outpoint), "%s:\n%s:%u", "Outpoint", inputData->input_txid,
-               inputData->input_vout);
+               (unsigned int)inputData->input_vout);
 
     GuiQRCodeHintBoxOpenCompact(url, "Input Reference", outpoint);
 }

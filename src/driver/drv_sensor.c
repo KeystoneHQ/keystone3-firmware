@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "drv_sensor.h"
 #include "drv_bpk.h"
 
@@ -60,7 +61,7 @@ void SensorInit(void)
 
 static void SensorRegPrint(char *regName, uint32_t *regAddr)
 {
-    printf("%s addr = %#x, val = %08X\r\n", regName, regAddr, *regAddr);
+    printf("%s addr = %#x, val = %08X\r\n", regName, (unsigned int)(uintptr_t)regAddr, (unsigned int)*regAddr);
 }
 
 static void SensorNvicConfiguration(void)

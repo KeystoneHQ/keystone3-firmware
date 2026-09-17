@@ -39,6 +39,23 @@ static MnemonicKeyBoard_t *g_importMkb;
 static uint8_t g_phraseCnt = 33;
 static lv_obj_t *g_noticeWindow = NULL;
 static PageWidget_t *g_pageWidget;
+static BackupConfirmationHintBox_t g_backupConfirmation;
+static bool g_backupConfirmationAccepted = false;
+
+static void BackupConfirmationHandler(lv_event_t *e)
+{
+    g_backupConfirmationAccepted = true;
+    CloseParentAndNextHandler(e);
+}
+
+static void ShowBackupConfirmation(void)
+{
+    GuiCreateBackupConfirmationHintBox(&g_backupConfirmation);
+    g_noticeWindow = g_backupConfirmation.container;
+    lv_obj_add_flag(g_backupConfirmation.closeButton, LV_OBJ_FLAG_HIDDEN);
+    lv_obj_add_event_cb(g_backupConfirmation.continueButton, BackupConfirmationHandler,
+                        LV_EVENT_CLICKED, &g_noticeWindow);
+}
 
 static void ContinueStopCreateHandler(lv_event_t *e)
 {
@@ -143,6 +160,7 @@ static void GuiShareSsbInputWidget(lv_obj_t *parent)
 void GuiImportShareInit(uint8_t wordsCnt)
 {
     g_phraseCnt = wordsCnt;
+    g_backupConfirmationAccepted = false;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
 
@@ -183,6 +201,11 @@ int8_t GuiImportShareNextTile(const char *passphrase)
             SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("Passphrase"));
             SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_QUESTION_MARK, OpenPassphraseTutorialHandler, NULL);
         } else {
+            if (!g_backupConfirmationAccepted) {
+                ShowBackupConfirmation();
+                return SUCCESS_CODE;
+            }
+            g_backupConfirmationAccepted = false;
             g_importShareTileView.currentTile++;
             SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
             GuiCreateCircleAroundAnimation(lv_scr_act(), -40);
@@ -193,6 +216,11 @@ int8_t GuiImportShareNextTile(const char *passphrase)
         lv_obj_add_flag(g_ssbImportKb->cont, LV_OBJ_FLAG_HIDDEN);
         break;
     case IMPORT_SHARE_PASSPHRASE:
+        if (!g_backupConfirmationAccepted) {
+            ShowBackupConfirmation();
+            return SUCCESS_CODE;
+        }
+        g_backupConfirmationAccepted = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
         SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
@@ -226,6 +254,7 @@ int8_t GuiImportSharePrevTile(void)
 void GuiImportShareDeInit(void)
 {
     GUI_DEL_OBJ(g_noticeWindow)
+    g_backupConfirmationAccepted = false;
     GUI_DEL_OBJ(g_nextCont)
     CLEAR_OBJECT(g_importMkb);
     GuiMnemonicHintboxClear();

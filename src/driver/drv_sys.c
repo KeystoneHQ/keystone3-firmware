@@ -39,11 +39,11 @@ void PrintSystemInfo(void)
     printf("GNUC\r\n");
 #endif
     SYSCTRL_GetClocksFreq(&ClocksStructure);
-    printf("PLL_Frequency :%dHz\r\n", ClocksStructure.PLL_Frequency);
-    printf("CPU_Frequency :%dHz\r\n", ClocksStructure.CPU_Frequency);
-    printf("HCLK_Frequency:%dHz\r\n", ClocksStructure.HCLK_Frequency);
-    printf("PCLK_Frequency:%dHz\r\n", ClocksStructure.PCLK_Frequency);
-    printf("SYSCTRL->FREQ_SEL=0x%08X\r\n", SYSCTRL->FREQ_SEL);
-    printf("SYSCTRL->FREQ_SEL=0x%08X\r\n", SYSCTRL->HCLK_1MS_VAL);
+    printf("PLL_Frequency :%dHz\r\n", (int)ClocksStructure.PLL_Frequency);
+    printf("CPU_Frequency :%dHz\r\n", (int)ClocksStructure.CPU_Frequency);
+    printf("HCLK_Frequency:%dHz\r\n", (int)ClocksStructure.HCLK_Frequency);
+    printf("PCLK_Frequency:%dHz\r\n", (int)ClocksStructure.PCLK_Frequency);
+    printf("SYSCTRL->FREQ_SEL=0x%08X\r\n", (unsigned int)SYSCTRL->FREQ_SEL);
+    printf("SYSCTRL->FREQ_SEL=0x%08X\r\n", (unsigned int)SYSCTRL->HCLK_1MS_VAL);
     printf("%s\n", GetSoftwareVersionString());
 }

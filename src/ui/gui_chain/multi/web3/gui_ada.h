@@ -16,23 +16,26 @@ void *GuiGetAdaData(void);
 void *GuiGetAdaSignDataData(void);
 PtrT_TransactionCheckResult GuiGetAdaCheckResult(void);
 PtrT_TransactionCheckResult GuiGetAdaSignDataCheckResult(void);
+PtrT_TransactionCheckResult GuiGetAdaSignCip8DataCheckResult(void);
 PtrT_TransactionCheckResult GuiGetAdaCatalystCheckResult(void);
 void GetAdaNetwork(void *indata, void *param, uint32_t maxLen);
 void GetAdaTotalInput(void *indata, void *param, uint32_t maxLen);
+bool GetAdaMultiAssetsExist(void *indata, void *param);
+void GuiShowAdaMultiAssetsWarning(lv_obj_t *parent, void *totalData);
+void GuiShowAdaRawData(lv_obj_t *parent, void *totalData);
+void GuiShowAdaTx(lv_obj_t *parent, void *totalData);
+void GuiShowAdaInputs(lv_obj_t *parent, void *totalData);
+void GuiShowAdaOutputs(lv_obj_t *parent, void *totalData);
+void GuiShowAdaSignData(lv_obj_t *parent, void *totalData);
 void GetAdaTotalOutput(void *indata, void *param, uint32_t maxLen);
 void GetAdaFee(void *indata, void *param, uint32_t maxLen);
 void GetAdaWithdrawalsLabel(void *indata, void *param, uint32_t maxLen);
-void GetAdaCertificatesLabel(void *indata, void *param, uint32_t maxLen);
 
 void *GetAdaInputDetail(uint8_t *row, uint8_t *col, void *param);
 void GetAdaInputDetailSize(uint16_t *width, uint16_t *height, void *param);
 
 void *GetAdaOutputDetail(uint8_t *row, uint8_t *col, void *param);
 void GetAdaOutputDetailSize(uint16_t *width, uint16_t *height, void *param);
-
-bool GetAdaCertificatesExist(void *indata, void *param);
-void GetAdaCertificatesSize(uint16_t *width, uint16_t *height, void *param);
-void *GetAdaCertificatesData(uint8_t *row, uint8_t *col, void *param);
 
 bool GetAdaWithdrawalsExist(void *indata, void *param);
 void GetAdaWithdrawalsSize(uint16_t *width, uint16_t *height, void *param);
@@ -79,12 +82,12 @@ bool GetAdaVotingProposalsExist(void *indata, void *param);
 void GetAdaVotingProposalsLabel(void *indata, void *param, uint32_t maxLen);
 
 AdaXPubType GetAdaXPubType(void);
-ChainType GetAdaXPubTypeByIndex(uint16_t index);
-ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint16_t index);
+ChainType GetAdaXPubTypeByIndex(uint32_t index);
+ChainType GetAdaXPubTypeByIndexAndDerivationType(AdaXPubType type, uint32_t index);
 
 void SetReceivePageAdaXPubType(AdaXPubType type);
 AdaXPubType GetReceivePageAdaXPubType(void);
-ChainType GetReceivePageAdaXPubTypeByIndex(uint16_t index);
+ChainType GetReceivePageAdaXPubTypeByIndex(uint32_t index);
 
 AdaXPubType GetKeyDerivationAdaXPubType(void);
 

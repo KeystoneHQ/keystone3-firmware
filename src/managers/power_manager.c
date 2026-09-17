@@ -51,7 +51,7 @@ void SetShutdownTimeOut(uint32_t timeOut)
 void AutoShutdownHandler(uint32_t time)
 {
     g_shutdownTick += time;
-    printf("AutoShutdownHandler g_shutdownTick is %d diffTime is %d g_shutdownTimeOut is %d\n", g_shutdownTick, time, g_shutdownTimeOut);
+    printf("AutoShutdownHandler g_shutdownTick is %d diffTime is %d g_shutdownTimeOut is %d\n", (int)g_shutdownTick, (int)time, (int)g_shutdownTimeOut);
     if (g_shutdownTick >= g_shutdownTimeOut && g_shutdownTimeOut != 0) {
         Aw32001PowerOff();
     }

@@ -52,7 +52,7 @@ bool SDCardPowerUp(void)
         }
     }
 
-    printf("Power up failed, OCR: %08X.\n", ocr);
+    printf("Power up failed, OCR: %08X.\n", (unsigned int)ocr);
     return false;
 }
 
@@ -63,12 +63,12 @@ void PrintSdCardInfo(void)
     printf("  ApplicationID: %04X\n", SDCardInfo.ApplicationID);
     printf("  ProductName: %.5s\n", SDCardInfo.ProductName);
     printf("  ProductRevision: %02X\n", SDCardInfo.ProductRevision);
-    printf("  ProductSN: %08X\n", SDCardInfo.ProductSN);
+    printf("  ProductSN: %08X\n", (unsigned int)SDCardInfo.ProductSN);
     printf("  ManufacturingDate: %06X\n", SDCardInfo.ManufacturingDate);
     printf("  Class: %d\n", SDCardInfo.Class);
     printf("  BlockSize: %u\n", SDCardInfo.BlockSize);
-    printf("  DeviceSize: %u MB\n", SDCardInfo.DeviceSize);
-    printf("  TransferRate: %d Kbps\n", SDCardInfo.TransferRate);
+    printf("  DeviceSize: %u MB\n", (unsigned int)SDCardInfo.DeviceSize);
+    printf("  TransferRate: %d Kbps\n", (int)SDCardInfo.TransferRate);
 }
 
 void GPIO_RemapConfiguration(void)

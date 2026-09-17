@@ -10,7 +10,6 @@
 #include "sha256.h"
 #include "drv_otp.h"
 #include "assert.h"
-#include "drv_mpu.h"
 
 //#define ATECC608B_TEST_MODE
 
@@ -23,7 +22,7 @@
 #warning "ATECC608B_TEST_MODE is enabled - This should ONLY be used for development/testing!"
 #endif
 
-#define CHECK_ATECC608B_RET(content, ret)   {if (ret != ATCA_SUCCESS) {printf("%s err,0x%X\r\n", content, ret); break; }}
+#define CHECK_ATECC608B_RET(content, ret)   {if (ret != ATCA_SUCCESS) {printf("%s err,0x%X\r\n", content, (unsigned int)(ret)); break; }}
 
 static int32_t Atecc608bBinding(void);
 static void GetIoProtectKey(uint8_t *ioProtectKey);
@@ -304,9 +303,7 @@ static int32_t Atecc608bBinding(void)
     do {
         ret = atcab_is_config_locked(&isLock);
         CHECK_ATECC608B_RET("get lock", ret);
-        MpuSetOtpProtection(false);
-        OTP_PowerOn();
-        memcpy(keys, (uint8_t *)OTP_ADDR_ATECC608B, sizeof(keys));
+        ReadOtpData(OTP_ADDR_ATECC608B, keys, sizeof(keys));
         if (CheckEntropy(keys, 96)) {
             //OTP key exist
             if (!isLock) {
@@ -330,7 +327,6 @@ static int32_t Atecc608bBinding(void)
             }
         }
     } while (0);
-    MpuSetOtpProtection(true);
     CLEAR_ARRAY(keys);
 
     assert(ret == 0);
@@ -345,10 +341,7 @@ static void GetIoProtectKey(uint8_t *ioProtectKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(ioProtectKey, g_ateccTestIoProtectKey, sizeof(g_ateccTestIoProtectKey));
 #else
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(ioProtectKey, (uint8_t *)IO_PROTECT_KEY_ADDR, 32);
-    MpuSetOtpProtection(true);
+    ReadOtpData(IO_PROTECT_KEY_ADDR, ioProtectKey, 32);
 #endif
 }
 
@@ -359,10 +352,7 @@ static void GetAuthKey(uint8_t *authKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(authKey, g_ateccTestAuthKey, sizeof(g_ateccTestAuthKey));
 #else
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(authKey, (uint8_t *)AUTH_KEY_ADDR, 32);
-    MpuSetOtpProtection(true);
+    ReadOtpData(AUTH_KEY_ADDR, authKey, 32);
 #endif
 }
 
@@ -373,10 +363,7 @@ static void GetEncryptKey(uint8_t *encryptKey)
 #ifdef ATECC608B_TEST_MODE
     memcpy(encryptKey, g_ateccTestEncryptKey, sizeof(g_ateccTestEncryptKey));
 #else
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(encryptKey, (uint8_t *)ENCRYPT_KEY_ADDR, 32);
-    MpuSetOtpProtection(true);
+    ReadOtpData(ENCRYPT_KEY_ADDR, encryptKey, 32);
 #endif
 }
 
@@ -474,7 +461,7 @@ static int32_t Atecc608bWriteConfig
             break;
         }
         ret = atcab_read_config_zone((uint8_t *)&config);
-        printf("atcab_read_config_zone=%d\r\n", ret);
+        printf("atcab_read_config_zone=%d\r\n", (int)ret);
         CHECK_ATECC608B_RET("read config zone", ret);
         memcpy(config.slotConfig, slotConfig, sizeof(slotConfig));
         memcpy(config.keyConfig, keyConfig, sizeof(keyConfig));
@@ -679,22 +666,23 @@ void Atecc608bTest(int argc, char *argv[])
 {
     int32_t ret;
     uint8_t *pData, *pDataOut, *nonce, *authKey;
-    uint32_t slot, offset, len, keyBlock, temp1, temp2, block;
+    unsigned int slot, offset, len, keyBlock, temp1, block;
+    uint32_t temp2;
     bool bRet;
 
     printf("crypto auth lib test(ATECC608B):\r\n");
     if (strcmp(argv[0], "random") == 0) {
         VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &len);
+        sscanf(argv[1], "%u", &len);
         pData = SRAM_MALLOC(len);
         ret = Atecc608bGetRng(pData, len);
-        printf("Atecc608bGetRng=%d\r\n", ret);
+        printf("Atecc608bGetRng=%d\r\n", (int)ret);
         PrintArray("data", pData, len);
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "readconfig") == 0) {
         pData = SRAM_MALLOC(BUFFER_SIZE_128);
         ret = atcab_read_config_zone(pData);
-        printf("atcab_read_config_zone=%d\r\n", ret);
+        printf("atcab_read_config_zone=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             PrintArray("data", pData, 128);
         }
@@ -702,61 +690,61 @@ void Atecc608bTest(int argc, char *argv[])
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "read") == 0) {
         VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &slot);
-        sscanf(argv[2], "%d", &offset);
-        sscanf(argv[3], "%d", &len);
+        sscanf(argv[1], "%u", &slot);
+        sscanf(argv[2], "%u", &offset);
+        sscanf(argv[3], "%u", &len);
         pData = SRAM_MALLOC(len);
         ret = atcab_read_bytes_zone(ATCA_ZONE_DATA, slot, offset, pData, len);
-        printf("atcab_read_bytes_zone=%d\r\n", ret);
+        printf("atcab_read_bytes_zone=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             PrintArray("data", pData, len);
         }
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "write") == 0) {
         VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &slot);
-        sscanf(argv[2], "%d", &offset);
+        sscanf(argv[1], "%u", &slot);
+        sscanf(argv[2], "%u", &offset);
         pData = SRAM_MALLOC(strlen(argv[3]) / 2 + 1);
         len = StrToHex(pData, argv[3]);
-        printf("writing %d bytes,slot=%d,offset=%d\r\n", len, slot, offset);
+        printf("writing %u bytes,slot=%u,offset=%u\r\n", len, slot, offset);
         ret = atcab_write_bytes_zone(ATCA_ZONE_DATA, slot, offset, pData, len);
-        printf("atcab_write_bytes_zone=%d\r\n", ret);
+        printf("atcab_write_bytes_zone=%d\r\n", (int)ret);
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "serial") == 0) {
         pData = SRAM_MALLOC(32);
         memset_s(pData, 9, 0, 9);
         ret = atcab_read_serial_number(pData);
-        printf("atcab_read_serial_number=%d\r\n", ret);
+        printf("atcab_read_serial_number=%d\r\n", (int)ret);
         PrintArray("serial number", pData, 9);
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "isslotlock") == 0) {
-        sscanf(argv[1], "%d", &slot);
+        sscanf(argv[1], "%u", &slot);
         ret = atcab_is_slot_locked(slot, &bRet);
-        printf("atcab_is_slot_locked=%d,result=%d\r\n", ret, bRet);
+        printf("atcab_is_slot_locked=%d,result=%d\r\n", (int)ret, bRet);
         ret = atcab_is_private(slot, &bRet);
-        printf("atcab_is_private=%d,result=%d\r\n", ret, bRet);
+        printf("atcab_is_private=%d,result=%d\r\n", (int)ret, bRet);
     } else if (strcmp(argv[0], "islock") == 0) {
         ret = atcab_is_locked(LOCK_ZONE_CONFIG, &bRet);
-        printf("config ret=%d,result=%d\r\n", ret, bRet);
+        printf("config ret=%d,result=%d\r\n", (int)ret, bRet);
         ret = atcab_is_locked(LOCK_ZONE_DATA, &bRet);
-        printf("data ret=%d,result=%d\r\n", ret, bRet);
+        printf("data ret=%d,result=%d\r\n", (int)ret, bRet);
     } else if (strcmp(argv[0], "lockconfigzone") == 0) {
         ret = atcab_lock_config_zone();
-        printf("atcab_lock_config_zone=%d\r\n", ret);
+        printf("atcab_lock_config_zone=%d\r\n", (int)ret);
     } else if (strcmp(argv[0], "lockdatazone") == 0) {
         ret = atcab_lock_data_zone();
-        printf("atcab_lock_data_zone=%d\r\n", ret);
+        printf("atcab_lock_data_zone=%d\r\n", (int)ret);
     } else if (strcmp(argv[0], "aes_encrypt") == 0) {
         VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &slot);
-        sscanf(argv[2], "%d", &keyBlock);
+        sscanf(argv[1], "%u", &slot);
+        sscanf(argv[2], "%u", &keyBlock);
         pData = SRAM_MALLOC(strlen(argv[3]) / 2 + 1);
         len = StrToHex(pData, argv[3]);
-        printf("aes encrypt %d bytes,keySlot=%d,keyBlock=%d\r\n", len, slot, keyBlock);
+        printf("aes encrypt %u bytes,keySlot=%u,keyBlock=%u\r\n", len, slot, keyBlock);
         //ret = atcab_write_bytes_zone(ATCA_ZONE_CONFIG, slot, offset, pData, len);
         pDataOut = SRAM_MALLOC(16);
         ret = atcab_aes_encrypt(slot, keyBlock, pData, pDataOut);
-        printf("atcab_aes_encrypt=%d\r\n", ret);
+        printf("atcab_aes_encrypt=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             PrintArray("pDataOut", pDataOut, 16);
         }
@@ -767,38 +755,38 @@ void Atecc608bTest(int argc, char *argv[])
         ret = atcab_counter_read(temp1, &temp2);
         //printf("atcab_counter_read=%d\r\n", ret);
         if (ret == ATCA_SUCCESS) {
-            printf("counter0=%d\r\n", temp2);
+            printf("counter0=%d\r\n", (int)temp2);
         }
         temp1 = 1;
         ret = atcab_counter_read(temp1, &temp2);
         //printf("atcab_counter_read=%d\r\n", ret);
         if (ret == ATCA_SUCCESS) {
-            printf("counter1=%d\r\n", temp2);
+            printf("counter1=%d\r\n", (int)temp2);
         }
     } else if (strcmp(argv[0], "increase_counter") == 0) {
         VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &temp1);
+        sscanf(argv[1], "%u", &temp1);
         ret = atcab_counter_increment(temp1, &temp2);
-        printf("calib_counter_increment=%d\r\n", ret);
+        printf("calib_counter_increment=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
-            printf("new counter=%d\r\n", temp2);
+            printf("new counter=%d\r\n", (int)temp2);
         }
     } else if (strcmp(argv[0], "gen_key") == 0) {
         VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &slot);
+        sscanf(argv[1], "%u", &slot);
         pData = SRAM_MALLOC(64);
         ret = atcab_genkey(slot, pData);
-        printf("atcab_genkey=%d\r\n", ret);
+        printf("atcab_genkey=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             PrintArray("public key", pData, 64);
         }
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "get_pubkey") == 0) {
         VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &slot);
+        sscanf(argv[1], "%u", &slot);
         pData = SRAM_MALLOC(64);
         ret = atcab_get_pubkey(slot, pData);
-        printf("atcab_get_pubkey=%d\r\n", ret);
+        printf("atcab_get_pubkey=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             PrintArray("public key", pData, 64);
         }
@@ -806,19 +794,19 @@ void Atecc608bTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "info") == 0) {
         pData = SRAM_MALLOC(4);
         ret = atcab_info(pData);
-        printf("atcab_info=%d\r\n", ret);
+        printf("atcab_info=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             PrintArray("revision", pData, 4);
         }
         ret = atcab_info_get_latch(&bRet);
-        printf("atcab_info_get_latch=%d\r\n", ret);
+        printf("atcab_info_get_latch=%d\r\n", (int)ret);
         if (ret == ATCA_SUCCESS) {
             printf("bRet=%d\r\n", bRet);
         }
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "write_pri_key") == 0) {
         VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &slot);
+        sscanf(argv[1], "%u", &slot);
         pData = SRAM_MALLOC(36);
         memset_s(pData, 4, 0, 4);
         TrngGet(pData + 4, 32);
@@ -827,7 +815,7 @@ void Atecc608bTest(int argc, char *argv[])
         TrngGet(nonce, 20);
         PrintArray("nonce", nonce, 20);
         ret = atcab_priv_write(slot, pData, 0, NULL, nonce);
-        printf("atcab_priv_write=%d\r\n", ret);
+        printf("atcab_priv_write=%d\r\n", (int)ret);
         SRAM_FREE(pData);
         SRAM_FREE(nonce);
     } else if (strcmp(argv[0], "write_config") == 0) {
@@ -835,8 +823,8 @@ void Atecc608bTest(int argc, char *argv[])
         Atecc608bWriteConfig();
     } else if (strcmp(argv[0], "en_read") == 0) {
         VALUE_CHECK(argc, 3);
-        sscanf(argv[1], "%d", &slot);
-        sscanf(argv[2], "%d", &block);
+        sscanf(argv[1], "%u", &slot);
+        sscanf(argv[2], "%u", &block);
         pData = SRAM_MALLOC(32);
         ret = Atecc608bEncryptRead(slot, block, pData);
         if (ret == ATCA_SUCCESS) {
@@ -845,8 +833,8 @@ void Atecc608bTest(int argc, char *argv[])
         SRAM_FREE(pData);
     } else if (strcmp(argv[0], "en_write") == 0) {
         VALUE_CHECK(argc, 4);
-        sscanf(argv[1], "%d", &slot);
-        sscanf(argv[2], "%d", &block);
+        sscanf(argv[1], "%u", &slot);
+        sscanf(argv[2], "%u", &block);
         pData = SRAM_MALLOC(strlen(argv[3]) / 2 + 1);
         len = StrToHex(pData, argv[3]);
         ret = Atecc608bEncryptWrite(slot, block, pData);
@@ -860,7 +848,7 @@ void Atecc608bTest(int argc, char *argv[])
             printf("auth input err\r\n");
             return;
         }
-        sscanf(argv[1], "%d", &slot);
+        sscanf(argv[1], "%u", &slot);
         authKey = SRAM_MALLOC(32);
         pData = SRAM_MALLOC(strlen(argv[3]) / 2 + 1);
         pDataOut = SRAM_MALLOC(32);
@@ -871,7 +859,7 @@ void Atecc608bTest(int argc, char *argv[])
             PrintArray("kdf output", pDataOut, 32);
             printf("kdf succ\r\n");
         } else {
-            printf("kdf err=%d\r\n", ret);
+            printf("kdf err=%d\r\n", (int)ret);
         }
         SRAM_FREE(pData);
         SRAM_FREE(pDataOut);
@@ -884,13 +872,13 @@ void Atecc608bTest(int argc, char *argv[])
         }
         authKey = SRAM_MALLOC(32);
         StrToHex(authKey, argv[2]);
-        sscanf(argv[1], "%d", &slot);
-        printf("derive key at slot %d\r\n", slot);
+        sscanf(argv[1], "%u", &slot);
+        printf("derive key at slot %u\r\n", slot);
         ret = Atecc608bDeriveKey(slot, authKey);
         if (ret == ATCA_SUCCESS) {
             printf("derivekey succ\r\n");
         } else {
-            printf("derivekey err=%d\r\n", ret);
+            printf("derivekey err=%d\r\n", (int)ret);
         }
     }
 }

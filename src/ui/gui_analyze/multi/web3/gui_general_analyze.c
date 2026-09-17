@@ -113,6 +113,18 @@ GetCustomContainerFunc GetOtherChainCustomFunc(char *funcName)
         return GuiShowAdaSignTxHashOverview;
     } else if (!strcmp(funcName, "GuiShowAdaSignTxHashDetails")) {
         return GuiShowAdaSignTxHashDetails;
+    } else if (!strcmp(funcName, "GuiShowAdaRawData")) {
+        return GuiShowAdaRawData;
+    } else if (!strcmp(funcName, "GuiShowAdaTx")) {
+        return GuiShowAdaTx;
+    } else if (!strcmp(funcName, "GuiShowAdaSignData")) {
+        return GuiShowAdaSignData;
+    } else if (!strcmp(funcName, "GuiShowAdaInputs")) {
+        return GuiShowAdaInputs;
+    } else if (!strcmp(funcName, "GuiShowAdaOutputs")) {
+        return GuiShowAdaOutputs;
+    } else if (!strcmp(funcName, "GuiShowAdaMultiAssetsWarning")) {
+        return GuiShowAdaMultiAssetsWarning;
     } else if (!strcmp(funcName, "GuiAvaxTxOverview")) {
         return GuiAvaxTxOverview;
     } else if (!strcmp(funcName, "GuiAvaxTxRawData")) {
@@ -177,8 +189,6 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetCosmosAddrExist;
     } else if (!strcmp(type, "GetAdaWithdrawalsExist")) {
         return GetAdaWithdrawalsExist;
-    } else if (!strcmp(type, "GetAdaCertificatesExist")) {
-        return GetAdaCertificatesExist;
     } else if (!strcmp(type, "GetAdaExtraDataExist")) {
         return GetAdaExtraDataExist;
     } else if (!strcmp(type, "GetAdaVotingProceduresExist")) {
@@ -195,8 +205,8 @@ GetObjStateFunc GuiOtherChainStateFuncGet(char *type)
         return GetIotaIsMessage;
     } else if (!strcmp(type, "GetIotaIsTransaction")) {
         return GetIotaIsTransaction;
-    } else if (!strcmp(type, "GetIotaIsTransfer")) {
-        return GetIotaIsTransfer;
+    } else if (!strcmp(type, "GetIotaShowOverview")) {
+        return GetIotaShowOverview;
     } else if (!strcmp(type, "GetSolMessageFromExist")) {
         return GetSolMessageFromExist;
     } else if (!strcmp(type, "GetSolMessageFromNotExist")) {
@@ -315,8 +325,6 @@ static GetLabelDataFunc GuiAdaTextFuncGet(char *type)
         return GetAdaFee;
     } else if (!strcmp(type, "GetAdaWithdrawalsLabel")) {
         return GetAdaWithdrawalsLabel;
-    } else if (!strcmp(type, "GetAdaCertificatesLabel")) {
-        return GetAdaCertificatesLabel;
     } else if (!strcmp(type, "GetAdaSignDataPayloadText")) {
         return GetAdaSignDataPayloadText;
     } else if (!strcmp(type, "GetAdaSignDataDerviationPathText")) {
@@ -389,9 +397,6 @@ static GetTableDataFunc GuiAdaTabelFuncGet(char *type)
     }
     if (!strcmp(type, "GetAdaWithdrawalsData")) {
         return GetAdaWithdrawalsData;
-    }
-    if (!strcmp(type, "GetAdaCertificatesData")) {
-        return GetAdaCertificatesData;
     }
     if (!strcmp(type, "GetAdaVotingProceduresData")) {
         return GetAdaVotingProceduresData;
@@ -669,9 +674,6 @@ static GetContSizeFunc GetAdaContainerSize(char *type)
     }
     if (!strcmp(type, "GetAdaOutputDetailSize")) {
         return GetAdaOutputDetailSize;
-    }
-    if (!strcmp(type, "GetAdaCertificatesSize")) {
-        return GetAdaCertificatesSize;
     }
     if (!strcmp(type, "GetAdaVotingProceduresSize")) {
         return GetAdaVotingProceduresSize;

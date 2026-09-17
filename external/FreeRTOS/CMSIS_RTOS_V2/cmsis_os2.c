@@ -31,6 +31,7 @@
 #include "task.h"                       // ARM.FreeRTOS::RTOS:Core
 #include "event_groups.h"               // ARM.FreeRTOS::RTOS:Event Groups
 #include "semphr.h"                     // ARM.FreeRTOS::RTOS:Core
+#include "user_memory.h"
 
 /*---------------------------------------------------------------------------*/
 #ifndef __ARM_ARCH_6M__
@@ -175,6 +176,11 @@ osStatus_t osKernelGetInfo(osVersion_t *version, char *id_buf, uint32_t id_size)
 osKernelState_t osKernelGetState(void)
 {
     osKernelState_t state;
+
+    /* The MPU wrapper must not issue an SVC from Handler mode. */
+    if (IS_IRQ()) {
+        return KernelState;
+    }
 
     switch (xTaskGetSchedulerState()) {
     case taskSCHEDULER_RUNNING:
@@ -398,6 +404,9 @@ osThreadId_t osThreadNew(osThreadFunc_t func, void *argument, const osThreadAttr
         } else {
             mem = 0;
         }
+
+        /* Existing firmware tasks remain privileged during the MPU baseline phase. */
+        prio |= portPRIVILEGE_BIT;
 
         if (mem == 1) {
             hTask = xTaskCreateStatic((TaskFunction_t) func, name, stack, argument, prio, (StackType_t  *) attr->stack_mem,
@@ -643,7 +652,7 @@ uint32_t osThreadEnumerate(osThreadId_t *thread_array, uint32_t array_items)
             count = uxTaskGetSystemState(task, count, NULL);
 
             for (i = 0U; (i < count) && (i < array_items); i++) {
-                thread_array[i] = (osThreadId_t) task[i].xHandle;
+                thread_array[i] = (osThreadId_t) xTaskGetHandle(task[i].pcTaskName);
             }
             count = i;
         }
@@ -1717,21 +1726,16 @@ uint32_t osMessageQueueGetCount(osMessageQueueId_t mq_id)
 
 uint32_t osMessageQueueGetSpace(osMessageQueueId_t mq_id)
 {
-    StaticQueue_t *mq = (StaticQueue_t *) mq_id;
+    QueueHandle_t hQueue = (QueueHandle_t) mq_id;
     uint32_t space;
-    uint32_t isrm;
 
-    if (mq == NULL) {
+    if (hQueue == NULL) {
         space = 0U;
     } else if (IS_IRQ()) {
-        isrm = taskENTER_CRITICAL_FROM_ISR();
-
-        /* space = pxQueue->uxLength - pxQueue->uxMessagesWaiting; */
-        space = mq->uxDummy4[1] - mq->uxDummy4[0];
-
-        taskEXIT_CRITICAL_FROM_ISR(isrm);
+        /* This project only calls this query from task context. */
+        space = 0U;
     } else {
-        space = (uint32_t) uxQueueSpacesAvailable((QueueHandle_t) mq);
+        space = (uint32_t) uxQueueSpacesAvailable(hQueue);
     }
 
     return (space);
@@ -1786,7 +1790,7 @@ extern void vApplicationIdleHook(void);
 extern void vApplicationTickHook(void);
 extern void vApplicationMallocFailedHook(void);
 extern void vApplicationDaemonTaskStartupHook(void);
-extern void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName);
+extern void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName);
 
 /**
   Dummy implementation of the callback function vApplicationIdleHook().
@@ -1820,7 +1824,7 @@ __WEAK void vApplicationDaemonTaskStartupHook(void) {}
   Dummy implementation of the callback function vApplicationStackOverflowHook().
 */
 #if (configCHECK_FOR_STACK_OVERFLOW > 0)
-__WEAK void vApplicationStackOverflowHook(TaskHandle_t xTask, signed char *pcTaskName)
+__WEAK void vApplicationStackOverflowHook(TaskHandle_t xTask, char *pcTaskName)
 {
     (void) xTask;
     (void) pcTaskName;

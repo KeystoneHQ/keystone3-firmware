@@ -26,6 +26,9 @@
 #include "account_manager.h"
 #include "gui_btc.h"
 #include "gui_pending_hintbox.h"
+#ifdef WEB3_VERSION
+#include "gui_ar.h"
+#endif
 #ifdef BTC_ONLY
 #include "gui_multisig_read_sdcard_widgets.h"
 #endif
@@ -203,17 +206,27 @@ void GuiTransactionCheckPass(void)
             ThrowError(ERR_INVALID_QRCODE);
             return;
         }
-        bool hasArXpub = IsArweaveSetupComplete();
-        if (!hasArXpub) {
-            GuiPendingHintBoxRemove();
-            GoToHomeViewHandler(NULL);
-            GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM);
-            return;
-        }
+        GuiPendingHintBoxRemove();
+        GoToHomeViewHandler(NULL);
+        bool allowGenerate = false;
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_PARSER_CONFIRM, &allowGenerate, sizeof(allowGenerate));
+        return;
     }
 #endif
     GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
 }
+
+#ifdef WEB3_VERSION
+void GuiArTransactionReady(const char *address)
+{
+    if (g_chainType != CHAIN_ARWEAVE || address == NULL || strnlen_s(address, 44) != 43 || GetIsTempAccount()) {
+        ThrowError(ERR_INVALID_QRCODE);
+        return;
+    }
+    GuiArSetMessageAddress(address);
+    GuiFrameOpenViewWithParam(&g_transactionDetailView, &g_qrcodeViewType, sizeof(g_qrcodeViewType));
+}
+#endif
 
 //Here return the error code and error message so that we can distinguish the error type later.
 void GuiTransactionCheckFailed(PtrT_TransactionCheckResult result)

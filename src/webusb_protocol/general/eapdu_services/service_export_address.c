@@ -243,11 +243,13 @@ void ExportAddressService(EAPDURequestPayload_t *payload)
         }
 
         EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
-        resultPage->command = CMD_EXPORT_ADDRESS;
-        resultPage->error_code = 0;
-        resultPage->error_message = "";
-        GotoResultPage(resultPage);
-        SRAM_FREE(resultPage);
+        if (resultPage != NULL) {
+            resultPage->command = CMD_EXPORT_ADDRESS;
+            resultPage->error_code = 0;
+            resultPage->error_message[0] = '\0';
+            GotoResultPage(resultPage);
+            SRAM_FREE(resultPage);
+        }
     } else {
         SendEApduResponseError(EAPDU_PROTOCOL_HEADER, CMD_EXPORT_ADDRESS, payload->requestID, PRS_EXPORT_ADDRESS_UNSUPPORTED_CHAIN, "Unsupported chain");
     }

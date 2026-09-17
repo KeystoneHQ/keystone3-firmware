@@ -1,9 +1,8 @@
 use crate::errors::{CardanoError, Result};
 use alloc::string::{String, ToString};
 
-use cardano_serialization_lib::protocol_types::credential::*;
-use cardano_serialization_lib::protocol_types::{
-    BaseAddress, Ed25519KeyHash, EnterpriseAddress, RewardAddress,
+use cardano_serialization_lib::{
+    BaseAddress, Credential, Ed25519KeyHash, EnterpriseAddress, RewardAddress,
 };
 use cryptoxide::hashing::blake2b_224;
 use ed25519_bip32_core::{DerivationScheme, XPub};

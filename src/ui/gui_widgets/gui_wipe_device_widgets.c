@@ -96,6 +96,11 @@ void GuiWipeDeviceEntranceWidget(lv_obj_t *parent)
     lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 192);
 
+    label = GuiCreateNoticeLabel(parent, _("system_settings_wipe_device_wipe_backup_desc"));
+    lv_obj_set_width(label, 408);
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+
     label = GuiCreateTextLabel(parent, _("system_settings_wipe_device_wipe_button"));
     lv_obj_set_style_text_color(label, lv_color_hex(0xf55831), LV_PART_MAIN);
 

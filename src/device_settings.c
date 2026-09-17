@@ -22,7 +22,7 @@
 #include "lv_i18n_api.h"
 #include "fetch_sensitive_data_task.h"
 #include "ctaes.h"
-#include "drv_mpu.h"
+#include "drv_otp.h"
 #include "log_print.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
@@ -83,8 +83,7 @@ static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher);
 static void InitBootParam(void);
 
 typedef struct {
-    // boot check
-    uint8_t bootCheckFlag[16];
+    uint8_t reserve[16];
 
     // recovery mode switch
     uint8_t recoveryModeSwitch[16];
@@ -115,11 +114,11 @@ void DeviceSettingsInit(void)
 
     ret = Gd25FlashReadBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, sizeof(size));
     ASSERT(ret == 4);
-    printf("device settings size=%d\n", size);
+    printf("device settings size=%d\n", (int)size);
     do {
         if (size >= SPI_FLASH_SIZE_NORMAL_PARAM - 4) {
             needRegenerate = true;
-            printf("device settings size err,%d\r\n", size);
+            printf("device settings size err,%d\r\n", (int)size);
             break;
         }
         jsonString = SRAM_MALLOC(size + 1);
@@ -168,22 +167,32 @@ void InitBootParam(void)
     BootParam_t bootParam;
     bool needSave = false;
     Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, (uint8_t *)&bootParam, sizeof(bootParam));
-    PrintArray("bootParam.bootCheckFlag", bootParam.bootCheckFlag, sizeof(bootParam.bootCheckFlag));
+    PrintArray("bootParam.reserve", bootParam.reserve, sizeof(bootParam.reserve));
     PrintArray("bootParam.recoveryModeSwitch", bootParam.recoveryModeSwitch, sizeof(bootParam.recoveryModeSwitch));
-    if (CheckAllFF(bootParam.bootCheckFlag, sizeof(bootParam.bootCheckFlag))) {
-        memcpy(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(bootParam.bootCheckFlag));
+    if (CheckAllFF(bootParam.reserve, sizeof(bootParam.reserve))) {
+        memcpy(g_bootParam.reserve, g_integrityFlag, sizeof(bootParam.reserve));
+        memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
+        SaveBootParam();
+        return;
+    }
+
+    AesDecryptBuffer((uint8_t *)&g_bootParam, sizeof(g_bootParam),
+                     (uint8_t *)&bootParam);
+    PrintArray("bootParam.reserve", g_bootParam.reserve, sizeof(g_bootParam.reserve));
+    PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
+
+    if (memcmp(g_bootParam.reserve, g_integrityFlag,
+               sizeof(g_bootParam.reserve)) != 0) {
+        memcpy(g_bootParam.reserve, g_integrityFlag, sizeof(g_bootParam.reserve));
+        needSave = true;
+    }
+    if (memcmp(g_bootParam.recoveryModeSwitch, g_recoveryModeFlag,
+               sizeof(g_bootParam.recoveryModeSwitch)) == 0) {
+        memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
         needSave = true;
     }
     if (needSave) {
         SaveBootParam();
-    } else {
-        AesDecryptBuffer(&g_bootParam, sizeof(g_bootParam), &bootParam);
-        PrintArray("bootParam.bootCheckFlag", g_bootParam.bootCheckFlag, sizeof(g_bootParam.bootCheckFlag));
-        PrintArray("bootParam.recoveryModeSwitch", g_bootParam.recoveryModeSwitch, sizeof(g_bootParam.recoveryModeSwitch));
-        if (memcmp(g_bootParam.recoveryModeSwitch, g_recoveryModeFlag, sizeof(g_bootParam.recoveryModeSwitch)) == 0) {
-            memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
-            SaveBootParam();
-        }
     }
 #endif
 }
@@ -191,7 +200,7 @@ void InitBootParam(void)
 void ResetBootParam(void)
 {
     memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
-    memcpy(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(g_bootParam.bootCheckFlag));
+    memcpy(g_bootParam.reserve, g_integrityFlag, sizeof(g_bootParam.reserve));
     SaveBootParam();
 }
 
@@ -215,12 +224,15 @@ int SaveBootParam(void)
         goto cleanup;
     }
 
-    if (Gd25FlashWriteBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher)) != SUCCESS_CODE) {
+    if (Gd25FlashWriteBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher)) !=
+        (int32_t)sizeof(cipher)) {
         ret = ERR_GD25_BAD_PARAM;
         goto cleanup;
     }
 
-    if (Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, verifyBuffer, sizeof(verifyBuffer)) != SUCCESS_CODE) {
+    if (Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, verifyBuffer,
+                           sizeof(verifyBuffer)) !=
+        (int32_t)sizeof(verifyBuffer)) {
         ret = ERR_GD25_BAD_PARAM;
         goto cleanup;
     }
@@ -344,15 +356,12 @@ static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain)
     uint8_t key128[16] = {0};
     uint8_t iv[16] = {0};
 
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(key128, (uint32_t *)(0x40009128), 16);
-    memcpy(iv, (uint32_t *)(0x40009138), 16);
+    ReadOtpData(OTP_ADDR_DEVICE_AES_KEY, key128, sizeof(key128));
+    ReadOtpData(OTP_ADDR_DEVICE_AES_IV, iv, sizeof(iv));
 
     AES128_CBC_ctx ctx;
     AES128_CBC_init(&ctx, key128, iv);
     AES128_CBC_encrypt(&ctx, sz / 16, cipher, plain);
-    MpuSetOtpProtection(true);
 }
 
 static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
@@ -361,28 +370,10 @@ static void AesDecryptBuffer(uint8_t *plain, uint32_t sz, uint8_t *cipher)
     uint8_t key128[16] = {0};
     uint8_t iv[16] = {0};
 
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(key128, (uint32_t *)(0x40009128), 16);
-    memcpy(iv, (uint32_t *)(0x40009138), 16);
+    ReadOtpData(OTP_ADDR_DEVICE_AES_KEY, key128, sizeof(key128));
+    ReadOtpData(OTP_ADDR_DEVICE_AES_IV, iv, sizeof(iv));
     AES128_CBC_init(&ctx, key128, iv);
     AES128_CBC_decrypt(&ctx, sz / 16, plain, cipher);
-    MpuSetOtpProtection(true);
-}
-
-bool GetBootSecureCheckFlag(void)
-{
-    return (memcmp(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(g_bootParam.bootCheckFlag)) == 0);
-}
-
-void SetBootSecureCheckFlag(bool isSet)
-{
-    if (isSet) {
-        memcpy(g_bootParam.bootCheckFlag, g_integrityFlag, sizeof(g_integrityFlag));
-    } else {
-        memset(g_bootParam.bootCheckFlag, 0, sizeof(g_bootParam.bootCheckFlag));
-    }
-    SaveBootParam();
 }
 
 bool GetRecoveryModeSwitch(void)
@@ -415,7 +406,7 @@ bool IsUpdateSuccess(void)
         SaveDeviceSettings();
         isUpdate = true;
     }
-    printf("g_deviceSettings.lastVersion=%#x\n", g_deviceSettings.lastVersion);
+    printf("g_deviceSettings.lastVersion=%#x\n", (unsigned int)g_deviceSettings.lastVersion);
 
     return isUpdate;
 }
@@ -496,7 +487,7 @@ void WipeDevice(void)
     SE_SetAccountStatus(2, ACCOUNT_STATUS_UNKNOWN);
     for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
         Gd25FlashBlockErase(addr);
-        printf("flash erase address: %#x\n", addr);
+        printf("flash erase address: %#x\n", (unsigned int)addr);
     }
 }
 
@@ -511,15 +502,15 @@ void DeviceSettingsTest(int argc, char *argv[])
         printf("wipe over\n");
     } else if (strcmp(argv[0], "info") == 0) {
         printf("device settings verion=%s\n", g_deviceSettingsVersion);
-        printf("setupStep=%d\n", GetSetupStep());
-        printf("bright=%d\n", GetBright());
-        printf("autoLockScreen=%d\n", GetAutoLockScreen());
-        printf("autoPowerOff=%d\n", GetAutoPowerOff());
-        printf("vibration=%d\n", GetVibration());
-        printf("darkMode=%d\n", GetDarkMode());
-        printf("usbSwitch=%d\n", GetUSBSwitch());
-        printf("language=%d\n", GetLanguage());
-        printf("enableBlindSigning=%d\n", GetEnableBlindSigning());
+        printf("setupStep=%d\n", (int)GetSetupStep());
+        printf("bright=%d\n", (int)GetBright());
+        printf("autoLockScreen=%d\n", (int)GetAutoLockScreen());
+        printf("autoPowerOff=%d\n", (int)GetAutoPowerOff());
+        printf("vibration=%d\n", (int)GetVibration());
+        printf("darkMode=%d\n", (int)GetDarkMode());
+        printf("usbSwitch=%d\n", (int)GetUSBSwitch());
+        printf("language=%d\n", (int)GetLanguage());
+        printf("enableBlindSigning=%d\n", (int)GetEnableBlindSigning());
     } else if (strcmp(argv[0], "set") == 0) {
         SetSetupStep(0);
         SetBright(50);

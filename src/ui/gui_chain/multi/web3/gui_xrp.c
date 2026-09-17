@@ -2,6 +2,7 @@
 #include "gui_xrp.h"
 #include "gui_chain.h"
 #include "account_manager.h"
+#include "assert.h"
 #include "user_memory.h"
 #include "keystore.h"
 #include "secret_cache.h"
@@ -29,18 +30,27 @@ char *GuiGetXrpPath(uint16_t index)
 
 char *GuiGetXrpAddressByIndex(uint16_t index)
 {
-    char *xPub;
+    memset_s(g_xrpAddr, sizeof(g_xrpAddr), 0, sizeof(g_xrpAddr));
     char *hdPath = GuiGetXrpPath(index);
-    SimpleResponse_c_char *result;
-
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-    result = xrp_get_address(hdPath, xPub, XRP_ROOT_PATH);
-
-    if (result->error_code == 0) {
-        strcpy_s(g_xrpAddr, XRP_ADD_MAX_LEN, result->data);
+    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
+    SimpleResponse_c_char *result = NULL;
+    if (xPub != NULL && xPub[0] != '\0') {
+        result = xrp_get_address(hdPath, xPub, XRP_ROOT_PATH);
     }
-
-    free_simple_response_c_char(result);
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(g_xrpAddr)) < sizeof(g_xrpAddr);
+    if (valid) {
+        valid = strcpy_s(g_xrpAddr, sizeof(g_xrpAddr), result->data) == 0;
+    }
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(g_xrpAddr, sizeof(g_xrpAddr), 0, sizeof(g_xrpAddr));
+        memset_s(g_hdPath, sizeof(g_hdPath), 0, sizeof(g_hdPath));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
     return g_xrpAddr;
 }
 
@@ -139,15 +149,24 @@ UREncodeResult *GuiGetXrpSignQrCodeData(void)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     UREncodeResult *encodeResult = NULL;
+    uint8_t seed[64] = {0};
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    int ret = SUCCESS_CODE;
     do {
-        uint8_t seed[64];
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
         encodeResult = xrp_sign_tx(data, g_hdPath, seed, len);
-        ClearSecretCache();
+        if (encodeResult == NULL) {
+            break;
+        }
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
+    ASSERT(ret == SUCCESS_CODE);
     return encodeResult;
 }

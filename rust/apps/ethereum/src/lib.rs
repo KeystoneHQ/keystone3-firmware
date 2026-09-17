@@ -16,6 +16,8 @@ use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
 use crate::errors::{EthereumError, Result};
 use crate::structs::{EthereumSignature, ParsedEthereumTransaction, PersonalMessage, TypedData};
 
+const MAX_TYPED_DATA_JSON_DEPTH: usize = 32;
+
 pub mod abi;
 pub mod address;
 pub mod batch_tx_rules;
@@ -77,8 +79,21 @@ pub fn parse_typed_data_message(tx_hex: &[u8], from_key: Option<PublicKey>) -> R
 }
 
 fn parse_typed_data_json(utf8_message: String) -> Result<Eip712TypedData> {
-    let typed_data: Eip712TypedData = serde_json::from_str(&utf8_message)
-        .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message.clone()))?;
+    validate_typed_data_json_depth(&utf8_message)?;
+    let typed_data: Eip712TypedData = if utf8_message
+        .bytes()
+        .find(|byte| !byte.is_ascii_whitespace())
+        == Some(b'"')
+    {
+        let nested_message: String = serde_json::from_str(&utf8_message)
+            .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message.clone()))?;
+        validate_typed_data_json_depth(&nested_message)?;
+        serde_json::from_str(&nested_message)
+            .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), nested_message.clone()))?
+    } else {
+        serde_json::from_str(&utf8_message)
+            .map_err(|e| EthereumError::InvalidTypedData(e.to_string(), utf8_message.clone()))?
+    };
 
     if typed_data_contains_nul(&typed_data) {
         return Err(EthereumError::InvalidTypedData(
@@ -88,6 +103,42 @@ fn parse_typed_data_json(utf8_message: String) -> Result<Eip712TypedData> {
     }
 
     Ok(typed_data)
+}
+
+fn validate_typed_data_json_depth(message: &str) -> Result<()> {
+    let mut depth = 0usize;
+    let mut in_string = false;
+    let mut escaped = false;
+
+    for byte in message.bytes() {
+        if in_string {
+            if escaped {
+                escaped = false;
+            } else if byte == b'\\' {
+                escaped = true;
+            } else if byte == b'"' {
+                in_string = false;
+            }
+            continue;
+        }
+
+        match byte {
+            b'"' => in_string = true,
+            b'{' | b'[' => {
+                depth += 1;
+                if depth > MAX_TYPED_DATA_JSON_DEPTH {
+                    return Err(EthereumError::InvalidTypedData(
+                        "JSON nesting limit exceeded".to_string(),
+                        String::new(),
+                    ));
+                }
+            }
+            b'}' | b']' => depth = depth.saturating_sub(1),
+            _ => {}
+        }
+    }
+
+    Ok(())
 }
 
 fn typed_data_contains_nul(typed_data: &Eip712TypedData) -> bool {
@@ -231,11 +282,11 @@ mod tests {
 
     use keystore::algorithms::secp256k1::get_public_key_by_seed;
 
-    use crate::alloc::string::ToString;
+    use crate::alloc::{format, string::ToString};
     use crate::eip712::eip712::{Eip712, TypedData as Eip712TypedData};
     use crate::{
         parse_fee_market_tx, parse_legacy_tx, parse_personal_message, parse_typed_data_message,
-        sign_personal_message, sign_typed_data_message,
+        sign_personal_message, sign_typed_data_message, validate_typed_data_json_depth,
     };
 
     #[test]
@@ -366,6 +417,62 @@ mod tests {
         assert!(sign_error
             .to_string()
             .contains("NUL characters are not supported"));
+    }
+
+    #[test]
+    fn test_typed_data_rejects_112_nested_arrays_before_json_parsing() {
+        let sign_data = format!(
+            "{{\"types\":{{\"EIP712Domain\":[],\"Message\":[{{\"name\":\"value\",\"type\":\"uint256{}\"}}]}},\"primaryType\":\"Message\",\"domain\":{{}},\"message\":{{\"value\":{}\"1\"{}}}}}",
+            "[]".repeat(112),
+            "[".repeat(112),
+            "]".repeat(112),
+        );
+
+        let error = parse_typed_data_message(sign_data.as_bytes(), None).unwrap_err();
+        assert!(error.to_string().contains("JSON nesting limit exceeded"));
+    }
+
+    #[test]
+    fn test_typed_data_rejects_stringified_nested_arrays() {
+        let nested_message = format!(
+            "{{\"types\":{{\"EIP712Domain\":[],\"Message\":[{{\"name\":\"value\",\"type\":\"uint256{}\"}}]}},\"primaryType\":\"Message\",\"domain\":{{}},\"message\":{{\"value\":{}\"1\"{}}}}}",
+            "[]".repeat(112),
+            "[".repeat(112),
+            "]".repeat(112),
+        );
+        let sign_data = serde_json::to_string(&nested_message).unwrap();
+
+        let error = parse_typed_data_message(sign_data.as_bytes(), None).unwrap_err();
+        assert!(error.to_string().contains("JSON nesting limit exceeded"));
+    }
+
+    #[test]
+    fn test_typed_data_accepts_stringified_json() {
+        let nested_message = r#"{"types":{"EIP712Domain":[],"Message":[{"name":"value","type":"string"}]},"primaryType":"Message","domain":{},"message":{"value":"hello"}}"#;
+        let sign_data = serde_json::to_string(nested_message).unwrap();
+
+        assert!(parse_typed_data_message(sign_data.as_bytes(), None).is_ok());
+    }
+
+    #[test]
+    fn test_typed_data_depth_limit_is_inclusive() {
+        let at_limit = format!("{}0{}", "[".repeat(32), "]".repeat(32));
+        let above_limit = format!("{}0{}", "[".repeat(33), "]".repeat(33));
+
+        assert!(validate_typed_data_json_depth(&at_limit).is_ok());
+        let error = validate_typed_data_json_depth(&above_limit).unwrap_err();
+        assert!(error.to_string().contains("JSON nesting limit exceeded"));
+    }
+
+    #[test]
+    fn test_typed_data_depth_scan_ignores_brackets_inside_strings() {
+        let brackets = "[".repeat(4096);
+        let sign_data = format!(
+            "{{\"types\":{{\"EIP712Domain\":[],\"Message\":[{{\"name\":\"value\",\"type\":\"string\"}}]}},\"primaryType\":\"Message\",\"domain\":{{}},\"message\":{{\"value\":\"{}\"}}}}",
+            brackets,
+        );
+
+        assert!(validate_typed_data_json_depth(&sign_data).is_ok());
     }
 
     #[test]

@@ -127,7 +127,7 @@ int32_t GetDevicePublicKey(uint8_t *pubkey);
 int32_t SetWalletDataHash(uint8_t index, uint8_t *info);
 bool VerifyWalletDataHash(uint8_t index, uint8_t *info);
 int32_t SetRsaPrimesHash(uint8_t index, uint8_t *info);
-bool VerifyRsaPrimesHash(uint8_t index, uint8_t *info);
+int32_t GetRsaPrimesHash(uint8_t index, uint8_t *info);
 int32_t SetMultisigDataHash(uint8_t index, uint8_t *info);
 bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info);
 

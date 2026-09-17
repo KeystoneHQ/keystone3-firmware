@@ -163,21 +163,21 @@ typedef UREncodeResult *(*SignFn)(void *data, PtrBytes seed, uint32_t seed_len);
 
 #define CHECK_CHAIN_BREAK(result)                                       \
     if (result->error_code != 0) {                                      \
-        printf("result->code = %d\n", result->error_code);              \
+        printf("result->code = %d\n", (int)result->error_code);         \
         printf("result->error message = %s\n", result->error_message);  \
         break;  \
     }
 
 #define CHECK_CHAIN_RETURN(result)                                      \
     if (result->error_code != 0) {                                      \
-        printf("result->code = %d\n", result->error_code);              \
+        printf("result->code = %d\n", (int)result->error_code);         \
         printf("result->error message = %s\n", result->error_message);  \
         return NULL;  \
     }
 
 #define CHECK_CHAIN_PRINT(result)                                       \
     if (result->error_code != 0) {                                      \
-        printf("result->code = %d\n", result->error_code);              \
+        printf("result->code = %d\n", (int)result->error_code);         \
         printf("result->error message = %s\n", result->error_message);  \
     }
 

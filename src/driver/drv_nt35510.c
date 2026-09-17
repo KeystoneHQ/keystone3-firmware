@@ -97,7 +97,7 @@ void Nt35510Clear(uint16_t color)
     while (Parallel8080Busy());
     endTick = osKernelGetTickCount();
     EXT_FREE(ramImg);
-    printf("frame tick=%d\r\n", endTick - startTick);
+    printf("frame tick=%d\r\n", (int)(endTick - startTick));
 }
 
 void Nt35510Draw(uint16_t xStart, uint16_t yStart, uint16_t xEnd, uint16_t yEnd, uint16_t *colors)

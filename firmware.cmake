@@ -1,16 +1,11 @@
-set(CROSS_COMPILE_PREFIX arm-none-eabi)
-set(CMAKE_C_COMPILER ${CROSS_COMPILE_PREFIX}-gcc)
-set(CMAKE_CXX_COMPILER ${CROSS_COMPILE_PREFIX}-g++)
-set(CMAKE_ASM_COMPILER ${CROSS_COMPILE_PREFIX}-gcc)
-set(CMAKE_OBJCOPY ${CROSS_COMPILE_PREFIX}-objcopy)
-set(CMAKE_OBJDUMP ${CROSS_COMPILE_PREFIX}-objdump)
-set(CMAKE_SIZE ${CROSS_COMPILE_PREFIX}-size)
 set(MCU cortex-m4)
 set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/mh1903b.ld)
 set(ARCH_FLAGS "-mcpu=${MCU} -mthumb -mlittle-endian")
 set(MCU_FLAGS "${ARCH_FLAGS} -Os -mfloat-abi=hard -mfpu=fpv4-sp-d16")
-set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g")
-set(CMAKE_CXX_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g")
+set(SECTION_FLAGS "-ffunction-sections -fdata-sections")
+set(HARDENING_FLAGS "-Wformat -Werror=format-security -Werror=format")
+set(CMAKE_C_FLAGS "${MCU_FLAGS} ${SECTION_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g ${HARDENING_FLAGS}")
+set(CMAKE_CXX_FLAGS "${MCU_FLAGS} ${SECTION_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g ${HARDENING_FLAGS}")
 
 if(NOT BUILD_PRODUCTION)
     aux_source_directory(test/ TEST_CMD)
@@ -59,6 +54,9 @@ set(TASKS
     src/tasks/data_parser_task.c
     src/tasks/fetch_sensitive_data_task.c
     src/tasks/cmd_task.c
+    src/tasks/mpu_sandbox_task.c
+    src/tasks/mpu_sandbox_runtime.c
+    src/tasks/watchdog_task.c
 )
 
 file(GLOB_RECURSE SRC
@@ -96,9 +94,13 @@ file(GLOB_RECURSE FREERTOS
     "external/FreeRTOS/Source/stream_buffer.c"
     "external/FreeRTOS/Source/tasks.c"
     "external/FreeRTOS/Source/timers.c"
-    "external/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.c"
+    "external/FreeRTOS/Source/portable/GCC/ARM_CM4_MPU/port.c"
+    "external/FreeRTOS/Source/portable/GCC/ARM_CM4_MPU/mpu_wrappers_v2_asm.c"
+    "external/FreeRTOS/Source/portable/Common/mpu_wrappers.c"
+    "external/FreeRTOS/Source/portable/Common/mpu_wrappers_v2.c"
     "external/FreeRTOS/CMSIS_RTOS_V2/cmsis_os2.c"
     "external/FreeRTOS/Source/portable/MemMang/heap_4.c"
+    "external/FreeRTOS/freertos_heap.c"
     "external/FreeRTOS/rtos_expand.c"
 )
 

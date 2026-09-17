@@ -102,7 +102,7 @@ static void BackgroundTask(void *argument)
         }
         break;
         case BACKGROUND_MSG_RESET: {
-            printf("reset device type=%d\r\n", rcvMsg.value);
+            printf("reset device type=%d\r\n", (int)rcvMsg.value);
             ExecuteSystemReset((SystemResetType)rcvMsg.value);
         }
         break;

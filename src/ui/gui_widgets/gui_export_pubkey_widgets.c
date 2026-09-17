@@ -637,7 +637,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     xPub = GetCurrentAccountPublicKey(g_pathTypeList[pathType].pubkeyType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
-    snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", g_pathTypeList[pathType].path, index);
+    snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", g_pathTypeList[pathType].path, (unsigned int)index);
     do {
         result = utxo_get_address(hdPath, xPub);
         CHECK_CHAIN_BREAK(result);
@@ -658,7 +658,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     xPub = GetCurrentAccountPublicKey(chainType);
     ASSERT(xPub);
     SimpleResponse_c_char *result;
-    snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", rootPath, index);
+    snprintf_s(hdPath, sizeof(hdPath), "%s/0/%u", rootPath, (unsigned int)index);
     do {
         result = utxo_get_address(hdPath, xPub);
         CHECK_CHAIN_BREAK(result);

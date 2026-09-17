@@ -54,17 +54,26 @@ UREncodeResult *GuiGetSolSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
+    uint8_t seed[64] = {0};
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    int ret = SUCCESS_CODE;
     do {
-        uint8_t seed[64];
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = solana_sign_tx(data, seed, len);
-        ClearSecretCache();
+        if (encodeResult == NULL) {
+            break;
+        }
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
+    ASSERT(ret == SUCCESS_CODE);
     return encodeResult;
 }
 
@@ -192,13 +201,13 @@ void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen)
 void GetSolMessageUtf8(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    snprintf_s((char *)indata, maxLen, "%.*s", maxLen - 1, message->utf8_message);
+    snprintf_s((char *)indata, maxLen, "%.*s", (int)(maxLen - 1), message->utf8_message);
 }
 
 void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    snprintf_s((char *)indata, maxLen, "%.*s", maxLen - 1, message->raw_message);
+    snprintf_s((char *)indata, maxLen, "%.*s", (int)(maxLen - 1), message->raw_message);
 }
 
 void GuiShowSolMessagePaged(lv_obj_t *parent, void *param, bool raw)

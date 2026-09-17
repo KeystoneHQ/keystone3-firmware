@@ -497,20 +497,20 @@ lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
 
     for (int i = 0; i < numSegments; i++) {
         int offset = i * segmentSize;
+        int segmentLength = textLen - offset;
+        if (segmentLength > segmentSize) {
+            segmentLength = segmentSize;
+        }
+        char savedChar = text[offset + segmentLength];
+        text[offset + segmentLength] = '\0';
         lv_obj_t *label = GuiCreateIllustrateLabel(cont, text + offset);
+        text[offset + segmentLength] = savedChar;
         lv_obj_set_width(label, 360);
         lv_label_set_recolor(label, true);
         if (i == 0) {
             lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 10);
         } else {
             GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
-        }
-
-        if (i < numSegments - 1 && textLen > offset + segmentSize) {
-            char savedChar = text[offset + segmentSize];
-            text[offset + segmentSize] = '\0';
-            lv_label_set_text(label, text + offset);
-            text[offset + segmentSize] = savedChar;
         }
     }
 
@@ -906,7 +906,7 @@ lv_obj_t *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
 {
     cJSON *item = cJSON_GetObjectItem(json, "tab_name");
     if (item != NULL) {
-        strcpy(g_tableName[g_analyzeTabview.tabviewIndex], item->valuestring);
+        strcpy_s(g_tableName[g_analyzeTabview.tabviewIndex], sizeof(g_tableName[g_analyzeTabview.tabviewIndex]), item->valuestring);
     }
     lv_obj_t *obj = lv_tabview_add_tab(g_tableView, item->valuestring);
 
@@ -1097,16 +1097,13 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
     static lv_point_t points[2] = {{0, 0}, {408, 0}};
     lv_obj_t *line = (lv_obj_t *)GuiCreateLine(g_imgCont, points, 2);
     lv_obj_align(line, LV_ALIGN_TOP_LEFT, 0, 64);
-    uint16_t tabWidth = 300;
+    const uint16_t tabItemWidth = 150;
+    uint16_t tabWidth = 0;
     for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
         if (g_analyzeTabview.obj[i] == NULL) {
-            if (i <= 1) {
-                tabWidth = 440;
-            } else {
-                tabWidth = 300;
-            }
             break;
         }
+        tabWidth += tabItemWidth;
     }
 
     for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {

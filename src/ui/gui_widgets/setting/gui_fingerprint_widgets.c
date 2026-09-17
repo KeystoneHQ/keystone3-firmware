@@ -1,38 +1,39 @@
 /* INCLUDES */
-#include "gui.h"
-#include "gui_views.h"
-#include "gui_status_bar.h"
-#include "gui_keyboard.h"
-#include "gui_button.h"
-#include "gui_hintbox.h"
-#include "gui_enter_passcode.h"
-#include "gui_model.h"
-#include "gui_setting_widgets.h"
-#include "gui_transaction_detail_widgets.h"
-#include "gui_lock_widgets.h"
-#include "gui_qr_hintbox.h"
-#include "user_memory.h"
-#include "secret_cache.h"
-#include "keystore.h"
-#include "presetting.h"
-#include "assert.h"
-#include "motor_manager.h"
-#include "fingerprint_process.h"
 #include "account_manager.h"
-#include "screen_manager.h"
-#ifndef COMPILE_SIMULATOR
-#include "sha256.h"
+#include "account_public_info.h"
+#include "assert.h"
+#include "fingerprint_process.h"
+#include "gui.h"
+#include "gui_button.h"
+#include "gui_enter_passcode.h"
+#include "gui_hintbox.h"
+#include "gui_keyboard.h"
+#include "gui_lock_widgets.h"
+#include "gui_model.h"
+#include "gui_qr_hintbox.h"
+#include "gui_setting_widgets.h"
+#include "gui_status_bar.h"
+#include "gui_transaction_detail_widgets.h"
+#include "gui_views.h"
 #include "keystore.h"
+#include "motor_manager.h"
+#include "presetting.h"
+#include "screen_manager.h"
+#include "secret_cache.h"
+#include "user_memory.h"
+#ifndef COMPILE_SIMULATOR
+#include "keystore.h"
+#include "sha256.h"
 #else
 #include "simulator_model.h"
-#define FP_SUCCESS_CODE                                                             (0)
-#define RECOGNIZE_UNLOCK                                                            (0)
-#define RECOGNIZE_OPEN_SIGN                                                         (1)
-#define RECOGNIZE_SIGN                                                              (2)
-#define NO_ENCRYPTION                                                               (0)
-#define AES_KEY_ENCRYPTION                                                          (1)
-#define RESET_AES_KEY_ENCRYPTION                                                    (2)
-#define FINGERPRINT_EN_SING_ERR_TIMES                                               (5)
+#define FP_SUCCESS_CODE               (0)
+#define RECOGNIZE_UNLOCK              (0)
+#define RECOGNIZE_OPEN_SIGN           (1)
+#define RECOGNIZE_SIGN                (2)
+#define NO_ENCRYPTION                 (0)
+#define AES_KEY_ENCRYPTION            (1)
+#define RESET_AES_KEY_ENCRYPTION      (2)
+#define FINGERPRINT_EN_SING_ERR_TIMES (5)
 #endif
 
 /* DEFINES */
@@ -81,7 +82,6 @@ uint8_t GuiGetFingerSettingIndex(void)
 
 void CancelVerifyFingerHandler(lv_event_t *e)
 {
-
     ClearSecretCache();
     FpCancelCurOperate();
     GUI_DEL_OBJ(g_verifyFingerCont)
@@ -89,7 +89,6 @@ void CancelVerifyFingerHandler(lv_event_t *e)
 
 void CancelCurFingerHandler(lv_event_t *e)
 {
-
     FpCancelCurOperate();
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_PREV, NULL, 0);
 }
@@ -123,8 +122,7 @@ void GuiWalletFingerOpenSign(void)
             .obj = img,
             .align = LV_ALIGN_DEFAULT,
             .position = {14, 14},
-        }
-    };
+        }};
     lv_obj_t *button = GuiCreateButton(cont, 64, 64, table, 1, CancelVerifyFingerHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
 
@@ -263,7 +261,7 @@ void GuiSettingFingerRegisterFail(void *param)
         lv_img_set_src(g_imgFinger, &imgRedFinger);
         printf("errCode = %#x\n", errCode);
         lv_obj_set_style_arc_color(g_arcProgress, RED_COLOR, LV_PART_INDICATOR);
-        if (errCode == 0x93) { // finger registered
+        if (errCode == 0x93) {  // finger registered
             text = _("fingerprint_add_failed_duplicate");
         } else if (errCode == ERR_FP_RECORDING_AREA_SMALL) {
             text = _("fingerprint_add_failed_partial");
@@ -325,8 +323,7 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
             .obj = label,
             .align = LV_ALIGN_BOTTOM_MID,
             .position = {0, -15},
-        }
-    };
+        }};
     static uint32_t walletSetting = DEVICE_SETTING_FINGER_ADD_SUCCESS;
     lv_obj_t *button = NULL;
     button = GuiCreateButton(parent, 408, 66, table, 1, WalletSettingHandler, &walletSetting);
@@ -358,8 +355,7 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     static uint32_t walletSetting[3] = {
         DEVICE_SETTING_FINGER_ADD_ENTER,
         DEVICE_SETTING_FINGER_DELETE,
-        DEVICE_SETTING_FINGER_SET_PATTERN
-    };
+        DEVICE_SETTING_FINGER_SET_PATTERN};
     static uint16_t walletUnlock = SIG_FINGER_SET_UNLOCK;
     static uint16_t walletSign = SIG_FINGER_SET_SIGN_TRANSITIONS;
 
@@ -469,8 +465,7 @@ void GuiWalletFingerDeleteWidget(lv_obj_t *parent)
             .obj = label,
             .align = LV_ALIGN_BOTTOM_MID,
             .position = {0, -15},
-        }
-    };
+        }};
     lv_obj_t *button = GuiCreateButton(parent, 282, 66, table, NUMBER_OF_ARRAYS(table), FingerDeleteDialogsHandler, &g_deleteFingerIndex);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -64);
 }
@@ -479,8 +474,7 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
 {
     static uint32_t walletSetting[2] = {
         SIG_FINGER_FINGER_SETTING,
-        SIG_SETTING_CHANGE_PASSWORD
-    };
+        SIG_SETTING_CHANGE_PASSWORD};
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 
@@ -499,8 +493,7 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
             .position = {411, 32},
         },
     };
-    lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table),
-                                       GuiShowKeyboardHandler, &walletSetting[0]);
+    lv_obj_t *button = GuiCreateButton(parent, 456, 84, table, NUMBER_OF_ARRAYS(table), GuiShowKeyboardHandler, &walletSetting[0]);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 144 - GUI_MAIN_AREA_OFFSET);
 
     lv_obj_t *line = GuiCreateDividerLine(parent);
@@ -511,6 +504,10 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
     table[0].obj = label;
     table[1].obj = imgArrow;
     button = GuiCreateButton(parent, 456, 84, table, 2, GuiShowKeyboardHandler, &walletSetting[1]);
+    if (GetIsTempAccount()) {
+        lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(line, LV_OBJ_FLAG_HIDDEN);
+    }
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, 253 - GUI_MAIN_AREA_OFFSET);
 }
 
@@ -544,7 +541,6 @@ static void AddFingerToManagerView(lv_event_t *e)
 
 static void FingerButtonHandler(lv_event_t *e)
 {
-
     uint8_t *fingerIndex = lv_event_get_user_data(e);
     g_deleteFingerIndex = *fingerIndex;
     uint8_t walletIndex = DEVICE_SETTING_FINGER_DELETE;
@@ -597,7 +593,6 @@ static void FingerDeleteDialogsHandler(lv_event_t *e)
 
 static void FingerDeleteHandler(lv_event_t *e)
 {
-
     DeleteFp(g_deleteFingerIndex);
     GUI_DEL_OBJ(g_fpDeleteCont)
 }

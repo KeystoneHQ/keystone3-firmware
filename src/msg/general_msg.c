@@ -2,7 +2,9 @@
 #include "stdio.h"
 #include "string.h"
 #include "stdbool.h"
+#include "stdint.h"
 #include "cmsis_os.h"
+#include "user_memory.h"
 
 static void* GetQueueFromMid(uint32_t messageID, uint32_t index);
 
@@ -35,7 +37,7 @@ uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
         queue = GetQueueFromMid(messageID, i);
         if (queue == NULL) {
             if (i == 0) {
-                printf("PubBufferMsg msg id err,msg id=0x%08X\r\n", messageID);
+                printf("PubBufferMsg msg id err,msg id=0x%08X\r\n", (unsigned int)messageID);
                 return MSG_MESSAGE_ID_ERROR;
             } else {
                 return MSG_SUCCESS;
@@ -52,7 +54,7 @@ uint32_t PubBufferMsg(uint32_t messageID, void *buffer, uint32_t length)
         err = osMessageQueuePut(queue, &msg, 0, 0);
         if (err != osOK) {
             SramFree(msg.buffer);
-            printf("msg bugger write queue err,queue=0x%08X,msgID=0x%08X,errid=0x%08X\r\n", queue, messageID, err);
+            printf("msg bugger write queue err,queue=0x%08X,msgID=0x%08X,errid=0x%08X\r\n", (unsigned int)(uintptr_t)queue, (unsigned int)messageID, err);
             continue;
         }
     }
@@ -73,18 +75,15 @@ uint32_t PubValueMsg(uint32_t messageID, uint32_t value)
         queue = GetQueueFromMid(messageID, i);
         if (queue == NULL) { // queue is empty
             if (i == 0) {
-                printf("PubValueMsg msg id err,msg id=0x%08X\r\n", messageID);
+                printf("PubValueMsg msg id err,msg id=0x%08X\r\n", (unsigned int)messageID);
                 return MSG_MESSAGE_ID_ERROR;
             } else {
                 return MSG_SUCCESS;
             }
-        } else if (osMessageQueueGetSpace(queue) == 0) {  // queue is full
-            return MSG_SEND_ERROR;
         }
         err = osMessageQueuePut(queue, &msg, 0, 0);
         if (err != osOK) {
-            printf("msg write queue err,queue=0x%08X,msgID=0x%08X,errid=0x%08X\r\n", queue, messageID, err);
-            continue;
+            return MSG_SEND_ERROR;
         }
     }
 }

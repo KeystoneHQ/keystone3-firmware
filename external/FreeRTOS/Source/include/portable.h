@@ -1,6 +1,6 @@
 /*
- * FreeRTOS Kernel V10.4.6
- * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
+ * FreeRTOS Kernel V11.3.0
+ * Copyright (C) 2021 Amazon.com, Inc. or its affiliates. All Rights Reserved.
  *
  * SPDX-License-Identifier: MIT
  *
@@ -50,45 +50,59 @@
  * included here.  In this case the path to the correct portmacro.h header file
  * must be set in the compiler's include path. */
 #ifndef portENTER_CRITICAL
-#include "portmacro.h"
+    #include "portmacro.h"
 #endif
 
 #if portBYTE_ALIGNMENT == 32
-#define portBYTE_ALIGNMENT_MASK    ( 0x001f )
+    #define portBYTE_ALIGNMENT_MASK    ( 0x001f )
 #elif portBYTE_ALIGNMENT == 16
-#define portBYTE_ALIGNMENT_MASK    ( 0x000f )
+    #define portBYTE_ALIGNMENT_MASK    ( 0x000f )
 #elif portBYTE_ALIGNMENT == 8
-#define portBYTE_ALIGNMENT_MASK    ( 0x0007 )
+    #define portBYTE_ALIGNMENT_MASK    ( 0x0007 )
 #elif portBYTE_ALIGNMENT == 4
-#define portBYTE_ALIGNMENT_MASK    ( 0x0003 )
+    #define portBYTE_ALIGNMENT_MASK    ( 0x0003 )
 #elif portBYTE_ALIGNMENT == 2
-#define portBYTE_ALIGNMENT_MASK    ( 0x0001 )
+    #define portBYTE_ALIGNMENT_MASK    ( 0x0001 )
 #elif portBYTE_ALIGNMENT == 1
-#define portBYTE_ALIGNMENT_MASK    ( 0x0000 )
+    #define portBYTE_ALIGNMENT_MASK    ( 0x0000 )
 #else /* if portBYTE_ALIGNMENT == 32 */
-#error "Invalid portBYTE_ALIGNMENT definition"
+    #error "Invalid portBYTE_ALIGNMENT definition"
 #endif /* if portBYTE_ALIGNMENT == 32 */
 
 #ifndef portUSING_MPU_WRAPPERS
-#define portUSING_MPU_WRAPPERS    0
+    #define portUSING_MPU_WRAPPERS    0
 #endif
 
 #ifndef portNUM_CONFIGURABLE_REGIONS
-#define portNUM_CONFIGURABLE_REGIONS    1
+    #define portNUM_CONFIGURABLE_REGIONS    1
 #endif
 
 #ifndef portHAS_STACK_OVERFLOW_CHECKING
-#define portHAS_STACK_OVERFLOW_CHECKING    0
+    #define portHAS_STACK_OVERFLOW_CHECKING    0
 #endif
 
 #ifndef portARCH_NAME
-#define portARCH_NAME    NULL
+    #define portARCH_NAME    NULL
+#endif
+
+#ifndef portBASE_TYPE_ENTER_CRITICAL
+    #define portBASE_TYPE_ENTER_CRITICAL()    taskENTER_CRITICAL()
+#endif
+
+#ifndef portBASE_TYPE_EXIT_CRITICAL
+    #define portBASE_TYPE_EXIT_CRITICAL()    taskEXIT_CRITICAL()
+#endif
+
+#ifndef configSTACK_DEPTH_TYPE
+    #define configSTACK_DEPTH_TYPE    StackType_t
 #endif
 
 #ifndef configSTACK_ALLOCATION_FROM_SEPARATE_HEAP
-/* Defaults to 0 for backward compatibility. */
-#define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP    0
+    /* Defaults to 0 for backward compatibility. */
+    #define configSTACK_ALLOCATION_FROM_SEPARATE_HEAP    0
 #endif
+
+#include "mpu_wrappers.h"
 
 /* *INDENT-OFF* */
 #ifdef __cplusplus
@@ -96,120 +110,175 @@
 #endif
 /* *INDENT-ON* */
 
-#include "mpu_wrappers.h"
-
-    /*
-     * Setup the stack of a new task so it is ready to be placed under the
-     * scheduler control.  The registers have to be placed on the stack in
-     * the order that the port expects to find them.
-     *
-     */
+/*
+ * Setup the stack of a new task so it is ready to be placed under the
+ * scheduler control.  The registers have to be placed on the stack in
+ * the order that the port expects to find them.
+ *
+ */
 #if ( portUSING_MPU_WRAPPERS == 1 )
-#if ( portHAS_STACK_OVERFLOW_CHECKING == 1 )
-    StackType_t * pxPortInitialiseStack(StackType_t * pxTopOfStack,
-                                        StackType_t * pxEndOfStack,
-                                        TaskFunction_t pxCode,
-                                        void * pvParameters,
-                                        BaseType_t xRunPrivileged) PRIVILEGED_FUNCTION;
-#else
-    StackType_t * pxPortInitialiseStack(StackType_t * pxTopOfStack,
-                                        TaskFunction_t pxCode,
-                                        void * pvParameters,
-                                        BaseType_t xRunPrivileged) PRIVILEGED_FUNCTION;
-#endif
+    #if ( portHAS_STACK_OVERFLOW_CHECKING == 1 )
+        StackType_t * pxPortInitialiseStack( StackType_t * pxTopOfStack,
+                                             StackType_t * pxEndOfStack,
+                                             TaskFunction_t pxCode,
+                                             void * pvParameters,
+                                             BaseType_t xRunPrivileged,
+                                             xMPU_SETTINGS * xMPUSettings ) PRIVILEGED_FUNCTION;
+    #else
+        StackType_t * pxPortInitialiseStack( StackType_t * pxTopOfStack,
+                                             TaskFunction_t pxCode,
+                                             void * pvParameters,
+                                             BaseType_t xRunPrivileged,
+                                             xMPU_SETTINGS * xMPUSettings ) PRIVILEGED_FUNCTION;
+    #endif /* if ( portHAS_STACK_OVERFLOW_CHECKING == 1 ) */
 #else /* if ( portUSING_MPU_WRAPPERS == 1 ) */
-#if ( portHAS_STACK_OVERFLOW_CHECKING == 1 )
-    StackType_t * pxPortInitialiseStack(StackType_t * pxTopOfStack,
-                                        StackType_t * pxEndOfStack,
-                                        TaskFunction_t pxCode,
-                                        void * pvParameters) PRIVILEGED_FUNCTION;
-#else
-    StackType_t * pxPortInitialiseStack(StackType_t * pxTopOfStack,
-                                        TaskFunction_t pxCode,
-                                        void * pvParameters) PRIVILEGED_FUNCTION;
-#endif
+    #if ( portHAS_STACK_OVERFLOW_CHECKING == 1 )
+        StackType_t * pxPortInitialiseStack( StackType_t * pxTopOfStack,
+                                             StackType_t * pxEndOfStack,
+                                             TaskFunction_t pxCode,
+                                             void * pvParameters ) PRIVILEGED_FUNCTION;
+    #else
+        StackType_t * pxPortInitialiseStack( StackType_t * pxTopOfStack,
+                                             TaskFunction_t pxCode,
+                                             void * pvParameters ) PRIVILEGED_FUNCTION;
+    #endif
 #endif /* if ( portUSING_MPU_WRAPPERS == 1 ) */
 
-    /* Used by heap_5.c to define the start address and size of each memory region
-     * that together comprise the total FreeRTOS heap space. */
-    typedef struct HeapRegion {
-        uint8_t * pucStartAddress;
-        size_t xSizeInBytes;
-    } HeapRegion_t;
+/* Used by heap_5.c to define the start address and size of each memory region
+ * that together comprise the total FreeRTOS heap space. */
+typedef struct HeapRegion
+{
+    uint8_t * pucStartAddress;
+    size_t xSizeInBytes;
+} HeapRegion_t;
 
-    /* Used to pass information about the heap out of vPortGetHeapStats(). */
-    typedef struct xHeapStats {
-        size_t xAvailableHeapSpaceInBytes;      /* The total heap size currently available - this is the sum of all the free blocks, not the largest block that can be allocated. */
-        size_t xSizeOfLargestFreeBlockInBytes;  /* The maximum size, in bytes, of all the free blocks within the heap at the time vPortGetHeapStats() is called. */
-        size_t xSizeOfSmallestFreeBlockInBytes; /* The minimum size, in bytes, of all the free blocks within the heap at the time vPortGetHeapStats() is called. */
-        size_t xNumberOfFreeBlocks;             /* The number of free memory blocks within the heap at the time vPortGetHeapStats() is called. */
-        size_t xMinimumEverFreeBytesRemaining;  /* The minimum amount of total free memory (sum of all free blocks) there has been in the heap since the system booted. */
-        size_t xNumberOfSuccessfulAllocations;  /* The number of calls to pvPortMalloc() that have returned a valid memory block. */
-        size_t xNumberOfSuccessfulFrees;        /* The number of calls to vPortFree() that has successfully freed a block of memory. */
-    } HeapStats_t;
+/* Used to pass information about the heap out of vPortGetHeapStats(). */
+typedef struct xHeapStats
+{
+    size_t xAvailableHeapSpaceInBytes;      /* The total heap size currently available - this is the sum of all the free blocks, not the largest block that can be allocated. */
+    size_t xSizeOfLargestFreeBlockInBytes;  /* The maximum size, in bytes, of all the free blocks within the heap at the time vPortGetHeapStats() is called. */
+    size_t xSizeOfSmallestFreeBlockInBytes; /* The minimum size, in bytes, of all the free blocks within the heap at the time vPortGetHeapStats() is called. */
+    size_t xNumberOfFreeBlocks;             /* The number of free memory blocks within the heap at the time vPortGetHeapStats() is called. */
+    size_t xMinimumEverFreeBytesRemaining;  /* The minimum amount of total free memory (sum of all free blocks) there has been in the heap since the system booted. */
+    size_t xNumberOfSuccessfulAllocations;  /* The number of calls to pvPortMalloc() that have returned a valid memory block. */
+    size_t xNumberOfSuccessfulFrees;        /* The number of calls to vPortFree() that has successfully freed a block of memory. */
+} HeapStats_t;
 
-    /*
-     * Used to define multiple heap regions for use by heap_5.c.  This function
-     * must be called before any calls to pvPortMalloc() - not creating a task,
-     * queue, semaphore, mutex, software timer, event group, etc. will result in
-     * pvPortMalloc being called.
-     *
-     * pxHeapRegions passes in an array of HeapRegion_t structures - each of which
-     * defines a region of memory that can be used as the heap.  The array is
-     * terminated by a HeapRegions_t structure that has a size of 0.  The region
-     * with the lowest start address must appear first in the array.
-     */
-    void vPortDefineHeapRegions(const HeapRegion_t * const pxHeapRegions) PRIVILEGED_FUNCTION;
+/*
+ * Used to define multiple heap regions for use by heap_5.c.  This function
+ * must be called before any calls to pvPortMalloc() - not creating a task,
+ * queue, semaphore, mutex, software timer, event group, etc. will result in
+ * pvPortMalloc being called.
+ *
+ * pxHeapRegions passes in an array of HeapRegion_t structures - each of which
+ * defines a region of memory that can be used as the heap.  The array is
+ * terminated by a HeapRegions_t structure that has a size of 0.  The region
+ * with the lowest start address must appear first in the array.
+ */
+void vPortDefineHeapRegions( const HeapRegion_t * const pxHeapRegions ) PRIVILEGED_FUNCTION;
 
-    /*
-     * Returns a HeapStats_t structure filled with information about the current
-     * heap state.
-     */
-    void vPortGetHeapStats(HeapStats_t * pxHeapStats);
+/*
+ * Returns a HeapStats_t structure filled with information about the current
+ * heap state.
+ */
+void vPortGetHeapStats( HeapStats_t * pxHeapStats );
 
-    /*
-     * Map to the memory management routines required for the port.
-     */
-    void * pvPortMalloc(size_t xSize) PRIVILEGED_FUNCTION;
-    void vPortFree(void * pv) PRIVILEGED_FUNCTION;
-    void vPortInitialiseBlocks(void) PRIVILEGED_FUNCTION;
-    size_t xPortGetFreeHeapSize(void) PRIVILEGED_FUNCTION;
-    size_t xPortGetMinimumEverFreeHeapSize(void) PRIVILEGED_FUNCTION;
+/*
+ * Map to the memory management routines required for the port.
+ */
+void * pvPortMalloc( size_t xWantedSize ) PRIVILEGED_FUNCTION;
+void * pvPortCalloc( size_t xNum,
+                     size_t xSize ) PRIVILEGED_FUNCTION;
+void vPortFree( void * pv ) PRIVILEGED_FUNCTION;
+void vPortInitialiseBlocks( void ) PRIVILEGED_FUNCTION;
+size_t xPortGetFreeHeapSize( void ) PRIVILEGED_FUNCTION;
+size_t xPortGetMinimumEverFreeHeapSize( void ) PRIVILEGED_FUNCTION;
+void xPortResetHeapMinimumEverFreeHeapSize( void ) PRIVILEGED_FUNCTION;
 
 #if ( configSTACK_ALLOCATION_FROM_SEPARATE_HEAP == 1 )
-    void * pvPortMallocStack(size_t xSize) PRIVILEGED_FUNCTION;
-    void vPortFreeStack(void * pv) PRIVILEGED_FUNCTION;
+    void * pvPortMallocStack( size_t xSize ) PRIVILEGED_FUNCTION;
+    void vPortFreeStack( void * pv ) PRIVILEGED_FUNCTION;
 #else
-#define pvPortMallocStack    SramMalloc
-#define vPortFreeStack       SramFree
+    #define pvPortMallocStack    pvPortMalloc
+    #define vPortFreeStack       vPortFree
 #endif
 
-    /*
-     * Setup the hardware ready for the scheduler to take control.  This generally
-     * sets up a tick interrupt and sets timers for the correct tick frequency.
-     */
-    BaseType_t xPortStartScheduler(void) PRIVILEGED_FUNCTION;
+/*
+ * This function resets the internal state of the heap module. It must be called
+ * by the application before restarting the scheduler.
+ */
+void vPortHeapResetState( void ) PRIVILEGED_FUNCTION;
 
-    /*
-     * Undo any hardware/ISR setup that was performed by xPortStartScheduler() so
-     * the hardware is left in its original condition after the scheduler stops
-     * executing.
-     */
-    void vPortEndScheduler(void) PRIVILEGED_FUNCTION;
+#if ( configUSE_MALLOC_FAILED_HOOK == 1 )
 
-    /*
-     * The structures and methods of manipulating the MPU are contained within the
-     * port layer.
-     *
-     * Fills the xMPUSettings structure with the memory region information
-     * contained in xRegions.
-     */
+/**
+ * task.h
+ * @code{c}
+ * void vApplicationMallocFailedHook( void )
+ * @endcode
+ *
+ * This hook function is called when allocation failed.
+ */
+    void vApplicationMallocFailedHook( void );
+#endif
+
+/*
+ * Setup the hardware ready for the scheduler to take control.  This generally
+ * sets up a tick interrupt and sets timers for the correct tick frequency.
+ */
+BaseType_t xPortStartScheduler( void ) PRIVILEGED_FUNCTION;
+
+/*
+ * Undo any hardware/ISR setup that was performed by xPortStartScheduler() so
+ * the hardware is left in its original condition after the scheduler stops
+ * executing.
+ */
+void vPortEndScheduler( void ) PRIVILEGED_FUNCTION;
+
+/*
+ * The structures and methods of manipulating the MPU are contained within the
+ * port layer.
+ *
+ * Fills the xMPUSettings structure with the memory region information
+ * contained in xRegions.
+ */
 #if ( portUSING_MPU_WRAPPERS == 1 )
     struct xMEMORY_REGION;
-    void vPortStoreTaskMPUSettings(xMPU_SETTINGS * xMPUSettings,
-                                   const struct xMEMORY_REGION * const xRegions,
-                                   StackType_t * pxBottomOfStack,
-                                   uint32_t ulStackDepth) PRIVILEGED_FUNCTION;
+    void vPortStoreTaskMPUSettings( xMPU_SETTINGS * xMPUSettings,
+                                    const struct xMEMORY_REGION * const xRegions,
+                                    StackType_t * pxBottomOfStack,
+                                    configSTACK_DEPTH_TYPE uxStackDepth ) PRIVILEGED_FUNCTION;
+#endif
+
+/**
+ * @brief Checks if the calling task is authorized to access the given buffer.
+ *
+ * @param pvBuffer The buffer which the calling task wants to access.
+ * @param ulBufferLength The length of the pvBuffer.
+ * @param ulAccessRequested The permissions that the calling task wants.
+ *
+ * @return pdTRUE if the calling task is authorized to access the buffer,
+ *         pdFALSE otherwise.
+ */
+#if ( portUSING_MPU_WRAPPERS == 1 )
+    BaseType_t xPortIsAuthorizedToAccessBuffer( const void * pvBuffer,
+                                                uint32_t ulBufferLength,
+                                                uint32_t ulAccessRequested ) PRIVILEGED_FUNCTION;
+#endif
+
+/**
+ * @brief Checks if the calling task is authorized to access the given kernel object.
+ *
+ * @param lInternalIndexOfKernelObject The index of the kernel object in the kernel
+ *                                     object handle pool.
+ *
+ * @return pdTRUE if the calling task is authorized to access the kernel object,
+ *         pdFALSE otherwise.
+ */
+#if ( ( portUSING_MPU_WRAPPERS == 1 ) && ( configUSE_MPU_WRAPPERS_V1 == 0 ) )
+
+    BaseType_t xPortIsAuthorizedToAccessKernelObject( int32_t lInternalIndexOfKernelObject ) PRIVILEGED_FUNCTION;
+
 #endif
 
 /* *INDENT-OFF* */

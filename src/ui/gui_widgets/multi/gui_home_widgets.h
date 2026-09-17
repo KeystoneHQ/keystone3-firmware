@@ -39,14 +39,15 @@ void GuiHomeSetWalletDesc(WalletDesc_t *wallet);
 void GuiHomeRestart(void);
 bool GuiHomePageIsTop(void);
 void GuiHomePasswordErrorCount(void *param);
-void GuiRemoveKeyboardWidget(void);
+void GuiRemoveKeyboardWidget(bool allowGenerate);
+void GuiHomeShowArSetupNotice(void);
+void GuiHomeCancelArSetup(void);
 void RecalculateManageWalletState(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
 void GuiShowRsaSetupasswordHintbox(void);
-void GuiShowRsaInitializatioCompleteHintbox(void);
+void GuiShowRsaInitializatioCompleteHintbox(bool receive, const char *address);
 void ClearHomePageCurrentIndex(void);
 void ReturnManageWalletHandler(lv_event_t *e);
 
 #endif /* _GUI_HOME_WIDGETS_H */
-

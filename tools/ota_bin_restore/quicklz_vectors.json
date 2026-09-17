@@ -1,0 +1,23 @@
+{
+  "source": "external/quicklz/quicklz.c, QuickLZ 1.5.0, level 3, streaming 0; generated with qlz_compress",
+  "vectors": [
+    {
+      "name": "short",
+      "size": 28,
+      "sha256": "b90e09d6cc99aaa02c3e22084326917d8ee4bb02b479f69a1127b76dec971c25",
+      "chunk_base64": "TREcCAAAgGFiY88BAGFiYyE="
+    },
+    {
+      "name": "long",
+      "size": 10000,
+      "sha256": "83ed00fd4410b12c310f75982abda5672efbdc8dbcdab4cf6578efcc7987f5f5",
+      "chunk_base64": "T+wAAAAQJwAAAAAAgEtleXN0b25lIGZpcm13YXJlIAABAgMEBQYHCAkKCwwAAPj/DQ4PEBESExQVFhcYGRobHB0eHwN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAP///4cDfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQADfhkAA34ZAAN+GQAbHB0eAAAAgB8="
+    },
+    {
+      "name": "repeated",
+      "size": 16384,
+      "sha256": "7f7d7f621694cdc133548e9a3eb50d7f1dfdf6abd00bef37d46d18bc7967a433",
+      "chunk_base64": "T2MBAAAAQAAAqKqqqlpaWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFpVVVXVA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAKqqqqpaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaVVVV1QP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQBaA/4BAFoD/gEAWgP+AQAqAACAWgP+AQBaA/4BAFoD+wEAWlpaWg=="
+    }
+  ]
+}

@@ -167,6 +167,15 @@ enum SignatureType {
     TYPEDETHEREUM,
 }
 
+fn data_item_take(reader: &mut Vec<u8>, len: usize) -> Result<Vec<u8>> {
+    if len > reader.len() {
+        return Err(ArweaveError::ParseTxError(
+            "Unexpected end of DataItem".to_string(),
+        ));
+    }
+    Ok(reader.drain(..len).collect())
+}
+
 impl DataItem {
     pub(crate) fn tags_ref(&self) -> &Tags {
         &self.tags
@@ -175,44 +184,44 @@ impl DataItem {
     pub fn deserialize(binary: &[u8]) -> Result<Self> {
         let mut reader = binary.to_vec();
         let signature_type =
-            u16::from_le_bytes(reader.drain(..2).collect::<Vec<u8>>().try_into().map_err(
-                |_| ArweaveError::ParseTxError("Invalid DataItem signature_type".to_string()),
-            )?);
+            u16::from_le_bytes(data_item_take(&mut reader, 2)?.try_into().map_err(|_| {
+                ArweaveError::ParseTxError("Invalid DataItem signature_type".to_string())
+            })?);
 
         if signature_type != SignatureType::ARWEAVE as u16 {
             return Err(ArweaveError::NotSupportedError);
         }
         //ar signature length is 512
-        let signature = reader.drain(..512).collect();
+        let signature = data_item_take(&mut reader, 512)?;
         //ar pubkey length is 512
-        let raw_owner: Vec<u8> = reader.drain(..512).collect();
+        let raw_owner = data_item_take(&mut reader, 512)?;
         let owner = generate_address(raw_owner.clone())?;
 
-        let has_target = reader.remove(0);
+        let has_target = data_item_take(&mut reader, 1)?[0];
         let (raw_target, target) = if has_target > 0 {
-            let raw_target: Vec<u8> = reader.drain(..32).collect();
+            let raw_target = data_item_take(&mut reader, 32)?;
             (raw_target.clone(), Some(base64_url(raw_target.clone())))
         } else {
             (vec![], None)
         };
 
-        let has_anchor = reader.remove(0);
+        let has_anchor = data_item_take(&mut reader, 1)?[0];
         let (raw_anchor, anchor) = if has_anchor > 0 {
-            let raw_anchor: Vec<u8> = reader.drain(..32).collect();
+            let raw_anchor = data_item_take(&mut reader, 32)?;
             (raw_anchor.clone(), Some(base64_url(raw_anchor.clone())))
         } else {
             (vec![], None)
         };
 
         let tags_number =
-            u64::from_le_bytes(reader.drain(..8).collect::<Vec<u8>>().try_into().map_err(
-                |_| ArweaveError::ParseTxError("Invalid DataItem tags_number".to_string()),
-            )?);
+            u64::from_le_bytes(data_item_take(&mut reader, 8)?.try_into().map_err(|_| {
+                ArweaveError::ParseTxError("Invalid DataItem tags_number".to_string())
+            })?);
 
         let tags_bytes_number =
-            u64::from_le_bytes(reader.drain(..8).collect::<Vec<u8>>().try_into().map_err(
-                |_| ArweaveError::ParseTxError("Invalid DataItem tags_number".to_string()),
-            )?);
+            u64::from_le_bytes(data_item_take(&mut reader, 8)?.try_into().map_err(|_| {
+                ArweaveError::ParseTxError("Invalid DataItem tags_number".to_string())
+            })?);
 
         let tags_bytes_len = usize::try_from(tags_bytes_number).map_err(|_| {
             ArweaveError::ParseTxError("DataItem tags byte length is too large".to_string())
@@ -271,11 +280,68 @@ impl DataItem {
 #[cfg(test)]
 mod tests {
 
-    use super::{DataItem, Tags};
+    use super::{ArweaveError, DataItem, Tags};
     use alloc::string::ToString;
     use alloc::vec::Vec;
 
     use hex;
+
+    #[test]
+    fn test_reject_truncated_data_item_fields() {
+        for has_target in [false, true] {
+            for has_anchor in [false, true] {
+                let mut binary = Vec::new();
+                binary.extend_from_slice(&1u16.to_le_bytes());
+                binary.extend_from_slice(&[0u8; 512]);
+                binary.extend_from_slice(&[0u8; 512]);
+                binary.push(u8::from(has_target));
+                if has_target {
+                    binary.extend_from_slice(&[0u8; 32]);
+                }
+                binary.push(u8::from(has_anchor));
+                if has_anchor {
+                    binary.extend_from_slice(&[0u8; 32]);
+                }
+                binary.extend_from_slice(&0u64.to_le_bytes());
+                binary.extend_from_slice(&1u64.to_le_bytes());
+                let header_len = binary.len();
+                binary.push(0);
+
+                assert!(DataItem::deserialize(&binary).is_ok());
+                for len in 0..header_len {
+                    let error = DataItem::deserialize(&binary[..len]).unwrap_err();
+                    assert!(
+                        matches!(error, ArweaveError::ParseTxError(_)),
+                        "target={has_target}, anchor={has_anchor}, length={len}: {error}"
+                    );
+                }
+                assert!(DataItem::deserialize(&binary[..header_len]).is_err());
+            }
+        }
+    }
+
+    #[test]
+    fn test_reject_malformed_avro_blocks() {
+        let cases: &[(&[u8], &str)] = &[
+            (
+                &[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x01],
+                "Invalid block count",
+            ),
+            (&[0x01, 0x01], "Invalid negative block size"),
+            (&[0x02, 0x01], "Invalid negative string length"),
+            (&[0x02, 0x02, 0xff], "utf-8"),
+            (&[0x02, 0x04, b'A'], "Unexpected end of Avro data"),
+            (
+                &[0x01, 0x06, 0x00, 0x00, 0x00, 0x00],
+                "Avro tag block contains trailing bytes",
+            ),
+        ];
+        for (serial, message) in cases {
+            let error = Tags::deserialize(serial).unwrap_err();
+            assert!(matches!(error, ArweaveError::AvroError(_)));
+            assert!(error.to_string().contains(message), "{error}");
+        }
+    }
 
     #[test]
     fn test_parse_tags_across_multiple_avro_blocks() {

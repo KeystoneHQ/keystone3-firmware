@@ -130,8 +130,9 @@ static bool DeriveConnectedAddress(void)
     }
     SimpleResponse_c_char *result = btcoin_get_address_with_network(hdPath, xpub, g_callData->network);
     if (result->error_code == 0 && result->data != NULL) {
-        g_address = SRAM_MALLOC(strnlen_s(result->data, BUFFER_SIZE_128) + 1);
-        strcpy(g_address, result->data);
+        size_t addressLen = strnlen_s(result->data, BUFFER_SIZE_128) + 1;
+        g_address = SRAM_MALLOC(addressLen);
+        strcpy_s(g_address, addressLen, result->data);
         free_simple_response_c_char(result);
         return true;
     }
@@ -334,7 +335,7 @@ static UREncodeResult *ModelGenerateSyncUR(void)
     int seedLen = (mnemonicType == MNEMONIC_TYPE_SLIP39) ? GetCurrentAccountEntropyLen() : sizeof(seed);
     GetAccountSeed(GetCurrentAccountIndex(), seed, password);
     UREncodeResult *urResult = generate_derive_context_hash_ur(g_data, seed, seedLen, g_address);
-    memset(seed, 0, sizeof(seed));
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
     ClearSecretCache();
     SetLockScreen(enable);
     return urResult;

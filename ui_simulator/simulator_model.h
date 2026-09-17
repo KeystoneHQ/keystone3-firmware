@@ -186,7 +186,7 @@ extern bool g_reboot;
         PC_SIMULATOR_PATH "/page_sign_ada_tx_hash.json", \
         GuiGetAdaSignTxHashData, \
         NULL, \
-        FreeAdaMemory \
+        FreeAdaSignTxHashMemory \
     }, \
     { \
         REMAPVIEW_ADA_SIGN_DATA, \

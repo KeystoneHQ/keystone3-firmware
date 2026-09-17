@@ -20,6 +20,14 @@ else()
     set(RUST_TOOLCHAIN "nightly-2026-05-22")
 endif()
 
+if(CMAKE_HOST_WIN32)
+    if(BUILD_ENVIRONMENT STREQUAL "SIMULATOR")
+        set(RUST_TOOLCHAIN "${RUST_TOOLCHAIN}-x86_64-pc-windows-gnu")
+    else()
+        set(RUST_TOOLCHAIN "${RUST_TOOLCHAIN}-x86_64-pc-windows-msvc")
+    endif()
+endif()
+
 if(BUILD_ENVIRONMENT STREQUAL "SIMULATOR")
     set(FEATURE_ENVIRONMENT "simulator")
     set(TARGET_PATH	${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds)
@@ -52,16 +60,26 @@ endif()
 set(FEATURE ${FEATURE_ENVIRONMENT}-${FEATURE_VARIANT})
 
 set(CBINDGEN_BINDINGS_TARGET ${RUST_C_DIR}/bindings/${FEATURE}/librust_c.h)
-set(COPY_BINDINGS_TARGET cp ${CBINDGEN_BINDINGS_TARGET} ${TARGET_PATH})
+set(COPY_BINDINGS_TARGET
+    ${CMAKE_COMMAND} -E copy_if_different ${CBINDGEN_BINDINGS_TARGET} ${TARGET_PATH}
+)
 
 # compile rust lib
 set(CARGO_FLAG --release -p rust_c --no-default-features)
 set(CARGO_FLAG ${CARGO_FLAG} --features ${FEATURE})
 if(CARGO_ARM_TARGET)
     set(CARGO_FLAG ${CARGO_FLAG} --target ${CARGO_ARM_TARGET})
-    set(COPY_BUILD_TARGET  cp ${RUST_DIR}/target/${CARGO_ARM_TARGET}/release/${LIB_NAME} ${TARGET_PATH})
+    set(COPY_BUILD_TARGET
+        ${CMAKE_COMMAND} -E copy_if_different
+        ${RUST_DIR}/target/${CARGO_ARM_TARGET}/release/${LIB_NAME}
+        ${TARGET_PATH}
+    )
 else()
-    set(COPY_BUILD_TARGET  cp ${RUST_DIR}/target/release/${LIB_NAME} ${TARGET_PATH})
+    set(COPY_BUILD_TARGET
+        ${CMAKE_COMMAND} -E copy_if_different
+        ${RUST_DIR}/target/release/${LIB_NAME}
+        ${TARGET_PATH}
+    )
 endif()
 
 message(STATUS "cargo build command: " ${CARGO_FLAG})
@@ -69,8 +87,10 @@ message(STATUS "cargo build command: " ${CARGO_FLAG})
 
 #run build
 add_custom_target(rust_c ALL
+    BYPRODUCTS ${TARGET_PATH}/${LIB_NAME} ${TARGET_PATH}/librust_c.h
     COMMAND rustup run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
     COMMAND ${COPY_BUILD_TARGET}
     COMMAND ${COPY_BINDINGS_TARGET}
     WORKING_DIRECTORY ${RUST_DIR}
+    USES_TERMINAL
 )

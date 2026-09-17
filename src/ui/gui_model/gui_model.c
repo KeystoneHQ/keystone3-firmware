@@ -647,25 +647,31 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
-    SimpleResponse_c_char *xPubResult;
-    uint8_t seed[64];
+    SimpleResponse_c_char *xPubResult = NULL;
+    uint8_t seed[64] = {0};
 
     do {
         ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
         xPubResult = get_extended_pubkey_by_seed(seed, 64, "M/49'/0'/0'");
-        if (xPubResult->error_code != 0) {
-            free_simple_response_c_char(xPubResult);
+        if (xPubResult == NULL || xPubResult->error_code != SUCCESS_CODE || xPubResult->data == NULL) {
+            ret = xPubResult != NULL && xPubResult->error_code != SUCCESS_CODE ? xPubResult->error_code : ERR_GENERAL_FAIL;
             break;
         }
         CLEAR_ARRAY(seed);
         char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-        if (!strcmp(xpub, xPubResult->data)) {
+        if (xpub != NULL && !strcmp(xpub, xPubResult->data)) {
             ret = SUCCESS_CODE;
         } else {
             ret = ERR_GENERAL_FAIL;
         }
-        free_simple_response_c_char(xPubResult);
     } while (0);
+    if (xPubResult != NULL) {
+        free_simple_response_c_char(xPubResult);
+    }
+    CLEAR_ARRAY(seed);
     ClearSecretCache();
     if (ret != SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_FAIL, NULL, 0);
@@ -673,7 +679,7 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
     }
     SetLockScreen(enable);
-    return 0;
+    return ret;
 }
 
 // Auxiliary word verification for bip39
@@ -689,12 +695,14 @@ static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
         // ERR_KEYSTORE_MNEMONIC_REPEAT (!= SUCCESS) exactly when the mnemonic matches an existing wallet — the
         // forget-pass SUCCESS path — and sets *index to that wallet.
         ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, &g_forgetResetIndex);
-        if (ret != SUCCESS_CODE) {
+        if (ret == ERR_KEYSTORE_MNEMONIC_REPEAT) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);
             return ret;
         }
-        ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+        if (ret == SUCCESS_CODE) {
+            ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+        }
     } while (0);
     GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
     SetLockScreen(enable);
@@ -773,9 +781,12 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
     uint8_t seed[64] = {0};
     int ret = SUCCESS_CODE;
     uint8_t existIndex = 0;
+    if (index != NULL) {
+        *index = 0xFF;
+    }
 
     do {
-        SimpleResponse_c_char *xPubResult;
+        SimpleResponse_c_char *xPubResult = NULL;
         if (bip39) {
             ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
             CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
@@ -787,7 +798,13 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
             xPubResult = get_extended_pubkey_by_seed(seed, emsLen, "M/49'/0'/0'");
         }
 
-        CHECK_CHAIN_BREAK(xPubResult);
+        if (xPubResult == NULL || xPubResult->error_code != SUCCESS_CODE || xPubResult->data == NULL) {
+            ret = xPubResult != NULL && xPubResult->error_code != SUCCESS_CODE ? xPubResult->error_code : ERR_GENERAL_FAIL;
+            if (xPubResult != NULL) {
+                free_simple_response_c_char(xPubResult);
+            }
+            break;
+        }
         CLEAR_ARRAY(seed);
         existIndex = SpecifiedXPubExist(xPubResult->data);
         if (index != NULL) {
@@ -800,6 +817,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
         }
         free_simple_response_c_char(xPubResult);
     } while (0);
+    CLEAR_ARRAY(seed);
     SetLockScreen(enable);
     return ret;
 }
@@ -1061,15 +1079,22 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
         }
         // Capture the matched (reset) wallet index for the prove-ownership guard (see ModelBip39ForgetPass).
         ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &g_forgetResetIndex);
-        if (ret != SUCCESS_CODE) {
+        if (ret == ERR_KEYSTORE_MNEMONIC_REPEAT) {
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
+            CLEAR_ARRAY(ems);
+            memset_s(entropy, entropyLen, 0, entropyLen);
+            SRAM_FREE(entropy);
             SetLockScreen(enable);
             return ret;
         }
-        ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+        if (ret == SUCCESS_CODE) {
+            ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+        }
     } while (0);
     GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
 
+    CLEAR_ARRAY(ems);
+    memset_s(entropy, entropyLen, 0, entropyLen);
     SRAM_FREE(entropy);
 #else
     GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
@@ -1290,7 +1315,8 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         }
         ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
 #ifdef BTC_ONLY
-        if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
+        if (ret == SUCCESS_CODE &&
+                strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
             AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
         }
 #endif
@@ -1358,7 +1384,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
         }
         break;
     }
-    g_passwordVerifyResult.signal = param;
+    g_passwordVerifyResult.signal = *param;
     GuiApiEmitSignal(signal, (void *)&g_passwordVerifyResult, sizeof(g_passwordVerifyResult));
 }
 
@@ -1580,7 +1606,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
-        printf("transaction check fail, error code: %d, error msg: %s\r\n", g_checkResult->error_code, g_checkResult->error_message);
+        printf("transaction check fail, error code: %d, error msg: %s\r\n", (int)g_checkResult->error_code, g_checkResult->error_message);
         GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
     }
@@ -1790,64 +1816,99 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
 #ifdef WEB3_VERSION
 static int32_t ModelRsaGenerateKeyPair(const void *inData, uint32_t inDataLen);
 
-void GuiModelRsaGenerateKeyPair(void)
+void GuiModelRsaGenerateKeyPair(bool allowGenerate)
 {
-    AsyncExecute(ModelRsaGenerateKeyPair, NULL, 0);
+    AsyncExecute(ModelRsaGenerateKeyPair, &allowGenerate, sizeof(allowGenerate));
 }
 
 static int32_t ModelRsaGenerateKeyPair(const void *inData, uint32_t inDataLen)
 {
-    UNUSED(inData);
-    UNUSED(inDataLen);
-    return RsaGenerateKeyPair(true);
+    bool allowGenerate = inData != NULL && inDataLen == sizeof(bool) && *(const bool *)inData;
+    return RsaGenerateKeyPair(true, allowGenerate, NULL);
 }
 
-int32_t RsaGenerateKeyPair(bool needEmitSignal)
+int32_t RsaGenerateKeyPair(bool needEmitSignal, bool allowGenerate, SimpleResponse_c_char **publicKeyOut)
 {
+    if (publicKeyOut != NULL) {
+        *publicKeyOut = NULL;
+    }
     bool lockState = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     if (needEmitSignal) {
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, NULL, 0);
+        bool loading = !allowGenerate;
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_START, &loading, sizeof(loading));
     }
 
     int32_t ret = SUCCESS_CODE;
     uint8_t seed[SEED_LEN] = {0};
     SimpleResponse_u8* secret = NULL;
+    SimpleResponse_c_char *publicKey = NULL;
+    SimpleResponse_c_char *address = NULL;
 
     do {
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-
+        ret = LoadAndValidateArKey(SecretCacheGetPassword(), NULL, &publicKey);
+        if (ret == SUCCESS_CODE) {
+            break;
+        }
+        if (!ArKeyNeedsSetup(ret) || !allowGenerate) {
+            break;
+        }
         ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         CHECK_ERRCODE_BREAK("get account seed", ret);
-
-        secret = generate_arweave_secret(seed, len);
-        CHECK_ERRCODE_BREAK("generate arweave secret", secret->error_code);
+        int seedLen = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+        secret = generate_arweave_secret(seed, seedLen);
+        if (secret == NULL || secret->error_code != SUCCESS_CODE || secret->data == NULL) {
+            ret = secret != NULL && secret->error_code != SUCCESS_CODE ? secret->error_code : ERR_GENERAL_FAIL;
+            break;
+        }
 
         ret = FlashWriteRsaPrimes(secret->data);
         CHECK_ERRCODE_BREAK("flash write rsa primes", ret);
 
-        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
+        if (needEmitSignal) {
+            GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_GENERATE_ADDRESS, NULL, 0);
+        }
 
-        ret = AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), true);
-        CHECK_ERRCODE_BREAK("account public info switch", ret);
+        ret = LoadAndValidateArKey(SecretCacheGetPassword(), NULL, &publicKey);
+        CHECK_ERRCODE_BREAK("validate AR key", ret);
 
         RecalculateManageWalletState();
     } while (0);
 
+    if (ret == SUCCESS_CODE && needEmitSignal) {
+        address = arweave_get_address(publicKey->data);
+        if (address == NULL || address->error_code != SUCCESS_CODE || address->data == NULL ||
+                strnlen_s(address->data, 44) != 43) {
+            ret = ERR_GENERAL_FAIL;
+        }
+    }
+    if (ret == SUCCESS_CODE && publicKeyOut != NULL) {
+        *publicKeyOut = publicKey;
+        publicKey = NULL;
+    }
+    if (publicKey != NULL) {
+        free_simple_response_c_char(publicKey);
+    }
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    if (secret != NULL) {
+        if (secret->error_code == SUCCESS_CODE && secret->data != NULL) {
+            memset_s(secret->data, SPI_FLASH_RSA_ORIGIN_DATA_SIZE, 0, SPI_FLASH_RSA_ORIGIN_DATA_SIZE);
+        }
+        free_simple_response_u8(secret);
+    }
+    SetLockScreen(lockState);
+    ClearLockScreenTime();
     if (needEmitSignal) {
         if (ret == SUCCESS_CODE) {
-            GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, NULL, 0);
+            GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD_PASS, address->data, 44);
         } else {
             GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WRITE_FAIL, &ret, sizeof(ret));
         }
         GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_HIDE_LOADING, NULL, 0);
     }
-    memset_s(seed, sizeof(seed), 0, sizeof(seed));
-    if (secret != NULL) {
-        free_simple_response_u8(secret);
+    if (address != NULL) {
+        free_simple_response_c_char(address);
     }
-    SetLockScreen(lockState);
-    ClearLockScreenTime();
     return ret;
 }
 #endif

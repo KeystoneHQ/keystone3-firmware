@@ -1,6 +1,6 @@
 /* USER CODE BEGIN Header */
 /*
- * FreeRTOS Kernel V10.0.1
+ * FreeRTOS Kernel V11.3.0
  * Copyright (C) 2017 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -43,7 +43,7 @@
  *----------------------------------------------------------*/
 
 /* USER CODE BEGIN Includes */
-/* Section where include file can be added */
+#include "rtos_expand.h"
 /* USER CODE END Includes */
 
 /* Ensure definitions are only used by the compiler, and not by the assembler. */
@@ -62,10 +62,22 @@ extern uint32_t SystemCoreClock;
 #define configTICK_RATE_HZ                          ((TickType_t)1000)
 #define configMAX_PRIORITIES                        ( 56 )
 #define configMINIMAL_STACK_SIZE                    ((uint16_t)128)
-#define configTOTAL_HEAP_SIZE                       ((size_t)1024 * 440)
+#define configCHECK_FOR_STACK_OVERFLOW              2
+#define configTOTAL_HEAP_SIZE                       ((size_t)1024 * 424)
 #define configMAX_TASK_NAME_LEN                     ( 16 )
 #define configUSE_TRACE_FACILITY                    1
 #define configUSE_16_BIT_TICKS                      0
+#define configRECORD_STACK_HIGH_ADDRESS             1
+#define configTOTAL_MPU_REGIONS                     8
+#define configUSE_MPU_WRAPPERS_V1                   0
+#define configSYSTEM_CALL_STACK_SIZE                128
+#define configPROTECTED_KERNEL_OBJECT_POOL_SIZE     128
+#define configENABLE_ACCESS_CONTROL_LIST            1
+#define configUSE_APPLICATION_DEFINED_SYSTEM_CALL_FILTER 1
+#define configENFORCE_SYSTEM_CALLS_FROM_KERNEL_ONLY 1
+#define configALLOW_UNPRIVILEGED_CRITICAL_SECTIONS  0
+#define configAPPLICATION_ALLOCATED_HEAP            1
+#define configALLOW_UNPRIVILEGED_PERIPHERAL_ACCESS  0
 #define configUSE_MUTEXES                           1
 #define configQUEUE_REGISTRY_SIZE                   8
 #define configUSE_RECURSIVE_MUTEXES                 1
@@ -135,7 +147,27 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
 /* USER CODE BEGIN 1 */
-#define configASSERT( x ) if ((x) == 0) {printf("assert file=%s, line=%d\r\n", __FILE__, __LINE__); taskDISABLE_INTERRUPTS(); for( ;; );}
+#define configASSERT( x )                                                        \
+    do {                                                                         \
+        if( ( x ) == 0 ) {                                                       \
+            uint32_t ulAssertIpsr;                                               \
+            int32_t lAssertIrq;                                                  \
+            uint32_t ulAssertPriority = 0xFFFFFFFFUL;                            \
+            __asm volatile ( "mrs %0, ipsr" : "=r" ( ulAssertIpsr )::"memory" ); \
+            lAssertIrq = ( int32_t ) ulAssertIpsr - 16;                          \
+            if( lAssertIrq >= 0 ) {                                              \
+                ulAssertPriority = ( ( volatile uint8_t * ) 0xE000E400UL )[ lAssertIrq ]; \
+            }                                                                    \
+            printf( "assert file=%s, line=%d, ipsr=%lu, irq=%ld, "              \
+                    "prio=0x%02lX, max_syscall=0x%02X, aircr=0x%08lX\r\n",      \
+                    __FILE__, __LINE__, ( unsigned long ) ulAssertIpsr,           \
+                    ( long ) lAssertIrq, ( unsigned long ) ulAssertPriority,      \
+                    ( unsigned int ) configMAX_SYSCALL_INTERRUPT_PRIORITY,       \
+                    ( unsigned long ) ( *( ( volatile uint32_t * ) 0xE000ED0CUL ) ) ); \
+            taskDISABLE_INTERRUPTS();                                            \
+            for( ;; );                                                           \
+        }                                                                        \
+    } while( 0 )
 /* USER CODE END 1 */
 
 /* Definitions that map the FreeRTOS port interrupt handlers to their CMSIS

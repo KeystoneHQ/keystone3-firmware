@@ -34,7 +34,7 @@ typedef enum {
     WALLET_LIST_SPARROW,
     WALLET_LIST_UNISAT,
     WALLET_LIST_IMTOKEN,
-    WALLET_LIST_CORE,
+    WALLET_LIST_RESERVED_1,
     WALLET_LIST_BLOCK_WALLET,
     WALLET_LIST_ZAPPER,
     WALLET_LIST_HELIUM,
@@ -44,7 +44,7 @@ typedef enum {
     WALLET_LIST_KEPLR,
     WALLET_LIST_MINT_SCAN,
     WALLET_LIST_WANDER,
-    WALLET_LIST_BEACON,
+    WALLET_LIST_RESERVED_2,
     WALLET_LIST_VESPR,
     WALLET_LIST_XBULL,
     WALLET_LIST_FEWCHA,
@@ -146,9 +146,14 @@ ETHAccountType GetMetamaskAccountType(void);
 SOLAccountType GetSolflareAccountType(void);
 SOLAccountType GetHeliumAccountType(void);
 void GuiPrepareArConnectWalletView(void);
-void GuiSetupArConnectWallet(void);
+int32_t GuiSetupArConnectWallet(SimpleResponse_c_char **publicKeyOut);
 void GuiConnectWalletPasswordErrorCount(void *param);
+#ifdef WEB3_VERSION
 void GuiConnectShowRsaSetupasswordHintbox(void);
+void GuiConnectShowArSetupNotice(int32_t status);
+#else
+void GuiConnectShowRsaSetupasswordHintbox(void);
+#endif
 UREncodeResult *GuiGetNaboxData(void);
 #endif
 #endif /* _GUI_CONNECT_WALLET_WIDGETS_H */

@@ -174,7 +174,7 @@ static lv_obj_t *CreateOverviewMessageTitleView(lv_obj_t *parent, size_t index, 
     }
 
     char title[32] = {0};
-    snprintf_s(title, sizeof(title), "Message %zu", index + 1);
+    snprintf_s(title, sizeof(title), "Message %u", (unsigned int)(index + 1));
 
     lv_obj_t *label = GuiCreateTextLabel(container, title);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
@@ -336,7 +336,7 @@ static lv_obj_t *CreateDetailsDataViewView(lv_obj_t *parent, DisplayTonMessage *
 
     char title[32] = {0};
     if (showTitle) {
-        snprintf_s(title, sizeof(title), "Data View %zu", index + 1);
+        snprintf_s(title, sizeof(title), "Data View %u", (unsigned int)(index + 1));
     }
 
     lv_obj_t *label = GuiCreateTextLabel(container, showTitle ? title : _("Data View"));

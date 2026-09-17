@@ -89,6 +89,10 @@ typedef enum {
 
     ERR_ZCASH_INVALID_ACCOUNT_INDEX,
 
+    ERR_AR_NOT_SETUP,
+    ERR_AR_AUTH_REQUIRED,
+    ERR_AR_DATA_INVALID,
+    ERR_AR_STORAGE,
     ERR_END,
 } Error_Code;
 
@@ -99,12 +103,11 @@ typedef struct  {
 
 const char *GetErrorMessage(Error_Code errCode);
 
-#define CHECK_ERRCODE_BREAK(content, ret)       {if (ret != SUCCESS_CODE) {printf("%s err,0x%X,line=%d\r\n", content, ret, __LINE__); break; }}
+#define CHECK_ERRCODE_BREAK(content, ret)       {if (ret != SUCCESS_CODE) {printf("%s err,0x%X,line=%d\r\n", content, (unsigned int)ret, __LINE__); break; }}
 #define CHECK_ERRCODE_RETURN(ret)               {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return; }}
 #define CHECK_ERRCODE_RETURN_NULL(ret)          {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return NULL; }}
 #define CHECK_ERRCODE_RETURN_INT(ret)           {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return ret; }}
 #define PRINT_ERRCODE(ret)                      {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); }}
 
 #endif
-
 

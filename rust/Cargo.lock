@@ -235,7 +235,9 @@ dependencies = [
  "ed25519-bip32-core",
  "hex",
  "keystore",
+ "minicbor",
  "rust_tools",
+ "serde_json",
  "thiserror-core",
  "ur-registry",
 ]
@@ -920,7 +922,7 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "09dc0086e469182132244e9b8d313a0742e1132da43a08c24b9dd3c18e0faf3a"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -968,8 +970,8 @@ dependencies = [
 
 [[package]]
 name = "cardano-serialization-lib"
-version = "13.2.0"
-source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=keystone-0.1.7#1822d2223a105aaea5feee6ec888ff3cc74c999d"
+version = "15.0.1"
+source = "git+https://git@github.com/KeystoneHQ/cardano-serialization-lib.git?tag=15.0.1-no_std#30bf508dba45878f97886f21e470fbf3b847de7c"
 dependencies = [
  "bech32 0.9.1",
  "cbor_event",
@@ -980,6 +982,7 @@ dependencies = [
  "digest 0.9.0",
  "ed25519-bip32-core",
  "getrandom 0.2.16",
+ "hashbrown 0.14.5",
  "hex",
  "itertools 0.10.5",
  "js-sys",
@@ -987,7 +990,9 @@ dependencies = [
  "num",
  "num-bigint",
  "num-integer",
+ "num-traits",
  "rand",
+ "rand_chacha",
  "rand_os",
  "ritelinked",
  "schemars",
@@ -1045,9 +1050,9 @@ dependencies = [
 
 [[package]]
 name = "cfg-if"
-version = "1.0.1"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9555578bc9e57714c812a1f84e4fc5b4d21fcb063490c624de019f7464c91268"
+checksum = "9330f8b2ff13f34540b44e946ef35111825727b38d33286ef986142615121801"
 
 [[package]]
 name = "cfg_aliases"
@@ -1081,9 +1086,9 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.4.39"
+version = "0.4.45"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7e36cc9d416881d2e24f9a963be5fb1cd90966419ac844274161d10488b3e825"
+checksum = "1aa79e62e7697b8e29b513a68abacf485adcd1fe8284a4316c5ae868e6633327"
 dependencies = [
  "num-traits",
  "serde",
@@ -1151,7 +1156,7 @@ version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0fa961b519f0b462e3a3b4a34b64d119eeaca1d59af726fe450bbba07a9fc0a1"
 dependencies = [
- "thiserror 2.0.12",
+ "thiserror 2.0.20",
 ]
 
 [[package]]
@@ -3860,6 +3865,7 @@ dependencies = [
  "app_xrp",
  "app_zcash",
  "base64 0.11.0",
+ "bcs",
  "bitcoin",
  "bitcoin_hashes 0.14.0",
  "cbc",
@@ -3873,6 +3879,7 @@ dependencies = [
  "getrandom 0.2.16",
  "hex",
  "itertools 0.13.0",
+ "keystone-ur",
  "keystore",
  "minicbor",
  "no_std_io2",
@@ -3880,6 +3887,7 @@ dependencies = [
  "rand_core 0.6.4",
  "rsa",
  "rust_tools",
+ "sandbox_parser",
  "serde_json",
  "sha1",
  "sim_qr_reader",
@@ -3983,6 +3991,10 @@ name = "ryu"
 version = "1.0.23"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9774ba4a74de5f7b1c1451ed6cd5285a32eddb5cccb8cc655a4e50009e06477f"
+
+[[package]]
+name = "sandbox_parser"
+version = "0.1.0"
 
 [[package]]
 name = "sapling-crypto"
@@ -4489,6 +4501,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "syn"
+version = "3.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "53e9bae58849f64dfa4f5d5ae372c8341f7305f82a3868709269343628b659a3"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "unicode-ident",
+]
+
+[[package]]
 name = "tap"
 version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4536,11 +4559,11 @@ dependencies = [
 
 [[package]]
 name = "thiserror"
-version = "2.0.12"
+version = "2.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "567b8a2dae586314f7be2a752ec7474332959c6460e02bde30d702a66d488708"
+checksum = "ec86235f5fcc2a73650310756d2ac5b138a5780bbbdfae3eeccec992c435ba4f"
 dependencies = [
- "thiserror-impl 2.0.12",
+ "thiserror-impl 2.0.20",
 ]
 
 [[package]]
@@ -4576,13 +4599,13 @@ dependencies = [
 
 [[package]]
 name = "thiserror-impl"
-version = "2.0.12"
+version = "2.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f7cf42b4507d8ea322120659672cf1b9dbb93f8f2d4ecfd6e51350ff5b17a1d"
+checksum = "bc04cd3e1236dd4a98afca4569f2deb3f120e5422a4023be2cb683f8486292af"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 2.0.104",
+ "syn 3.0.3",
 ]
 
 [[package]]
@@ -5529,7 +5552,7 @@ dependencies = [
  "secp256k1",
  "sha1",
  "sha2 0.10.9",
- "thiserror 2.0.12",
+ "thiserror 2.0.20",
 ]
 
 [[package]]

@@ -220,7 +220,7 @@ void GuiAboutInfoEntranceWidget(lv_obj_t *parent)
 
     titleLabel = GuiCreateTextLabel(parent, _("about_info_battery_voltage"));
     contentLabel = GuiCreateNoticeLabel(parent, "");
-    lv_label_set_text_fmt(contentLabel, "%umV", GetBatteryMilliVolt());
+    lv_label_set_text_fmt(contentLabel, "%umV", (unsigned int)GetBatteryMilliVolt());
     table[0].obj = titleLabel;
     table[0].align = LV_ALIGN_DEFAULT;
     table[0].position.x = 24;
@@ -259,7 +259,7 @@ void GuiAboutWidgetsLogExport(bool en, int32_t errCode)
             desc = _("about_info_result_export_failed_desc_no_space");
         }
     }
-    printf("errcode = %d\n", errCode);
+    printf("errcode = %d\n", (int)errCode);
     g_noticeHintBox = GuiCreateResultHintbox(386, src,
                       title, desc, NULL, DARK_GRAY_COLOR, right, rightColor);
     lv_obj_t *descLabel = lv_obj_get_child(g_noticeHintBox, 0);
@@ -284,9 +284,9 @@ static void LogExportHandler(lv_event_t *e)
     char sn[BUFFER_SIZE_32] = {0};
     char buff[BUFFER_SIZE_128] = {0};
     GetSerialNumber(sn);
-    snprintf_s(logName, sizeof(logName), "0:Log_%s_%d.bin", sn, GetCurrentStampTime());
+    snprintf_s(logName, sizeof(logName), "0:Log_%s_%d.bin", sn, (int)GetCurrentStampTime());
     LogSetLogName(logName);
-    snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, GetCurrentStampTime());
+    snprintf_s(logName, sizeof(logName), "Log_%s_%d.bin", sn, (int)GetCurrentStampTime());
     snprintf_s(buff, sizeof(buff), "%s\n%s", _("about_info_export_file_name"), logName);
     g_noticeHintBox = GuiCreateResultHintbox(386, &imgSdCardL,
                       _("about_info_export_to_sdcard"), buff, _("Cancel"), DARK_GRAY_COLOR, _("Export"), ORANGE_COLOR);

@@ -1,5 +1,6 @@
-#include "define.h"
 #include "gui_chain.h"
+
+#include "define.h"
 #include "keystore.h"
 #include "user_memory.h"
 #ifdef COMPILE_SIMULATOR
@@ -93,7 +94,7 @@ static const ViewHandlerEntry g_viewHandlerMap[] = {
 
     {CardanoSignTxHash, GuiGetAdaSignTxHashQrCodeData, GuiGetAdaSignTxHashQrCodeData, GuiGetAdaSignTxHashCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_TX_HASH},
     {CardanoSignData, GuiGetAdaSignSignDataQrCodeData, GuiGetAdaSignSignDataQrCodeData, GuiGetAdaSignDataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
-    {CardanoSignCip8Data, GuiGetAdaSignSignCip8DataQrCodeData, GuiGetAdaSignSignCip8DataQrCodeData, GuiGetAdaSignDataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
+    {CardanoSignCip8Data, GuiGetAdaSignSignCip8DataQrCodeData, GuiGetAdaSignSignCip8DataQrCodeData, GuiGetAdaSignCip8DataCheckResult, CHAIN_ADA, REMAPVIEW_ADA_SIGN_DATA},
     {CardanoCatalystVotingRegistration, GuiGetAdaSignCatalystVotingRegistrationQrCodeData, GuiGetAdaSignCatalystVotingRegistrationQrCodeData, GuiGetAdaCatalystCheckResult, CHAIN_ADA, REMAPVIEW_ADA_CATALYST},
     {CardanoTx, GuiGetAdaSignQrCodeData, GuiGetAdaSignUrDataUnlimited, GuiGetAdaCheckResult, CHAIN_ADA, REMAPVIEW_ADA},
 
@@ -148,7 +149,9 @@ GuiChainCoinType ViewTypeToChainTypeSwitch(uint8_t viewType)
 #ifdef WEB3_VERSION
 bool IsMessageType(uint8_t type)
 {
-    return type == EthPersonalMessage || type == EthTypedData || type == TronPersonalMessage || IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData || type == CardanoSignCip8Data;
+    return type == EthPersonalMessage || type == EthTypedData || type == TronPersonalMessage ||
+           IsCosmosMsg(type) || type == SolanaMessage || IsAptosMsg(type) ||
+           IsIotaMsg(type) || type == BtcMsg || type == ArweaveMessage || type == CardanoSignData || type == CardanoSignCip8Data;
 }
 
 bool isCatalystVotingRegistration(uint8_t type)

@@ -105,6 +105,7 @@ typedef struct {
 extern CDC_Data_TypeDef CDCData;
 
 extern USBD_Class_cb_TypeDef USBD_CDC_cb;
+void USBD_cdc_TxPump(void);
 
 #endif // __USB_CDC_CORE_H_
 

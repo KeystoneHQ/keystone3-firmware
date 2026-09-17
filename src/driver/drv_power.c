@@ -64,5 +64,5 @@ void PowerTest(int argc, char *argv[])
             line = __LINE__;
         }
     }
-    printf("power test,execute line=%d\r\n", line);
+    printf("power test,execute line=%d\r\n", (int)line);
 }

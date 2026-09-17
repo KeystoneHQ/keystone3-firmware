@@ -1,9 +1,12 @@
 #include "drv_mpu.h"
-#include "drv_otp.h"
 
-static bool g_otpProtect = false;
 extern uint32_t _sbss;
 extern uint32_t _ebss;
+
+static void MpuConfiguration(MPU_Region_InitTypeDef *mpuConfig);
+static void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t regionNum,
+                             uint8_t disableExec, uint8_t accessPermission,
+                             uint8_t shareable, uint8_t cacheable, uint8_t bufferable);
 
 static uint8_t MpuRegionSizeField(uint32_t regionSize)
 {
@@ -32,23 +35,23 @@ static void ConfigureMPUForSramNoExec(void)
                      MPU_ACCESS_BUFFERABLE);
 }
 
-void MpuDisable(void)
+static void MpuDisable(void)
 {
     __DMB();
-    SCB->SHCSR &= SCB_SHCSR_MEMFAULTENA_Msk;
-    MPU->CTRL = 0;
+    MPU->CTRL = 0U;
+    __DSB();
+    __ISB();
 }
 
-void MpuEnable(uint32_t MPU_Control)
+static void MpuEnable(uint32_t mpuControl)
 {
-    MPU->CTRL = MPU_Control | MPU_CTRL_ENABLE_Msk;
+    MPU->CTRL = mpuControl | MPU_CTRL_ENABLE_Msk;
     SCB->SHCSR |= SCB_SHCSR_MEMFAULTENA_Msk;
     __DSB();
     __ISB();
 }
 
-
-void MpuConfiguration(MPU_Region_InitTypeDef* mpuConfig)
+static void MpuConfiguration(MPU_Region_InitTypeDef *mpuConfig)
 {
     MPU->RNR = mpuConfig->Number;
 
@@ -70,8 +73,9 @@ void MpuConfiguration(MPU_Region_InitTypeDef* mpuConfig)
 }
 
 
-void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t regionNum, uint8_t disableExec,
-                      uint8_t accessPermission, uint8_t shareable, uint8_t cacheable, uint8_t bufferable)
+static void MpuSetProtection(uint32_t baseAddress, uint32_t regionSize, uint32_t regionNum,
+                             uint8_t disableExec, uint8_t accessPermission,
+                             uint8_t shareable, uint8_t cacheable, uint8_t bufferable)
 {
     MPU_Region_InitTypeDef  mpu;
 
@@ -118,23 +122,4 @@ void ConfigureMPUForBSS(void)
 void MpuInit(void)
 {
     ConfigureMPUForSramNoExec();
-    MpuSetOtpProtection(true);
-}
-
-bool GetOtpProtection(void)
-{
-    return g_otpProtect;
-}
-
-void MpuSetOtpProtection(bool noAccess)
-{
-    uint8_t accessPermission = noAccess ? MPU_REGION_NO_ACCESS : MPU_REGION_FULL_ACCESS;
-    MpuSetProtection(OTP_ADDR_BASE,
-                     MPU_REGION_SIZE_1KB,
-                     MPU_REGION_NUMBER1,
-                     MPU_INSTRUCTION_ACCESS_DISABLE,
-                     accessPermission,
-                     MPU_ACCESS_SHAREABLE,
-                     MPU_ACCESS_CACHEABLE,
-                     MPU_ACCESS_BUFFERABLE);
 }

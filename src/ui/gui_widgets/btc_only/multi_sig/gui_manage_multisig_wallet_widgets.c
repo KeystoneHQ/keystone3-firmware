@@ -209,8 +209,8 @@ static void CreateCoSignerDetailWidget(lv_obj_t *parent)
     lv_obj_align(cont, LV_ALIGN_DEFAULT, 36, 0);
 
     for (int i = 0; i < g_multiSigWallet->total; i++) {
-        char buff[8] = {0};
-        snprintf(buff, sizeof(buff), "%d/%d", i + 1, g_multiSigWallet->total);
+        char buff[BUFFER_SIZE_32] = {0};
+        snprintf(buff, sizeof(buff), "%u/%u", (unsigned int)(i + 1), (unsigned int)g_multiSigWallet->total);
         lv_obj_t *label = GuiCreateIllustrateLabel(cont, buff);
         lv_obj_align(label, LV_ALIGN_DEFAULT, 24, i * 204 + 16);
         lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);

@@ -30,6 +30,9 @@ use super::types::bytes::Bytes;
 /// Custom types for `TypedData`
 pub type Types = BTreeMap<String, Vec<Eip712DomainType>>;
 
+const MAX_TYPED_DATA_DISPLAY_BYTES: usize = 4096;
+const MAX_TYPED_DATA_DISPLAY_NODES: usize = 64;
+
 /// Pre-computed value of the following expression:
 ///
 /// `keccak256("EIP712Domain(string name,string version,uint256 chainId,address
@@ -332,9 +335,8 @@ impl TryFrom<TypedData> for StructTypedDta {
     type Error = Eip712Error;
 
     fn try_from(value: TypedData) -> Result<Self, Self::Error> {
+        let message = build_bounded_display_message(&value.message)?;
         let message_hash = value.struct_hash()?;
-        let message = serde_json::to_string_pretty(&value.message)
-            .map_err(|e| Eip712Error::Message(e.to_string()))?;
         let domain_separator = value.domain.separator(Some(&value.types));
 
         Ok(StructTypedDta {
@@ -367,6 +369,52 @@ impl TryFrom<TypedData> for StructTypedDta {
             safe_tx_hash: String::new(),
         })
     }
+}
+
+fn build_bounded_display_message(
+    message: &BTreeMap<String, serde_json::Value>,
+) -> Result<String, Eip712Error> {
+    fn consume_node(value: &serde_json::Value, remaining: &mut usize) -> bool {
+        if *remaining == 0 {
+            return false;
+        }
+        *remaining -= 1;
+
+        match value {
+            serde_json::Value::Array(values) => {
+                values.iter().all(|value| consume_node(value, remaining))
+            }
+            serde_json::Value::Object(values) => {
+                values.values().all(|value| consume_node(value, remaining))
+            }
+            _ => true,
+        }
+    }
+
+    let mut remaining = MAX_TYPED_DATA_DISPLAY_NODES;
+    if remaining == 0 {
+        return Err(Eip712Error::Message(
+            "Typed data display node limit exceeded".to_string(),
+        ));
+    }
+    remaining -= 1;
+    if !message
+        .values()
+        .all(|value| consume_node(value, &mut remaining))
+    {
+        return Err(Eip712Error::Message(
+            "Typed data display node limit exceeded".to_string(),
+        ));
+    }
+
+    let display =
+        serde_json::to_string_pretty(message).map_err(|e| Eip712Error::Message(e.to_string()))?;
+    if display.len() > MAX_TYPED_DATA_DISPLAY_BYTES {
+        return Err(Eip712Error::Message(
+            "Typed data display size limit exceeded".to_string(),
+        ));
+    }
+    Ok(display)
 }
 
 /// According to the MetaMask implementation,
@@ -793,6 +841,46 @@ mod tests {
     extern crate std;
 
     use super::*;
+
+    #[test]
+    fn test_typed_data_display_size_budget() {
+        let mut accepted = BTreeMap::new();
+        accepted.insert(
+            "value".to_string(),
+            serde_json::Value::String("D".repeat(4000)),
+        );
+        assert!(build_bounded_display_message(&accepted).is_ok());
+
+        let mut rejected = BTreeMap::new();
+        rejected.insert(
+            "value".to_string(),
+            serde_json::Value::String("D".repeat(4096)),
+        );
+        let error = build_bounded_display_message(&rejected).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("Typed data display size limit exceeded"));
+    }
+
+    #[test]
+    fn test_typed_data_display_node_budget() {
+        let values = (0..62)
+            .map(|value| serde_json::Value::from(value as u64))
+            .collect::<Vec<_>>();
+        let mut accepted = BTreeMap::new();
+        accepted.insert("values".to_string(), serde_json::Value::Array(values));
+        assert!(build_bounded_display_message(&accepted).is_ok());
+
+        let values = (0..63)
+            .map(|value| serde_json::Value::from(value as u64))
+            .collect::<Vec<_>>();
+        let mut rejected = BTreeMap::new();
+        rejected.insert("values".to_string(), serde_json::Value::Array(values));
+        let error = build_bounded_display_message(&rejected).unwrap_err();
+        assert!(error
+            .to_string()
+            .contains("Typed data display node limit exceeded"));
+    }
 
     #[test]
     fn test_full_domain() {

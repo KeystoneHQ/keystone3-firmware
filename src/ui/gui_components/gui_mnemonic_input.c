@@ -37,17 +37,22 @@ static void CompleteSlip39Import(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb);
 static void ShowShareSuccessDialog(void);
 static void UpdateSliceLabels(MnemonicKeyBoard_t *mkb);
 
-char *GuiMnemonicGetTrueWord(const char *word, char *trueWord)
+char *GuiMnemonicGetTrueWord(const char *word, char *trueWord, size_t trueWordMaxLen)
 {
-    char *temp = trueWord;
+    if (trueWordMaxLen == 0) {
+        return trueWord;
+    }
+
+    size_t written = 0;
     for (int i = 0; i < strnlen_s(word, GUI_KEYBOARD_CANDIDATE_WORDS_LEN); i++) {
-        if (word[i] >= 'a' && word[i] <= 'z') {
-            *temp++ = word[i];
-        }
         if (word[i] == '#') {
             break;
         }
+        if (word[i] >= 'a' && word[i] <= 'z' && written + 1 < trueWordMaxLen) {
+            trueWord[written++] = word[i];
+        }
     }
+    trueWord[written] = '\0';
     return trueWord;
 }
 
@@ -59,7 +64,7 @@ static void CollectMnemonicWords(MnemonicKeyBoard_t *mkb, char *mnemonic, size_t
     for (int i = 0, j = 0; i < mkb->wordCnt; j++, i += 3) {
         for (int k = i; k < i + 3; k++) {
             char trueBuf[12] = {0};
-            GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, k), trueBuf);
+            GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, k), trueBuf, sizeof(trueBuf));
             strcat_s(tempMnemonic, bufferSize, trueBuf);
             strcat_s(tempMnemonic, bufferSize, " ");
         }
@@ -116,7 +121,7 @@ void ImportShareNextSlice(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
                 mkb->threShold = threShold;
                 for (int i = 0; i < 3; i++) {
                     char trueBuf[12] = {0};
-                    GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, i), trueBuf);
+                    GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, i), trueBuf, sizeof(trueBuf));
                     strcat_s(g_sliceHeadWords, sizeof(g_sliceHeadWords), trueBuf);
                     if (i == 2) {
                         break;
@@ -211,7 +216,7 @@ bool GuiMnemonicInputCheck(MnemonicKeyBoard_t *mkb, KeyBoard_t *letterKb)
     for (int i = 0; i < mkb->wordCnt; i++) {
         memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
         const char *text = lv_btnmatrix_get_btn_text(mkb->btnm, i);
-        GuiMnemonicGetTrueWord(text, trueText);
+        GuiMnemonicGetTrueWord(text, trueText, sizeof(trueText));
         if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
             return false;
         }
@@ -236,7 +241,7 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
     } else if (strlen(word) == 0) {
         currentId = lv_btnmatrix_get_selected_btn(obj);
         const char *currText = lv_btnmatrix_get_btn_text(obj, currentId);
-        GuiMnemonicGetTrueWord(currText, trueText);
+        GuiMnemonicGetTrueWord(currText, trueText, sizeof(trueText));
         if (strlen(trueText) > 0 && GuiWordsWhole(trueText)) {
             needNext = true;
         }
@@ -251,7 +256,7 @@ static void GuiMnemonicUpdateNextBtn(MnemonicKeyBoard_t *mkb, KeyBoard_t *letter
         memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
         currentId = lv_btnmatrix_get_selected_btn(obj);
         const char *nextText = lv_btnmatrix_get_btn_text(obj, currentId);
-        GuiMnemonicGetTrueWord(nextText, trueText);
+        GuiMnemonicGetTrueWord(nextText, trueText, sizeof(trueText));
         if (searchTrie(rootTree, trueText) == 1) { // whole word
             GuiSetLetterBoardNext(letterKb);
         }
@@ -290,7 +295,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
 
         // 1.Determine if the current word is complete
         const char *currText = lv_btnmatrix_get_btn_text(obj, currentId);
-        GuiMnemonicGetTrueWord(currText, trueText);
+        GuiMnemonicGetTrueWord(currText, trueText, sizeof(trueText));
         GuiSetMnemonicCache(letterKb, trueText);
         if (strlen(trueText) > 0 && GuiWordsWhole(trueText)) {
             GuiSetLetterBoardNext(letterKb);
@@ -306,7 +311,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
             memset_s(trueText, sizeof(trueText), 0, sizeof(trueText));
             const char *lastText = lv_btnmatrix_get_btn_text(obj, i);
             // const char *lastText = lv_btnmatrix_get_btn_text(obj, mkb->currentId);
-            GuiMnemonicGetTrueWord(lastText, trueText);
+            GuiMnemonicGetTrueWord(lastText, trueText, sizeof(trueText));
             if (strlen(trueText) > 0 && !GuiWordsWhole(trueText)) {
                 char buf[BUFFER_SIZE_32] = { 0 };
                 snprintf_s(buf, BUFFER_SIZE_32, "#FF0000 %s#", trueText);
@@ -345,7 +350,7 @@ void GuiMnemonicInputHandler(lv_event_t *e)
                 char tempBuf[32] = {0};
                 for (int i = 0; i < 3; i++) {
                     char trueBuf[12] = {0};
-                    GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, i), trueBuf);
+                    GuiMnemonicGetTrueWord(lv_btnmatrix_get_btn_text(mkb->btnm, i), trueBuf, sizeof(trueBuf));
                     strcat(tempBuf, trueBuf);
                     if (i == 2) {
                         break;

@@ -1,3 +1,4 @@
+#include "secret_cache.h"
 #include "gui_style.h"
 #include "gui_obj.h"
 #include "gui_button.h"
@@ -617,7 +618,7 @@ static void RefreshQrCode(void)
     CutAndFormatString(string, sizeof(string), addressDataItem.address, 20);
 #endif
     lv_label_set_text(g_multiAccountsReceiveWidgets.addressLabel, string);
-    lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "%s-%u", addressPrefix, (addressDataItem.index));
+    lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.addressCountLabel, "%s-%u", addressPrefix, (unsigned int)(addressDataItem.index));
 }
 
 static void RefreshSwitchAddress(void)
@@ -639,7 +640,7 @@ static void RefreshSwitchAddress(void)
             }
         }
 #endif
-        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", addressPrefix, (addressDataItem.index));
+        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", addressPrefix, (unsigned int)(addressDataItem.index));
         char string[128] = {0};
         CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
@@ -811,6 +812,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     lv_obj_draw_part_dsc_t *dsc;
     const char *txt;
     char input[16];
+    unsigned int parsedIndex;
     uint32_t len;
     uint64_t longInt;
 
@@ -819,12 +821,14 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
         strcpy_s(input, sizeof(input), lv_label_get_text(g_multiAccountsReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
-                sscanf(input, "%u", &g_tmpIndex);
-                g_showIndex = g_tmpIndex / 5 * 5;
-                RefreshSwitchAddress();
-                lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
-                g_inputAccountValid = false;
-                UpdateConfirmIndexBtn();
+                if (sscanf(input, "%u", &parsedIndex) == 1) {
+                    g_tmpIndex = parsedIndex;
+                    g_showIndex = g_tmpIndex / 5 * 5;
+                    RefreshSwitchAddress();
+                    lv_obj_add_flag(g_multiAccountsReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                    g_inputAccountValid = false;
+                    UpdateConfirmIndexBtn();
+                }
             }
         } else if (strcmp(txt, "-") == 0) {
             len = strlen(input);
@@ -1103,7 +1107,7 @@ static void RefreshSwitchAccount(void)
         if (g_chainCard == HOME_WALLET_CARD_MONERO) {
             ModelGetAddress(index, &addressDataItem, 1);
             bool isPrimaryAccount = index == 0;
-            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", isPrimaryAccount ? _("primary_account_head") : _("account_head"), (addressDataItem.index));
+            lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", isPrimaryAccount ? _("primary_account_head") : _("account_head"), (unsigned int)addressDataItem.index);
             char string[128] = {0};
             CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
             lv_label_set_text(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressLabel, string);
@@ -1112,9 +1116,9 @@ static void RefreshSwitchAccount(void)
 
 #ifdef WEB3_VERSION
         char temp[BUFFER_SIZE_64];
-        snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", index);
+        snprintf_s(temp, BUFFER_SIZE_64, "m/1852'/1815'/%u'", (unsigned int)index);
         lv_label_set_text(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressLabel, temp);
-        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", _("account_head"), index);
+        lv_label_set_text_fmt(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (unsigned int)index);
 #endif
         if (end) {
             lv_obj_add_flag(g_multiAccountsReceiveWidgets.switchAccountWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
@@ -1230,14 +1234,21 @@ static void GuiCreateSwitchAccountWidget()
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
-    char *xPub = NULL, *pvk = NULL, hdPath[BUFFER_SIZE_128];
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
+    char *xPub = NULL, *pvk = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
     switch (g_chainCard) {
 #ifdef WEB3_VERSION
     case HOME_WALLET_CARD_ADA: {
         uint32_t currentAccount = GetAccountIndex(GetCoinCardByIndex(g_chainCard)->coin);
+        if (currentAccount > XPUB_TYPE_ADA_23 - XPUB_TYPE_ADA_0 || type > 2) {
+            break;
+        }
         xPub = GetCurrentAccountPublicKey(GetReceivePageAdaXPubTypeByIndex(currentAccount));
-        snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", currentAccount, index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'/0/%u", (unsigned int)currentAccount, (unsigned int)index);
         // cardano mainnet;
         switch (type) {
         case 1:
@@ -1260,16 +1271,22 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
         case 1:
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
             pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
-            snprintf_s(hdPath, BUFFER_SIZE_16, "");
+            if (xPub == NULL || xPub[0] == '\0' || pvk == NULL || pvk[0] == '\0') {
+                break;
+            }
+            hdPath[0] = '\0';
             bool isPrimaryAccount = index == 0;
             result = monero_get_address(xPub, pvk, index, 0, !isPrimaryAccount);
             break;
         default:
             xPub = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_0);
             pvk = GetCurrentAccountPublicKey(XPUB_TYPE_MONERO_PVK_0);
+            if (xPub == NULL || xPub[0] == '\0' || pvk == NULL || pvk[0] == '\0') {
+                break;
+            }
             uint32_t accountIndex = g_selectedAccount[GetCurrentAccountIndex()];
             bool isSubAddress = index != 0 || accountIndex != 0;
-            snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/128'/0'/0/%u", index);
+            snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/128'/0'/0/%u", (unsigned int)index);
             result = monero_get_address(xPub, pvk, accountIndex, index, isSubAddress);
             break;
         }
@@ -1278,14 +1295,22 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item, uint8_t typ
     default:
         break;
     }
-    ASSERT(xPub);
-
-    if (result->error_code == 0) {
-        item->index = index;
-        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(item->address)) < sizeof(item->address);
+    if (valid) {
+        valid = strcpy_s(item->address, sizeof(item->address), result->data) == 0;
+        valid = valid && strnlen_s(hdPath, sizeof(item->path)) < sizeof(item->path) &&
+                strcpy_s(item->path, sizeof(item->path), hdPath) == 0;
     }
-    free_simple_response_c_char(result);
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
+    item->index = index;
 }
 
 void GuiResetCurrentMultiAccountsCache(uint8_t index)

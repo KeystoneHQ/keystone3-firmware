@@ -21,6 +21,7 @@
 #include "log_print.h"
 #include "version.h"
 #include "gui_pending_hintbox.h"
+#include "gui_standard_receive_widgets.h"
 
 typedef enum {
     GestureRight = 1,
@@ -312,29 +313,9 @@ void GuiShowRsaSetupasswordHintbox(void)
     SetKeyboardWidgetSig(g_keyboardWidget, &sig);
 }
 
-static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
+void GuiHomeShowArSetupNotice(void)
 {
-    GUI_DEL_OBJ(g_noticeWindow);
-    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM);
-}
-
-static void GuiOpenARAddressNoticeWindow()
-{
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_set_width(btn, 192);
-    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_set_width(btn, 192);
-    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+    GuiCreateAttentionHintboxWithCancel(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM, GuiHomeCancelArSetup);
 }
 
 static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
@@ -360,12 +341,8 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
         GuiFrameOpenViewWithParam(&g_multiAccountsReceiveView, &coin, sizeof(coin));
         break;
     case HOME_WALLET_CARD_ARWEAVE: {
-        bool shouldGenerateArweaveXPub = IsArweaveSetupComplete();
-        if (!shouldGenerateArweaveXPub) {
-            GuiOpenARAddressNoticeWindow();
-            break;
-        }
-        GuiFrameOpenViewWithParam(&g_standardReceiveView, &coin, sizeof(coin));
+        bool allowGenerate = false;
+        GuiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_RECEIVE_CONFIRM, &allowGenerate, sizeof(allowGenerate));
         break;
     }
     default:
@@ -374,12 +351,12 @@ static void CoinDealHandler(HOME_WALLET_CARD_ENUM coin)
     }
 }
 
-void GuiRemoveKeyboardWidget(void)
+void GuiRemoveKeyboardWidget(bool allowGenerate)
 {
     if (g_keyboardWidget != NULL) {
         GuiDeleteKeyboardWidget(g_keyboardWidget);
     }
-    GuiModelRsaGenerateKeyPair();
+    GuiModelRsaGenerateKeyPair(allowGenerate);
 }
 
 void RecalculateManageWalletState(void)
@@ -390,11 +367,17 @@ void RecalculateManageWalletState(void)
     AccountPublicHomeCoinSet(walletState, NUMBER_OF_ARRAYS(walletState));
 }
 
-void GuiShowRsaInitializatioCompleteHintbox(void)
+void GuiShowRsaInitializatioCompleteHintbox(bool receive, const char *address)
 {
     GuiPendingHintBoxRemove();
     ClearSecretCache();
-    GuiCreateInitializatioCompleteHintbox();
+    if (receive) {
+        StandardReceiveParams_t params = {.chain = HOME_WALLET_CARD_ARWEAVE};
+        strcpy_s(params.address, sizeof(params.address), address);
+        GuiFrameOpenViewWithParam(&g_standardReceiveView, &params, sizeof(params));
+    } else {
+        GuiCreateInitializatioCompleteHintbox();
+    }
 }
 
 void GuiHomePasswordErrorCount(void *param)
@@ -721,6 +704,7 @@ void ClearHomePageCurrentIndex(void)
 
 void GuiHomeRestart(void)
 {
+    GuiHomeCancelArSetup();
     g_currentPage = 0;
     g_coinCurrentPage = 0;
     g_currentFilter = COIN_FILTER_MAIN;

@@ -146,6 +146,5 @@ if __name__ == '__main__':
     if platform.system() == 'Darwin':
         ota_maker()
     purpose = args.purpose
-    if purpose and purpose == "debug":
+    if purpose == "debug" and platform.system() == 'Darwin':
         ota_maker()
-

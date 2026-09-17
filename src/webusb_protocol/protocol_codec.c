@@ -66,7 +66,7 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
     pHead->head = PROTOCOL_HEADER;
     pHead->protocolVersion = PROTOCOL_VERSION;
     pHead->length = totalLen - sizeof(FrameHead_t) - 4;
-    printf("Total frame length: %u\n", totalLen);
+    printf("Total frame length: %u\n", (unsigned int)totalLen);
 
     memcpy_s(sendData, totalLen, pHead, sizeof(FrameHead_t));
     uint32_t index = sizeof(FrameHead_t);
@@ -76,7 +76,7 @@ uint8_t *BuildFrame(FrameHead_t *pHead, const Tlv_t tlvArray[], uint32_t tlvLen)
     }
 
     uint32_t crc32Calc = crc32_ieee(0, sendData, totalLen - 4);
-    printf("CRC32 Calculated: 0x%X\n", crc32Calc);
+    printf("CRC32 Calculated: 0x%X\n", (unsigned int)crc32Calc);
     memcpy_s(&sendData[index], 4, &crc32Calc, 4);
 
     return sendData;

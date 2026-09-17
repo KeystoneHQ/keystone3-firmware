@@ -27,6 +27,7 @@
 #include "screen_manager.h"
 #include "low_power.h"
 #include "se_manager.h"
+#include "crc.h"
 
 /* DEFINES */
 #define FINGERPRINT_REG_MAX_TIMES               (18)

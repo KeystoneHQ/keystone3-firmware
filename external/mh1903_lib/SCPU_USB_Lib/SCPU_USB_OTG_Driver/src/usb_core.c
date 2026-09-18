@@ -1187,7 +1187,8 @@ USB_OTG_STS USB_OTG_EnableDevInt(USB_OTG_CORE_HANDLE *pdev)
 
     intr_usbe.d8 = USB_OTG_READ_REG8(&pdev->regs.COMMREGS->INTRUSBE);
     intr_usbe.b.en_discon = 1;
-    intr_usbe.b.en_sof = 1;
+    /* SOF is unused by this firmware. */
+    intr_usbe.b.en_sof = 0;
     intr_usbe.b.en_reset_babble = 1;
 //  intr_usbe.b.en_suspend = 1;
 //  intr_usbe.b.en_resume = 1;

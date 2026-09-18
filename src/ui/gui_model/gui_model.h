@@ -52,7 +52,7 @@ typedef struct {
 } WalletDesc_t;
 
 typedef struct PasswordVerifyResult {
-    void *signal;
+    uint16_t signal;
     uint16_t errorCount;
 } PasswordVerifyResult_t;
 
@@ -85,8 +85,8 @@ void GuiModelURGenerateQRCode(GenerateUR func);
 void GuiModelURUpdate(void);
 void GuiModelURClear(void);
 void GuiModelCheckTransaction(ViewType ViewType);
-int32_t RsaGenerateKeyPair(bool needEmitSignal);
-void GuiModelRsaGenerateKeyPair(void);
+int32_t RsaGenerateKeyPair(bool needEmitSignal, bool allowGenerate, SimpleResponse_c_char **publicKeyOut);
+void GuiModelRsaGenerateKeyPair(bool allowGenerate);
 void GuiModelTransactionCheckResultClear(void);
 void GuiModelParseTransaction(ReturnVoidPointerFunc func);
 bool ModelGetPassphraseQuickAccess(void);

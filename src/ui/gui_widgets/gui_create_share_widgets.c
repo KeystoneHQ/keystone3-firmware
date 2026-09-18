@@ -77,8 +77,26 @@ static char g_randomBuff[BUFFER_SIZE_512];
 static lv_obj_t *g_noticeWindow = NULL;
 static uint8_t g_entropyMethod;
 static PageWidget_t *g_pageWidget;
+static bool g_backupConfirmationAccepted = false;
+static BackupConfirmationHintBox_t g_backupConfirmation;
 static void SelectParseCntHandler(lv_event_t *e);
 static void SelectCheckBoxHandler(lv_event_t* e);
+
+static void BackupConfirmationHandler(lv_event_t *e)
+{
+    g_backupConfirmationAccepted = true;
+    CloseParentAndNextHandler(e);
+}
+
+static void ShowBackupConfirmation(void)
+{
+    GuiCreateBackupConfirmationHintBox(&g_backupConfirmation);
+    g_noticeWindow = g_backupConfirmation.container;
+    lv_obj_add_event_cb(g_backupConfirmation.closeButton, CloseHintBoxHandler,
+                        LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_add_event_cb(g_backupConfirmation.continueButton, BackupConfirmationHandler,
+                        LV_EVENT_CLICKED, &g_noticeWindow);
+}
 
 static bool DiceRollsNotEnoughForWordCnt(uint8_t wordCnt)
 {
@@ -373,6 +391,12 @@ static void GuiShareBackupWidget(lv_obj_t *parent)
     lv_obj_refr_size(label);
     height -= lv_obj_get_self_height(label);
 
+    label = GuiCreateIllustrateLabel(parent, _("seed_phrase_privacy_notice"));
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    lv_obj_refr_size(label);
+    height -= lv_obj_get_self_height(label);
+
     g_shareBackupTile.keyBoard = GuiCreateMnemonicKeyBoard(parent, NULL, g_selectCnt == SLIP39_MNEMONIC_20_WORDS ? KEY_STONE_MNEMONIC_20 : KEY_STONE_MNEMONIC_33, NULL);
     lv_obj_align_to(g_shareBackupTile.keyBoard->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_obj_set_size(g_shareBackupTile.keyBoard->cont, 408, height);
@@ -503,6 +527,11 @@ int8_t GuiCreateShareNextTile(const char *passphrase)
         }
         break;
     case CREATE_SHARE_BACKUPFROM:
+        if (!g_backupConfirmationAccepted) {
+            ShowBackupConfirmation();
+            return SUCCESS_CODE;
+        }
+        g_backupConfirmationAccepted = false;
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
         lv_obj_add_flag(g_shareBackupTile.nextCont, LV_OBJ_FLAG_HIDDEN);
@@ -570,6 +599,7 @@ void GuiCreateShareDeInit(void)
         g_pressedBtnFlag[i] = 0;
     }
     g_currId = 0;
+    g_backupConfirmationAccepted = false;
     g_selectCnt = SLIP39_DEFAULT_MNEMONIC_WORDS;
     g_selectSliceTile.memberCnt = SLIP39_DEFAULT_MEMBER_COUNT;
     g_selectSliceTile.memberThreshold = SLIP39_DEFAULT_MEMBER_THRESHOLD;

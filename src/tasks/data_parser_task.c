@@ -17,7 +17,6 @@
 #include "usb_task.h"
 #include "anti_tamper.h"
 #include "device_setting.h"
-#include "drv_mpu.h"
 #include "circular_buffer.h"
 #include "protocol_parse.h"
 #include "ctaes.h"
@@ -34,14 +33,12 @@
 static void DataParserTask(void *argument);
 void USBD_cdc_SendBuffer_Cb(const uint8_t *data, uint32_t len);
 
-static uint8_t g_dataParserCache[PARSER_CACHE_LEN] __attribute__((section(".data_parser_section")));
+static uint8_t g_dataParserCache[PARSER_CACHE_LEN];
 static cbuf_handle_t g_cBufHandle;
 static uint8_t g_dataParserPubKey[PUB_KEY_SIZE] = {0};
 static uint8_t g_dataSharedKey[PRIV_KEY_SIZE] = {0};
 static uint8_t g_dataParserIv[16] = {0};
 static osThreadId_t g_dataParserHandle;
-extern uint32_t __data_parser_start;
-extern uint32_t __data_parser_end;
 
 uint8_t *GetDataParserCache(void)
 {
@@ -60,9 +57,9 @@ uint8_t *GetDeviceParserPubKey(uint8_t *webPub, uint16_t len)
     uint8_t shareKey[PUB_KEY_SIZE] = {0};
     TrngGet(privKey, sizeof(privKey));
     SimpleResponse_u8 *simpleResponse = k1_generate_pubkey_by_privkey(privKey, sizeof(privKey));
-    memcpy_s(shareKey, sizeof(shareKey) + 1, simpleResponse->data, PUB_KEY_SIZE);
+    memcpy_s(shareKey, sizeof(shareKey), simpleResponse->data, PUB_KEY_SIZE);
     free_simple_response_u8(simpleResponse);
-    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey) + 1, shareKey, PUB_KEY_SIZE);
+    memcpy_s(g_dataParserPubKey, sizeof(g_dataParserPubKey), shareKey, PUB_KEY_SIZE);
     simpleResponse = k1_generate_ecdh_sharekey(privKey, sizeof(privKey), webPub, PUB_KEY_SIZE);
     if (simpleResponse == NULL) {
         printf("get_master_fingerprint return NULL\r\n");
@@ -133,23 +130,8 @@ void ResetDataField(void)
     }
 }
 
-static void DataParserCacheMpuInit(void)
-{
-    uint32_t region_size = (uint32_t)&__data_parser_end - (uint32_t)&__data_parser_start;
-    uint32_t region_size_pow2 = 1 << (32 - __builtin_clz(region_size - 1));
-    MpuSetProtection((uint32_t)g_dataParserCache,
-                     region_size_pow2,
-                     MPU_REGION_NUMBER0,
-                     MPU_INSTRUCTION_ACCESS_DISABLE,
-                     MPU_REGION_PRIV_RW,
-                     MPU_ACCESS_SHAREABLE,
-                     MPU_ACCESS_CACHEABLE,
-                     MPU_ACCESS_BUFFERABLE);
-}
-
 static void DataParserTask(void *argument)
 {
-    DataParserCacheMpuInit();
     g_cBufHandle = circular_buf_init(g_dataParserCache, sizeof(g_dataParserCache));
     memset_s(g_dataParserCache, sizeof(g_dataParserCache), 0, sizeof(g_dataParserCache));
     Message_t rcvMsg;
@@ -187,32 +169,60 @@ static void DataParserTask(void *argument)
     }
 }
 
-void MemManage_Handler(void)
+static void MemManageFaultHandler(uint32_t *stackFrame, uint32_t excReturn)
+    __attribute__((noreturn, noinline, used));
+
+__attribute__((naked)) void MemManage_Handler(void)
 {
-#define SCB_CFSR (*((volatile uint32_t *)0xE000ED28))
-#define SCB_HFSR (*((volatile uint32_t *)0xE000ED2C))
-#define SCB_MMFAR (*((volatile uint32_t *)0xE000ED34))
-    uint32_t cfsr = SCB_CFSR;
-    uint32_t mmfar = SCB_MMFAR;
+    __asm volatile (
+        "tst lr, #4\n"
+        "ite eq\n"
+        "mrseq r0, msp\n"
+        "mrsne r0, psp\n"
+        "mov r1, lr\n"
+        "b MemManageFaultHandler\n"
+    );
+}
 
-    if (cfsr & (1 << 0)) {
-        uint32_t fault_address = mmfar;
+static void MemManageFaultHandler(uint32_t *stackFrame, uint32_t excReturn)
+{
+    extern volatile uint32_t ulSystemCallRejectReason;
+    extern volatile uint32_t ulSystemCallRejectLocation;
+    extern volatile uint32_t ulSystemCallRejectNumber;
+    extern volatile uint32_t ulSystemCallRejectTaskFrame;
+    extern volatile uint32_t ulSystemCallRejectActiveTaskStack;
+    extern volatile uint32_t ulSystemCallRejectImplementation;
+    extern volatile uint32_t ulSystemCallRejectSavedLinkRegister;
+    extern volatile uint32_t ulSystemCallRejectExceptionReturn;
+    uint32_t cfsr = SCB->CFSR;
+    uint32_t faultAddress = (cfsr & SCB_CFSR_MMARVALID_Msk) != 0U ? SCB->MMFAR : UINT32_MAX;
+    uint32_t stackedLr = UINT32_MAX;
+    uint32_t stackedPc = UINT32_MAX;
+    uint32_t stackedPsr = UINT32_MAX;
 
-        printf("Memory management fault at address: 0x%08X\n", fault_address);
+    if ((stackFrame != NULL) &&
+            ((cfsr & (SCB_CFSR_MUNSTKERR_Msk | SCB_CFSR_MSTKERR_Msk)) == 0U)) {
+        stackedLr = stackFrame[5];
+        stackedPc = stackFrame[6];
+        stackedPsr = stackFrame[7];
     }
 
-    if (cfsr & (1 << 1)) {
-        // Data Access Violation
-    }
-    if (cfsr & (1 << 3)) {
-        // Unstacking Error
-    }
-    if (cfsr & (1 << 4)) {
-    }
-    if (cfsr & (1 << 5)) {
-    }
-
-    // system reset test
-    *(uint32_t *)0 = 123;
+    printf("MemManage cfsr=0x%08lX mmfar=0x%08lX exc_return=0x%08lX "
+           "lr=0x%08lX pc=0x%08lX psr=0x%08lX\r\n",
+           (unsigned long)cfsr, (unsigned long)faultAddress, (unsigned long)excReturn,
+           (unsigned long)stackedLr, (unsigned long)stackedPc, (unsigned long)stackedPsr);
+    printf("SyscallReject reason=0x%02lX location=0x%08lX svc=%lu frame=0x%08lX "
+           "active=0x%08lX impl=0x%08lX saved_lr=0x%08lX exc_return=0x%08lX\r\n",
+           (unsigned long)ulSystemCallRejectReason,
+           (unsigned long)ulSystemCallRejectLocation,
+           (unsigned long)ulSystemCallRejectNumber,
+           (unsigned long)ulSystemCallRejectTaskFrame,
+           (unsigned long)ulSystemCallRejectActiveTaskStack,
+           (unsigned long)ulSystemCallRejectImplementation,
+           (unsigned long)ulSystemCallRejectSavedLinkRegister,
+           (unsigned long)ulSystemCallRejectExceptionReturn);
+    __DSB();
     NVIC_SystemReset();
+    for (;;) {
+    }
 }

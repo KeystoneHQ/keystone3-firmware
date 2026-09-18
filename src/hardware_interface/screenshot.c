@@ -91,7 +91,7 @@ void ScreenShot(uint8_t *imgData)
     for (i = 0; i < LV_VER_RES; i++) {
         memcpy_s(screenBuffer + headSize + i * bmpHorByte, LV_HOR_RES * (LV_COLOR_DEPTH / 8), imgData + i * LV_HOR_RES * (LV_COLOR_DEPTH / 8), LV_HOR_RES * (LV_COLOR_DEPTH / 8));
     }
-    snprintf_s(fileName, BUFFER_SIZE_32, "0:screenshot_%d.bmp", osKernelGetTickCount());
+    snprintf_s(fileName, BUFFER_SIZE_32, "0:screenshot_%d.bmp", (int)osKernelGetTickCount());
     printf("start save file\r\n");
     FatfsFileWrite(fileName, screenBuffer, fileSize);
     printf("save file over\r\n");

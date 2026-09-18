@@ -36,8 +36,8 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
                 GuiDealChangePermitKeyBoard(true);
                 return SUCCESS_CODE;
 #endif
-            } else if (sig == SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH || sig == SIG_SETTING_CHANGE_RECOVERY_MODE_SWITCH) {
-                GuiDealBootSecureParamKeyBoard(sig, true);
+            } else if (sig == SIG_SETTING_CHANGE_RECOVERY_MODE_SWITCH) {
+                GuiDealRecoveryModeKeyBoard(true);
                 return SUCCESS_CODE;
             }
         }
@@ -46,7 +46,7 @@ int32_t GuiSystemSettingViewEventProcess(void *self, uint16_t usEvent, void *par
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            uint16_t sig = passwordVerifyResult->signal;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);

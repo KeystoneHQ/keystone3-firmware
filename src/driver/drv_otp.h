@@ -8,6 +8,9 @@
 
 #define OTA_ADDR_FACTORY_BASE       0x40009400
 
+#define OTP_ADDR_DEVICE_AES_KEY     0x40009128
+#define OTP_ADDR_DEVICE_AES_IV      0x40009138
+
 #define OTP_ADDR_BASE               0x40009500
 #define OTP_ADDR_SALT               OTP_ADDR_BASE
 #define OTP_ADDR_AES_KEY            OTP_ADDR_SALT + 32
@@ -30,6 +33,7 @@
 #endif
 
 int32_t WriteOtpData(uint32_t addr, const uint8_t *data, uint32_t len);
+void ReadOtpData(uint32_t addr, uint8_t *data, uint32_t len);
 bool ReadTamperFlag(void);
 int32_t WriteTamperFlag(void);
 

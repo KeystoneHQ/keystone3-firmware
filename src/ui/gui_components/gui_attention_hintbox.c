@@ -3,6 +3,7 @@
 #define MIN_OPERATE_POWER 80
 
 static lv_obj_t *g_attentionCont;
+static void (*g_onCancel)(void);
 static bool g_isEnableBlindSigning = false;
 typedef struct {
     char *title;
@@ -35,12 +36,12 @@ static uint16_t RecalculateButtonWidth(lv_obj_t *button, uint16_t minButtonWidth
 static AttentionHintboxContext *BuildConfirmationHintboxContext()
 {
     AttentionHintboxContext *context = SRAM_MALLOC(sizeof(AttentionHintboxContext));
-    context->title =  _("rsa_confirm_hintbox_title");
-    context->context = _("rsa_confirm_hintbox_context");
-    context->icon = &imgAttentionLock;
+    context->title = _("ar_preparation_title");
+    context->context = _("ar_preparation_address_notice");
+    context->icon = &imgWarn;
     context->hintboxHeight = 476;
-    context->okBtnText = _("rsa_confirm_hintbox_ok");
-    context->cancelBtnText = _("rsa_confirm_hintbox_cancel");
+    context->okBtnText = _("Continue");
+    context->cancelBtnText = _("not_now");
     return context;
 }
 
@@ -109,6 +110,7 @@ static void CloseEnableBlindSigningHandler(lv_event_t *e)
 }
 static void ConfirmAttentionHandler(lv_event_t *e)
 {
+    g_onCancel = NULL;
     GuiEmitSignal(g_confirmSign, NULL, 0);
     GUI_DEL_OBJ(g_attentionCont);
 }
@@ -123,9 +125,14 @@ static bool CheckPowerRequirements()
 
 void GuiCloseAttentionHintbox()
 {
+    void (*onCancel)(void) = g_onCancel;
+    g_onCancel = NULL;
     if (g_attentionCont) {
         lv_obj_add_flag(g_attentionCont, LV_OBJ_FLAG_HIDDEN);
         GUI_DEL_OBJ(g_attentionCont);
+    }
+    if (onCancel != NULL) {
+        onCancel();
     }
 }
 
@@ -204,6 +211,64 @@ void GuiCreateEnableBlindSigningHintbox()
 
 void GuiCreateAttentionHintbox(uint16_t confirmSign)
 {
+    GuiCreateAttentionHintboxWithCancel(confirmSign, NULL);
+}
+
+static lv_obj_t *CreateArPreparationHintbox(AttentionHintboxContext *context)
+{
+    const char *paragraphs[] = {context->context, _("ar_preparation_power_notice")};
+    lv_obj_t *cont = GuiCreateHintBox(800);
+    lv_obj_t *body = GuiCreateContainerWithParent(cont, 408, 662);
+    lv_obj_set_style_bg_opa(body, LV_OPA_TRANSP, LV_PART_MAIN);
+    lv_obj_align(body, LV_ALIGN_TOP_LEFT, 36, 40);
+    lv_obj_add_flag(body, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_set_scroll_dir(body, LV_DIR_VER);
+    lv_obj_t *icon = GuiCreateImg(body, context->icon);
+    lv_obj_align(icon, LV_ALIGN_TOP_LEFT, 0, 0);
+    lv_obj_update_layout(icon);
+    int32_t y = lv_obj_get_height(icon) + 28;
+    lv_obj_t *title = GuiCreateLittleTitleLabel(body, context->title);
+    lv_obj_set_width(title, 408);
+    lv_label_set_long_mode(title, LV_LABEL_LONG_WRAP);
+    lv_obj_align(title, LV_ALIGN_TOP_LEFT, 0, y);
+    lv_obj_update_layout(title);
+    y += lv_obj_get_height(title) + 16;
+    for (size_t i = 0; i < 2; i++) {
+        lv_obj_t *bullet = GuiCreateIllustrateLabel(body, "·");
+        lv_obj_set_width(bullet, 16);
+        lv_obj_set_style_text_color(bullet, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_align(bullet, LV_ALIGN_TOP_LEFT, 0, y);
+        lv_obj_t *text = GuiCreateIllustrateLabel(body, paragraphs[i]);
+        lv_obj_set_width(text, 388);
+        lv_label_set_long_mode(text, LV_LABEL_LONG_WRAP);
+        lv_obj_align(text, LV_ALIGN_TOP_LEFT, 20, y);
+        lv_obj_update_layout(text);
+        y += lv_obj_get_height(text) + 20;
+    }
+    uint32_t height = y + 142;
+    if (height > 800) {
+        height = 800;
+    }
+    GuiHintBoxResize(cont, height);
+    lv_obj_set_height(body, height - 138);
+    lv_obj_align(body, LV_ALIGN_TOP_LEFT, 36, 800 - height + 40);
+    lv_obj_t *leftBtn = GuiCreateTextBtn(cont, context->cancelBtnText);
+    lv_obj_set_size(leftBtn, 192, 66);
+    lv_obj_set_style_bg_color(leftBtn, WHITE_COLOR_OPA20, LV_PART_MAIN);
+    lv_obj_align(leftBtn, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_add_event_cb(leftBtn, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *rightBtn = GuiCreateTextBtn(cont, context->okBtnText);
+    lv_obj_set_size(rightBtn, 192, 66);
+    lv_obj_set_style_bg_color(rightBtn, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_align(rightBtn, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(rightBtn, ConfirmAttentionHandler, LV_EVENT_CLICKED, NULL);
+    return cont;
+}
+
+void GuiCreateAttentionHintboxWithCancel(uint16_t confirmSign, void (*onCancel)(void))
+{
+    GuiCloseAttentionHintbox();
+    g_onCancel = onCancel;
     if (!CheckPowerRequirements()) {
         AttentionHintboxContext *context = BuildLowPowerHintboxContext();
         g_attentionCont = GuiCreateHintBox(context->hintboxHeight);
@@ -228,11 +293,7 @@ void GuiCreateAttentionHintbox(uint16_t confirmSign)
     }
     g_confirmSign = confirmSign;
     AttentionHintboxContext *context = BuildConfirmationHintboxContext();
-    g_attentionCont = GuiCreateGeneralHintBox(context->icon, context->title, context->context, NULL, context->cancelBtnText, WHITE_COLOR_OPA20, context->okBtnText, ORANGE_COLOR);
-    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_attentionCont);
-    lv_obj_add_event_cb(leftBtn, CloseAttentionHandler, LV_EVENT_CLICKED, NULL);
-    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_attentionCont);
-    lv_obj_add_event_cb(rightBtn, ConfirmAttentionHandler, LV_EVENT_CLICKED, NULL);
+    g_attentionCont = CreateArPreparationHintbox(context);
 
     SRAM_FREE(context);
 }

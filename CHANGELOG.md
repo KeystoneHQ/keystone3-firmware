@@ -1,3 +1,46 @@
+## 3.1.0 (2026-09-10)
+
+**Web3:**
+
+
+### What’s New
+
+1. Improved the initial setup process with new firmware update and secure backup reminders
+
+### Improvements
+
+1. Optimized IOTA transaction parsing
+2. Optimized ADA transaction parsing
+3. Displayed the Sub-Account Path by default for SOL
+4. Removed the Core Wallet connection entry
+5. Optimized USB functionality
+6. Enhanced security policies
+
+
+**CYPHERPUNK:**
+
+### What’s New
+
+1. Improved the initial setup process with new firmware update and secure backup reminders
+
+### Improvements
+
+1. Enhanced security policies
+
+
+
+
+**BTC-ONLY:**
+
+
+### What’s New
+
+1. Improved the initial setup process with new firmware update and secure backup reminders
+
+### Improvements
+
+1. Enhanced security policies
+
 ## 3.0.8 (2026-09-15)
 
 **Web3:**
@@ -12,7 +55,6 @@
 
 ### What's new
 1. Added support for Solana v1 transactions
-
 
 ## 3.0.4 (2026-08-10)
 

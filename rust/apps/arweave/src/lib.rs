@@ -18,12 +18,15 @@ use alloc::vec::Vec;
 use data_item::DataItem;
 
 use keystore::algorithms::rsa::get_rsa_secret_from_seed;
-use rsa::{BigUint, RsaPrivateKey};
+#[cfg(test)]
+use rsa::BigUint;
+use rsa::{PublicKeyParts, RsaPrivateKey};
 
 use serde_json::{json, Value};
 
 use sha2::Digest;
 use transaction::{Base64, Transaction};
+use zeroize::Zeroizing;
 
 type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
@@ -62,10 +65,13 @@ pub fn base64_url(hash: Vec<u8>) -> String {
 }
 
 pub fn generate_public_key_from_primes(p: &[u8], q: &[u8]) -> Result<Vec<u8>> {
-    let p = BigUint::from_bytes_be(p);
-    let q = BigUint::from_bytes_be(q);
-    let n = p * q;
-    Ok(n.to_bytes_be())
+    let key = Zeroizing::new(
+        keystore::algorithms::rsa::build_rsa_private_key_from_primes(p, q)
+            .map_err(|e| ArweaveError::KeystoreError(e.to_string()))?,
+    );
+    keystore::algorithms::rsa::check_rsa_key_pair(&key)
+        .map_err(|e| ArweaveError::KeystoreError(e.to_string()))?;
+    Ok(key.n().to_bytes_be())
 }
 
 pub fn generate_secret(seed: &[u8]) -> Result<RsaPrivateKey> {
@@ -162,6 +168,33 @@ mod tests {
     use super::*;
     use alloc::borrow::ToOwned;
     use {hex, rsa::PublicKeyParts};
+
+    #[test]
+    fn test_public_key_rejects_invalid_primes() {
+        let error = generate_public_key_from_primes(&[1; 255], &[1; 256]).unwrap_err();
+        assert!(matches!(error, ArweaveError::KeystoreError(_)));
+        assert!(error.to_string().contains("Invalid prime P length"));
+
+        let error = generate_public_key_from_primes(&[0; 256], &[0; 256]).unwrap_err();
+        assert!(matches!(error, ArweaveError::KeystoreError(_)));
+        assert!(error.to_string().contains("invalid RSA primes"));
+    }
+
+    #[test]
+    fn test_aes256_rejects_invalid_padding() {
+        let key = [0x42; 32];
+        let iv = [0x24; 16];
+        let data = [0x5a; 512];
+        let mut encrypted = aes256_encrypt(&key, &iv, &data).unwrap();
+        assert_eq!(encrypted.len(), 528);
+        assert_eq!(aes256_decrypt(&key, &iv, &encrypted).unwrap(), data);
+
+        encrypted[511] ^= 0x10;
+        let error = aes256_decrypt(&key, &iv, &encrypted).unwrap_err();
+        assert!(matches!(error, ArweaveError::KeystoreError(_)));
+        assert!(error.to_string().contains("aes256_decrypt failed"));
+        assert!(aes256_decrypt(&key, &iv, &encrypted[..527]).is_err());
+    }
 
     #[test]
     fn test_generate_address() {

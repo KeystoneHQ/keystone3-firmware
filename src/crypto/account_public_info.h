@@ -270,12 +270,26 @@ typedef enum {
 } ChainType;
 
 bool GetIsTempAccount(void);
+#ifndef BTC_ONLY
+bool GetCurrentAccountZcashSFP(uint8_t *outSfp);
+int32_t RegenerateAndStoreCurrentZcashSFP(uint8_t accountIndex, uint8_t *seed, int seedLen);
+#endif
 #ifdef CYPHERPUNK_VERSION
-int32_t RegenerateZcashUFVK(uint8_t accountIndex, const uint8_t *seed, int seedLen, const char *password, char *ufvkOut, uint32_t ufvkOutLen);
+int32_t FindAccountByPasswordAndDeriveZcashCacheKey(
+    uint8_t *matchedAccountIndex, const char *password,
+    uint8_t cacheKey[32]);
+int32_t VerifyAccountPasswordAndDeriveZcashCacheKey(
+    uint8_t accountIndex, const char *password,
+    uint8_t cacheKey[32]);
+int32_t MigrateLegacyZcashPublicInfoToV3(uint8_t accountIndex, uint8_t *seed, int seedLen,
+                                        const uint8_t *cacheKey, char *ufvkOut,
+                                        uint32_t ufvkOutLen);
+int32_t RegenerateZcashUFVKV3(uint8_t accountIndex, const uint8_t *seed, int seedLen,
+                              const char *password);
 #endif
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey);
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set);
-void DeleteAccountPublicInfo(uint8_t accountIndex);
+int32_t DeleteAccountPublicInfo(uint8_t accountIndex);
 char *GetCurrentAccountPublicKey(ChainType chain);
 char *GetCurrentAccountPath(ChainType chain);
 uint8_t SpecifiedXPubExist(const char *xPub);
@@ -315,4 +329,3 @@ void SetAccountTestReceivePath(const char* chainName, uint32_t index);
 void DeleteAccountMultiReceiveIndex(const char* chainName, char *verifyCode);
 #endif
 #endif
-

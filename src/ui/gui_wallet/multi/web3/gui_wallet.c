@@ -1,5 +1,7 @@
 #include "stdio.h"
 #include "gui_wallet.h"
+#include "gui_api.h"
+#include "rsa.h"
 #include "keystore.h"
 #include "account_public_info.h"
 #include "gui_connect_wallet_widgets.h"
@@ -248,43 +250,24 @@ UREncodeResult *GuiGetNaboxData(void)
     return urEncode;
 }
 
-UREncodeResult *GuiGetCoreWalletData(void)
-{
-    ChainPath_t chainPaths[] = {
-        {.path = "m/44'/60'/0'", .chainType = XPUB_TYPE_ETH_BIP44_STANDARD},
-        {.path = "m/44'/9000'/0'", .chainType = XPUB_TYPE_AVAX_X_P_0},
-        {.path = "m/44'/9000'/1'", .chainType = XPUB_TYPE_AVAX_X_P_1},
-        {.path = "m/44'/9000'/2'", .chainType = XPUB_TYPE_AVAX_X_P_2},
-        {.path = "m/44'/9000'/3'", .chainType = XPUB_TYPE_AVAX_X_P_3},
-        {.path = "m/44'/9000'/4'", .chainType = XPUB_TYPE_AVAX_X_P_4},
-        {.path = "m/44'/9000'/5'", .chainType = XPUB_TYPE_AVAX_X_P_5},
-        {.path = "m/44'/9000'/6'", .chainType = XPUB_TYPE_AVAX_X_P_6},
-        {.path = "m/44'/9000'/7'", .chainType = XPUB_TYPE_AVAX_X_P_7},
-        {.path = "m/44'/9000'/8'", .chainType = XPUB_TYPE_AVAX_X_P_8},
-        {.path = "m/44'/9000'/9'", .chainType = XPUB_TYPE_AVAX_X_P_9},
-    };
-    ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
-    uint8_t mfp[4] = {0};
-    GetMasterFingerPrint(mfp);
-    PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, NUMBER_OF_ARRAYS(chainPaths));
-    UREncodeResult *urEncode = get_core_wallet_ur(mfp, sizeof(mfp), public_keys, "Keystone3");
-    CHECK_CHAIN_PRINT(urEncode);
-    SRAM_FREE(public_keys);
-    return urEncode;
-}
-
 UREncodeResult *GuiGetWanderData(void)
 {
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
-    char *arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-    if (arXpub == NULL || strlen(arXpub) != 1024) {
-        GuiSetupArConnectWallet();
-        arXpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    SimpleResponse_c_char *publicKey = NULL;
+    int32_t ret = GuiSetupArConnectWallet(&publicKey);
+    if (!ArKeyNeedsSetup(ret)) {
         ClearSecretCache();
     }
-    ASSERT(arXpub != NULL);
-    UREncodeResult *urEncode = get_connect_arconnect_wallet_ur_from_xpub(mfp, sizeof(mfp), arXpub);
+    if (ret != SUCCESS_CODE) {
+        GuiApiEmitSignal(SIG_SETUP_RSA_PRIVATE_KEY_WRITE_FAIL, &ret, sizeof(ret));
+        return NULL;
+    }
+    if (publicKey == NULL) {
+        return NULL;
+    }
+    UREncodeResult *urEncode = get_connect_arconnect_wallet_ur_from_xpub(mfp, sizeof(mfp), publicKey->data);
+    free_simple_response_c_char(publicKey);
     CHECK_CHAIN_PRINT(urEncode);
     return urEncode;
 }
@@ -414,7 +397,7 @@ UREncodeResult *GuiGetADADataByIndex(char *walletName)
     char* xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
             GetConnectWalletPathIndex(walletName), index));
     char path[BUFFER_SIZE_32] = {0};
-    snprintf(path, sizeof(path), "1852'/1815'/%u'", index);
+    snprintf(path, sizeof(path), "1852'/1815'/%u'", (unsigned int)index);
     ExtendedPublicKey xpubs[1];
     xpubs[0].path = path;
     xpubs[0].xpub = xpub;
@@ -449,7 +432,7 @@ UREncodeResult *GuiGetKeplrDataByIndex(uint32_t index)
         keys[i].xpub = GetCurrentAccountPublicKey(chain->xpubType);
         keys[i].name = "Account-1";
         keys[i].path = SRAM_MALLOC(BUFFER_SIZE_32);
-        snprintf_s(keys[i].path, BUFFER_SIZE_32, "M/44'/%u'/0'/0/%u", chain->coinType, index);
+        snprintf_s(keys[i].path, BUFFER_SIZE_32, "M/44'/%u'/0'/0/%u", chain->coinType, (unsigned int)index);
     }
 
     UREncodeResult *urEncode = get_connect_keplr_wallet_ur(mfp, sizeof(mfp), publicKeys);

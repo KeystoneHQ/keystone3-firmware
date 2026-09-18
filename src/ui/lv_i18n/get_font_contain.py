@@ -7,12 +7,13 @@ import re
 import os
 import shutil
 import subprocess
+import tempfile
 
 from pathlib import Path
 
 g_font_size = 0
 
-def update_font_properties(file_path, font_size):
+def update_font_properties(file_path, font_size, output_path=None):
     font_properties = {
         20: (30, 7),
         24: (40, 11),
@@ -33,6 +34,9 @@ def update_font_properties(file_path, font_size):
                      f'.line_height = {line_height},          /*The maximum line height required by the font*/', content)
     content = re.sub(r'\.base_line = \d+,\s*/\*\s*Baseline measured from the bottom of the line\s*\*/',
                      f'.base_line = {base_line},             /*Baseline measured from the bottom of the line*/', content)
+    if output_path:
+        content = re.sub(r'(--format lvgl -o ).*',
+                         rf'\g<1>{output_path}', content, count=1)
 
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write(content)
@@ -85,7 +89,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
     elif font_size in [28, 36]:
         bpp = 1
 
-    output_file = "../gui_assets/font/" + language + "/" + label
+    output_file = (Path("../gui_assets/font") / language / label).resolve()
     try:
         with open(output_file, 'r', encoding='utf-8') as generated_font:
             has_space_glyph = '/* U+0020 " " */' in generated_font.read()
@@ -107,19 +111,23 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
         # font for U+0020, and a missing space is rendered as the missing-glyph
         # box between translated words.
         symbols_for_generation = unique_characters + " "
-        build_command = build_lv_font_conv_command(
-            bpp,
-            font_size,
-            font_mapping[language],
-            symbols_for_generation,
-            output_file,
-        )
-        cmd_result = subprocess.run(build_command, check=False)
-        if cmd_result.returncode != 0:
-            raise RuntimeError(
-                f"lv_font_conv failed with exit code {cmd_result.returncode}"
+        with tempfile.TemporaryDirectory(dir=output_file.parent) as temp_dir:
+            temp_output = Path(temp_dir) / output_file.name
+            build_command = build_lv_font_conv_command(
+                bpp,
+                font_size,
+                font_mapping[language],
+                symbols_for_generation,
+                temp_output,
             )
-        update_font_properties(output_file, font_size)
+            cmd_result = subprocess.run(build_command, check=False)
+            if cmd_result.returncode != 0:
+                raise RuntimeError(
+                    f"lv_font_conv failed with exit code {cmd_result.returncode}"
+                )
+            stable_output = f"../gui_assets/font/{language}/{label}"
+            update_font_properties(temp_output, font_size, stable_output)
+            shutil.copyfile(temp_output, output_file)
         # raise ValueError("Unique characters do not match the symbols provided in the command line.")
 
     return options, language
@@ -165,20 +173,18 @@ def main():
                 try:
                     with open(source_file_path, 'r', encoding='utf-8') as file:
                         lines = file.readlines()
-                        if len(lines) >= 4:
-                            parse_command_line(lines[3].strip(), font_size, language, unique_characters, f"{label}.c")
-                        else:
-                            print(f"The file {source_file_path} does not have a fourth line.")
                 except FileNotFoundError:
-                    print(language)
-                    try:
-                        with open(source_file_path, 'w', encoding='utf-8') as file:
-                            parse_command_line(font_size = font_size, language = language, unique_characters = unique_characters, label = f"{label}.c")
-                    except FileNotFoundError:
-                        print(f"The file {source_file_path} does not exist.")
+                    lines = []
+
+                if len(lines) >= 4:
+                    parse_command_line(lines[3].strip(), font_size, language, unique_characters, f"{label}.c")
+                else:
+                    parse_command_line(font_size=font_size, language=language,
+                                       unique_characters=unique_characters, label=f"{label}.c")
         except Exception as e:
             print("language is: g_font_size = ", language, g_font_size)
             print("An error occurred:", e)
+            raise
 
 if __name__ == '__main__':
     main()

@@ -2052,7 +2052,7 @@ static const unsigned char en_[] = {
     0x7a,0x6f,0x6f,0,
 };
 #define en ((const char*)en_)
-static const char *en_i[] = {
+static const char * const en_i[] = {
     en+0, en+8, en+16, en+21, en+27, en+33,
     en+40, en+47, en+56, en+63, en+69, en+76,
     en+85, en+93, en+100, en+108, en+113, en+122,
@@ -2404,5 +2404,5 @@ static const struct words en_words = {
     true,
     (const char *)en_,
     0, /* Constant string */
-    en_i
+    (const char **)en_i
 };

@@ -1,20 +1,21 @@
 use crate::common::errors::RustCError;
-use crate::common::structs::SimpleResponse;
-use crate::common::structs::{TransactionCheckResult, TransactionParseResult};
+use crate::common::structs::TransactionParseResult;
+use crate::common::structs::{ExtendedPublicKey, SimpleResponse};
 use crate::common::types::{PtrBytes, PtrString, PtrT, PtrUR};
 use crate::common::ur::{UREncodeResult, FRAGMENT_MAX_LENGTH_DEFAULT};
 use crate::common::utils::{convert_c_char, recover_c_char};
 use crate::extract_ptr_with_type;
 use crate::sui::get_public_key;
 use crate::{extract_array, extract_array_mut};
-use alloc::format;
 use alloc::vec::Vec;
 use alloc::{
     string::{String, ToString},
     vec,
 };
 use app_sui::errors::SuiError;
+use app_sui::types::intent::{IntentMessage, PersonalMessage};
 use app_sui::Intent;
+use app_utils::normalize_path;
 use cty::c_char;
 use structs::DisplayIotaIntentData;
 use structs::DisplayIotaSignMessageHash;
@@ -26,6 +27,43 @@ use ur_registry::traits::RegistryItem;
 use zeroize::Zeroize;
 
 pub mod structs;
+
+fn extract_personal_message_bytes(intent: &[u8]) -> Result<Vec<u8>, SuiError> {
+    if intent.get(..3) != Some(&[3, 0, 0]) {
+        return Err(SuiError::InvalidData(
+            "Invalid personal message intent".to_string(),
+        ));
+    }
+    bcs::from_bytes::<IntentMessage<PersonalMessage>>(intent)
+        .map(|message| message.value.message)
+        .map_err(SuiError::from)
+}
+
+fn signing_path(request: &IotaSignRequest) -> Result<String, SuiError> {
+    request
+        .get_derivation_paths()
+        .first()
+        .and_then(|path| path.get_path())
+        .map(|path| normalize_path(&path))
+        .ok_or_else(|| SuiError::InvalidData("Invalid signing path".to_string()))
+}
+
+fn verified_message_address(request: &IotaSignRequest, pubkey: &str) -> Result<String, SuiError> {
+    let address = app_iota::address::get_address_from_pubkey(pubkey.to_string())
+        .map_err(|e| SuiError::InvalidData(e.to_string()))?;
+    if let Some(addresses) = request.get_addresses() {
+        let supplied = addresses
+            .first()
+            .filter(|address| address.len() == 32)
+            .ok_or_else(|| SuiError::InvalidData("Invalid signing address".to_string()))?;
+        if hex::encode(supplied) != address[2..] {
+            return Err(SuiError::InvalidData(
+                "Signing address does not match device key".to_string(),
+            ));
+        }
+    }
+    Ok(address)
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn iota_get_address_from_pubkey(
@@ -41,32 +79,48 @@ pub unsafe extern "C" fn iota_get_address_from_pubkey(
 #[no_mangle]
 pub unsafe extern "C" fn iota_parse_intent(
     ptr: PtrUR,
+    keys: PtrT<ExtendedPublicKey>,
+    keys_len: u32,
 ) -> PtrT<TransactionParseResult<DisplayIotaIntentData>> {
     let sign_request = extract_ptr_with_type!(ptr, IotaSignRequest);
+    let keys = if keys.is_null() || keys_len == 0 {
+        &[]
+    } else {
+        extract_array!(keys, ExtendedPublicKey, keys_len)
+    };
+    match parse_iota_request(sign_request, keys) {
+        Ok(data) => TransactionParseResult::success(data.c_ptr()).c_ptr(),
+        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    }
+}
+
+unsafe fn parse_iota_request(
+    sign_request: &IotaSignRequest,
+    keys: &[ExtendedPublicKey],
+) -> Result<DisplayIotaIntentData, SuiError> {
     let sign_data = sign_request.get_intent_message();
 
-    let address = sign_request
-        .get_addresses()
-        .and_then(|addrs| addrs.first().cloned())
-        .map(|addr| format!("0x{}", hex::encode(addr)))
-        .unwrap_or_else(|| "0x".to_string());
-
-    let data = app_sui::parse_intent(&sign_data);
-    match data {
-        Ok(data) => match data {
-            Intent::TransactionData(ref transaction_data) => {
-                TransactionParseResult::success(DisplayIotaIntentData::from(data).c_ptr()).c_ptr()
-            }
-            Intent::PersonalMessage(ref personal_message) => TransactionParseResult::success(
-                DisplayIotaIntentData::from(data)
-                    .with_address(address)
-                    .c_ptr(),
-            )
-            .c_ptr(),
-            _ => TransactionParseResult::from(SuiError::InvalidData("Invalid intent".to_string()))
-                .c_ptr(),
-        },
-        Err(e) => TransactionParseResult::from(e).c_ptr(),
+    if sign_data.first() == Some(&3) {
+        let message = extract_personal_message_bytes(&sign_data)?;
+        let path = signing_path(sign_request)?;
+        let key = keys
+            .iter()
+            .find(|key| {
+                !key.path.is_null()
+                    && !key.xpub.is_null()
+                    && normalize_path(&recover_c_char(key.path)) == path
+            })
+            .ok_or_else(|| {
+                SuiError::InvalidData(
+                    "Unsupported IOTA signing path or missing device key".to_string(),
+                )
+            })?;
+        let address = verified_message_address(sign_request, &recover_c_char(key.xpub))?;
+        return Ok(DisplayIotaIntentData::personal_message(&message, address));
+    }
+    match app_sui::parse_intent(&sign_data)? {
+        data @ Intent::TransactionData(_) => Ok(DisplayIotaIntentData::from(data)),
+        _ => Err(SuiError::InvalidData("Invalid intent".to_string())),
     }
 }
 
@@ -219,6 +273,11 @@ pub unsafe extern "C" fn iota_sign_intent(
     let sign_data = sign_request.get_intent_message();
 
     let (signature, pub_key) = match iota_sign_internal(seed, &path, |s, p| {
+        if sign_data.first() == Some(&3) {
+            extract_personal_message_bytes(&sign_data)?;
+            let pubkey = get_public_key(s, &p.to_string())?;
+            verified_message_address(sign_request, &hex::encode(pubkey))?;
+        }
         app_sui::sign_intent(s, &p.to_string(), &sign_data.to_vec())
     }) {
         Ok(result) => result,

@@ -30,7 +30,9 @@ typedef struct {
     uint8_t q[SPI_FLASH_RSA_PRIME_SIZE];
 } Rsa_primes_t;
 
-Rsa_primes_t *FlashReadRsaPrimes(void);
+
+int32_t LoadAndValidateArKey(const char *password, Rsa_primes_t **out, SimpleResponse_c_char **publicKeyOut);
+bool ArKeyNeedsSetup(int32_t status);
 int FlashWriteRsaPrimes(const uint8_t *data);
 
 #endif

@@ -27,7 +27,7 @@
 #include "librust_c.h"
 #include "assert.h"
 #include "secret_cache.h"
-#include "drv_mpu.h"
+#include "background_task.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_storage.h"
@@ -46,9 +46,30 @@ static PassphraseInfo_t g_passphraseInfo[3] = {0};
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount);
 static int32_t LoadAccountSecret(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
 #ifndef COMPILE_SIMULATOR
+typedef struct {
+    uint8_t accountEncryptData[ACCOUNT_TOTAL_LEN];
+    uint8_t param[PARAM_LEN];
+    uint8_t preOtpEncryptKey[AES_KEY_LEN];
+} VerifiedAccountBlob_t;
+
+static int32_t VerifyAccountBlobFromSE(uint8_t accountIndex, const char *password,
+                                       VerifiedAccountBlob_t *verified,
+                                       const uint8_t *subkeyDomain,
+                                       uint8_t *derivedKeyOut);
+static int32_t DecryptAccountBlob(const VerifiedAccountBlob_t *verified, AccountSecret_t *accountSecret);
 static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password);
 #endif
 static int32_t AccountExists(uint8_t accountIndex, bool *exists);
+static int32_t FindAccountByPasswordInternal(uint8_t *matchedAccountIndex, const char *password,
+                                             const uint8_t *subkeyDomain,
+                                             uint8_t *derivedKey);
+static int32_t VerifyAccountPasswordInternal(uint8_t accountIndex, const char *password,
+                                             const uint8_t *subkeyDomain,
+                                             uint8_t *derivedKey);
+static void DeriveAccountSubkeyFromAccountBlobAuthKey(
+    const uint8_t accountBlobAuthKey[AUTH_KEY_LEN], uint8_t accountIndex,
+    const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
+    uint8_t derivedKey[AUTH_KEY_LEN]);
 
 static void CombineInnerAesKey(uint8_t *aesKey);
 static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char *passphrase, const char *password);
@@ -277,6 +298,10 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
     AccountSecret_t accountSecret;
 
     ASSERT(accountIndex <= 2);
+    if (accountIndex != GetCurrentAccountIndex() || GetIsTempAccount()) {
+        printf("change pin requires the current base account\r\n");
+        return ERR_GENERAL_FAIL;
+    }
     do {
         ret = CheckPasswordExisted(newPassword, accountIndex);
         CHECK_ERRCODE_BREAK("check repeat password", ret);
@@ -291,22 +316,15 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
         CHECK_ERRCODE_BREAK("prepare change pin", ret);
         ret = SaveAccountSecret(accountIndex, &accountSecret, newPassword, false);
         CHECK_ERRCODE_BREAK("save account secret", ret);   // on failure: status stays CHANGING_PIN -> boot erases
-        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // re-wrap committed
-        CHECK_ERRCODE_BREAK("set created status", ret);
 #ifdef CYPHERPUNK_VERSION
-        // The stored Zcash UFVK ciphertext is keyed by the login password, so keep it in sync here.
-        // Best effort after the PIN re-wrap is committed: a failure must not fail the password change,
-        // and a stale ciphertext is repaired by SetupZcashCache at the next login (which also migrates
-        // wallets whose password was changed before this sync existed). Temp (passphrase) accounts are
-        // skipped for the same reason.
-        if (accountIndex == GetCurrentAccountIndex() && !GetIsTempAccount() && IsZcashSupportedForCurrentMnemonic()) {
+        if (IsZcashSupportedForCurrentMnemonic()) {
             int seedLen = GetMnemonicType() == MNEMONIC_TYPE_SLIP39 ? accountSecret.entropyLen : sizeof(accountSecret.seed);
-            int32_t zcashRet = RegenerateZcashUFVK(accountIndex, accountSecret.seed, seedLen, newPassword, NULL, 0);
-            if (zcashRet != SUCCESS_CODE) {
-                printf("regenerate zcash ufvk err=%d\r\n", zcashRet);
-            }
+            ret = RegenerateZcashUFVKV3(accountIndex, accountSecret.seed, seedLen, newPassword);
+            CHECK_ERRCODE_BREAK("regenerate zcash z3 ufvk", ret);
         }
 #endif
+        ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);
+        CHECK_ERRCODE_BREAK("set created status", ret);
     } while (0);
     // SetNewKeyPieceToSE consumes the arm on the normal path; disarm here too so a change-PIN never
     // leaves it armed (e.g. if SaveAccountSecret returned before SetNewKeyPieceToSE).
@@ -321,14 +339,30 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
 /// @return err code.
 int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password)
 {
-    AccountSecret_t accountSecret;
+    return FindAccountByPasswordInternal(matchedAccountIndex, password, NULL, NULL);
+}
+
+static int32_t FindAccountByPasswordInternal(uint8_t *matchedAccountIndex, const char *password,
+                                             const uint8_t *subkeyDomain,
+                                             uint8_t *derivedKey)
+{
     uint8_t tryOrder[3];
     uint8_t lastAccountIndex;
     bool exists;
     int32_t ret = ERR_KEYSTORE_PASSWORD_ERR;
     uint8_t tryCount = 0;
+
+    ASSERT((subkeyDomain == NULL) == (derivedKey == NULL));
 #ifdef COMPILE_SIMULATOR
-    return SimulatorVerifyPassword(matchedAccountIndex, password);
+    uint8_t simulatorAccountIndex;
+    uint8_t *resultAccountIndex = matchedAccountIndex == NULL ? &simulatorAccountIndex : matchedAccountIndex;
+    if (derivedKey != NULL) {
+        ret = SimulatorVerifyPasswordAndDeriveSubkey(
+            resultAccountIndex, password, subkeyDomain, derivedKey);
+    } else {
+        ret = SimulatorVerifyPassword(resultAccountIndex, password);
+    }
+    return ret;
 #endif
 
     lastAccountIndex = GetLastAccountIndex();
@@ -350,15 +384,15 @@ int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password
             continue;
         }
 
-        ret = LoadAccountSecret(tryOrder[i], &accountSecret, password);
-        CLEAR_OBJECT(accountSecret);
+        ret = VerifyAccountPasswordInternal(
+            tryOrder[i], password, subkeyDomain, derivedKey);
         if (ret == SUCCESS_CODE) {
             if (matchedAccountIndex != NULL) {
                 *matchedAccountIndex = tryOrder[i];
             }
             break;
         }
-        if (ret == ERR_KEYSTORE_AUTH) {
+        if (ret == ERR_KEYSTORE_AUTH || ret == ERR_KEYSTORE_PASSWORD_ERR) {
             ret = ERR_KEYSTORE_PASSWORD_ERR;
             continue;
         }
@@ -370,13 +404,73 @@ int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password
 
 int32_t VerifyAccountPassword(uint8_t accountIndex, const char *password)
 {
-    AccountSecret_t accountSecret;
+    return VerifyAccountPasswordInternal(accountIndex, password, NULL, NULL);
+}
+
+static int32_t VerifyAccountPasswordInternal(uint8_t accountIndex, const char *password,
+                                             const uint8_t *subkeyDomain,
+                                             uint8_t *derivedKey)
+{
     int32_t ret;
 
     ASSERT(accountIndex <= 2);
-    ret = LoadAccountSecret(accountIndex, &accountSecret, password);
-    CLEAR_OBJECT(accountSecret);
+    ASSERT((subkeyDomain == NULL) == (derivedKey == NULL));
+#ifdef COMPILE_SIMULATOR
+    if (derivedKey != NULL) {
+        ret = SimulatorVerifyCurrentPasswordAndDeriveSubkey(
+            accountIndex, password, subkeyDomain, derivedKey);
+    } else {
+        ret = SimulatorVerifyCurrentPassword(accountIndex, password);
+    }
+#else
+    VerifiedAccountBlob_t verified;
+    CLEAR_OBJECT(verified);
+    ret = VerifyAccountBlobFromSE(
+        accountIndex, password, &verified, subkeyDomain, derivedKey);
+    CLEAR_OBJECT(verified);
+#endif
+    if (ret != SUCCESS_CODE && derivedKey != NULL) {
+        memset_s(derivedKey, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
+    }
     return (ret == ERR_KEYSTORE_AUTH) ? ERR_KEYSTORE_PASSWORD_ERR : ret;
+}
+
+int32_t FindAccountByPasswordAndDeriveSubkey(
+    uint8_t *matchedAccountIndex, const char *password,
+    const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
+    uint8_t derivedKey[AUTH_KEY_LEN])
+{
+    ASSERT(domain != NULL);
+    ASSERT(derivedKey != NULL);
+    memset_s(derivedKey, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
+    return FindAccountByPasswordInternal(
+        matchedAccountIndex, password, domain, derivedKey);
+}
+
+int32_t VerifyAccountPasswordAndDeriveSubkey(
+    uint8_t accountIndex, const char *password,
+    const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
+    uint8_t derivedKey[AUTH_KEY_LEN])
+{
+    ASSERT(domain != NULL);
+    ASSERT(derivedKey != NULL);
+    memset_s(derivedKey, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
+    return VerifyAccountPasswordInternal(
+        accountIndex, password, domain, derivedKey);
+}
+
+static void DeriveAccountSubkeyFromAccountBlobAuthKey(
+    const uint8_t accountBlobAuthKey[AUTH_KEY_LEN], uint8_t accountIndex,
+    const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
+    uint8_t derivedKey[AUTH_KEY_LEN])
+{
+    uint8_t context[ACCOUNT_SUBKEY_DOMAIN_LEN + 1];
+
+    memcpy_s(context, sizeof(context), domain, ACCOUNT_SUBKEY_DOMAIN_LEN);
+    context[ACCOUNT_SUBKEY_DOMAIN_LEN] = accountIndex;
+    hmac_sha256(accountBlobAuthKey, AUTH_KEY_LEN,
+                context, sizeof(context), derivedKey);
+    CLEAR_ARRAY(context);
 }
 
 /// @brief Check if password repeat with existing others.
@@ -421,8 +515,10 @@ int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex)
 /// @return err code.
 int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password)
 {
-    uint8_t seed[SEED_LEN];
-    int32_t ret;
+    uint8_t seed[SEED_LEN] = {0};
+    uint8_t newMfp[4] = {0};
+    SimpleResponse_u8 *simpleResponse = NULL;
+    int32_t ret = ERR_GENERAL_FAIL;
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
 
     ASSERT(strnlen_s(password, PASSWORD_MAX_LEN) >= 6);
@@ -430,38 +526,56 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
     do {
         ret = GetPassphraseSeed(accountIndex, seed, passphrase, password);
         CHECK_ERRCODE_BREAK("GetPassphraseSeed", ret);
-        SimpleResponse_u8 *simpleResponse = get_master_fingerprint(seed, len);
+        simpleResponse = get_master_fingerprint(seed, len);
         if (simpleResponse == NULL) {
             printf("get_master_fingerprint return NULL\r\n");
+            ret = ERR_GENERAL_FAIL;
             break;
         }
         if (simpleResponse->error_code != 0) {
             printf("get_master_fingerprint error\r\n");
             if (simpleResponse->error_message != NULL) {
-                printf("error code = %d\r\nerror msg is: %s\r\n", simpleResponse->error_code, simpleResponse->error_message);
+                printf("error code = %d\r\nerror msg is: %s\r\n", (int)simpleResponse->error_code, simpleResponse->error_message);
             }
         }
-        CHECK_ERRCODE_BREAK("get_master_fingerprint", simpleResponse->error_code);
-        uint8_t *masterFingerprint = simpleResponse->data;
-        memcpy_s(g_passphraseInfo[accountIndex].mfp, sizeof(g_passphraseInfo[accountIndex].mfp), masterFingerprint, 4);
+        ret = simpleResponse->error_code;
+        CHECK_ERRCODE_BREAK("get_master_fingerprint", ret);
+        memcpy_s(newMfp, sizeof(newMfp), simpleResponse->data, sizeof(newMfp));
         free_simple_response_u8(simpleResponse);
+        simpleResponse = NULL;
         if (strnlen_s(passphrase, PASSPHRASE_MAX_LEN) > 0) {
             strcpy_s(g_passphraseInfo[accountIndex].passphrase, PASSPHRASE_MAX_LEN, passphrase);
+            memcpy_s(g_passphraseInfo[accountIndex].mfp,
+                     sizeof(g_passphraseInfo[accountIndex].mfp), newMfp, sizeof(newMfp));
             g_passphraseInfo[accountIndex].passphraseExist = true;
             ret = TempAccountPublicInfo(accountIndex, password, true);
         } else {
             ClearAccountPassphrase(accountIndex);
             ret = AccountPublicInfoSwitch(accountIndex, password, false);
         }
+        CHECK_ERRCODE_BREAK("generate passphrase public info", ret);
 #ifdef WEB3_VERSION
-        SetupZcashSFP(accountIndex, password);
+        ret = SetupZcashSFP(accountIndex, password);
+        CHECK_ERRCODE_BREAK("setup passphrase zcash sfp", ret);
 #endif
 #ifdef CYPHERPUNK_VERSION
-        SetupZcashCache(accountIndex, password);
+        ret = SetupZcashCache(accountIndex, password, NULL);
+        CHECK_ERRCODE_BREAK("setup passphrase zcash cache", ret);
 #endif
         SetPassphraseMark(passphrase[0] != '\0');
     } while (0);
+    if (simpleResponse != NULL) {
+        free_simple_response_u8(simpleResponse);
+    }
     CLEAR_ARRAY(seed);
+    CLEAR_ARRAY(newMfp);
+
+    if (ret != SUCCESS_CODE) {
+        ClearAccountPassphrase(accountIndex);
+        ClearSecretCache();
+        LogoutCurrentAccount();
+        SystemReboot();
+    }
 
     return ret;
 }
@@ -529,7 +643,7 @@ char *GetPassphrase(uint8_t accountIndex)
 static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *accountSecret, const char *password, bool newAccount)
 {
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64];
-    uint8_t *enKey, *authKey;
+    uint8_t *enKey, *accountBlobAuthKey;
     uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39EmsOrTonEntropyL32, *encryptReservedData, *hmac;
     uint8_t accountEncryptData[ACCOUNT_TOTAL_LEN];
     int32_t ret;
@@ -538,7 +652,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
 
     ASSERT(accountIndex <= 2);
     enKey = sha512Hash;
-    authKey = sha512Hash + AES_KEY_LEN;
+    accountBlobAuthKey = sha512Hash + AES_KEY_LEN;
     iv = accountEncryptData;
     encryptEntropy = iv + AES_IV_LEN;
     encryptSeed = encryptEntropy + ENTROPY_MAX_LEN;
@@ -577,9 +691,10 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
         KEYSTORE_PRINT_ARRAY("encryptSeed", encryptSeed, SEED_LEN);
         KEYSTORE_PRINT_ARRAY("slip39EmsOrTonEntropyL32", slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN);
         KEYSTORE_PRINT_ARRAY("encryptReservedData", encryptReservedData, SE_DATA_RESERVED_LEN);
-        hmac_sha256(authKey, AUTH_KEY_LEN, accountEncryptData, ACCOUNT_TOTAL_LEN - HMAC_LEN, hmac);
+        hmac_sha256(accountBlobAuthKey, AUTH_KEY_LEN, accountEncryptData,
+                    ACCOUNT_TOTAL_LEN - HMAC_LEN, hmac);
         KEYSTORE_PRINT_ARRAY("accountEncryptData", accountEncryptData, ACCOUNT_TOTAL_LEN);
-        KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
+        KEYSTORE_PRINT_ARRAY("accountBlobAuthKey", accountBlobAuthKey, AUTH_KEY_LEN);
         // param[0] = accountSecret->entropyLen;
         ret = SE_HmacEncryptWrite(iv, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
         CHECK_ERRCODE_BREAK("write iv", ret);
@@ -612,7 +727,7 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
                 if (simpleResponse->error_code != 0) {
                     printf("get_master_fingerprint error\r\n");
                     if (simpleResponse->error_message != NULL) {
-                        printf("error code = %d\r\nerror msg is: %s\r\n", simpleResponse->error_code, simpleResponse->error_message);
+                        printf("error code = %d\r\nerror msg is: %s\r\n", (int)simpleResponse->error_code, simpleResponse->error_message);
                     }
                     ret = simpleResponse->error_code;
                     free_simple_response_u8(simpleResponse);   // was leaked on the error path
@@ -647,25 +762,32 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
     return ret;
 }
 
-/// @brief Load account secret with the SE PIN gate.
+#ifndef COMPILE_SIMULATOR
 /// @param[in] accountIndex Account index, 0~2.
-/// @param[out] accountSecret Account secret data.
 /// @param[in] password Password string.
 /// @return err code.
-#ifndef COMPILE_SIMULATOR
-static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
+static int32_t VerifyAccountBlobFromSE(uint8_t accountIndex, const char *password,
+                                       VerifiedAccountBlob_t *verified,
+                                       const uint8_t *subkeyDomain,
+                                       uint8_t *derivedKeyOut)
 {
     uint8_t pieces[KEY_PIECE_LEN * 2], hash[32], sha512Hash[64], hmacCalc[32];
-    uint8_t *enKey, *authKey;
+    uint8_t *enKey, *accountBlobAuthKey;
     uint8_t *iv, *encryptEntropy, *encryptSeed, *slip39EmsOrTonEntropyL32, *encryptReservedData, *hmac;
-    uint8_t accountEncryptData[ACCOUNT_TOTAL_LEN], param[32];
-    AccountInfo_t *pAccountInfo = (AccountInfo_t *)param;
+    uint8_t *accountEncryptData, *param;
     int32_t ret;
-    AES256_CBC_ctx ctx;
 
     ASSERT(accountIndex <= 2);
+    ASSERT(verified != NULL);
+    ASSERT((subkeyDomain == NULL) == (derivedKeyOut == NULL));
+    CLEAR_OBJECT(*verified);
+    if (derivedKeyOut != NULL) {
+        memset_s(derivedKeyOut, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
+    }
+    accountEncryptData = verified->accountEncryptData;
+    param = verified->param;
     enKey = sha512Hash;
-    authKey = sha512Hash + AES_KEY_LEN;
+    accountBlobAuthKey = sha512Hash + AES_KEY_LEN;
     iv = accountEncryptData;
     encryptEntropy = iv + AES_IV_LEN;
     encryptSeed = encryptEntropy + ENTROPY_MAX_LEN;
@@ -696,35 +818,76 @@ static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *ac
         CHECK_ERRCODE_BREAK("read hmac", ret);
         ret = SE_HmacEncryptRead(param, accountIndex * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_PARAM);
         CHECK_ERRCODE_BREAK("read param", ret);
-        hmac_sha256(authKey, AUTH_KEY_LEN, accountEncryptData, ACCOUNT_TOTAL_LEN - HMAC_LEN, hmacCalc);
+        hmac_sha256(accountBlobAuthKey, AUTH_KEY_LEN, accountEncryptData,
+                    ACCOUNT_TOTAL_LEN - HMAC_LEN, hmacCalc);
         KEYSTORE_PRINT_ARRAY("accountEncryptData", accountEncryptData, ACCOUNT_TOTAL_LEN);
-        KEYSTORE_PRINT_ARRAY("authKey", authKey, AUTH_KEY_LEN);
-        ret = ((memcmp(hmacCalc, hmac, HMAC_LEN) == 0) ? SUCCESS_CODE : ERR_KEYSTORE_AUTH);
+        KEYSTORE_PRINT_ARRAY("accountBlobAuthKey", accountBlobAuthKey, AUTH_KEY_LEN);
+        ret = ((timingsafe_bcmp(hmacCalc, hmac, HMAC_LEN) == 0) ? SUCCESS_CODE : ERR_KEYSTORE_AUTH);
         CHECK_ERRCODE_BREAK("check hmac", ret);
         // PIN proven correct here -> notify the SE backend of a successful unlock (gen-1: no-op).
         ret = SE_OnUnlockSuccess(accountIndex);
         CHECK_ERRCODE_BREAK("on unlock success", ret);
-        accountSecret->entropyLen = (pAccountInfo->entropyLen == 0) ? 32 : pAccountInfo->entropyLen; // 32 bytes as default.
-        CombineInnerAesKey(enKey);
-        AES256_CBC_init(&ctx, enKey, iv);
-        AES256_CBC_decrypt(&ctx, ENTROPY_MAX_LEN / AES_BLOCK_SIZE, accountSecret->entropy, encryptEntropy);
-        AES256_CBC_decrypt(&ctx, SEED_LEN / AES_BLOCK_SIZE, accountSecret->seed, encryptSeed);
-        AES256_CBC_decrypt(&ctx, SLIP39_EMS_LEN / AES_BLOCK_SIZE, accountSecret->slip39EmsOrTonEntropyL32, slip39EmsOrTonEntropyL32);
-        AES256_CBC_decrypt(&ctx, SE_DATA_RESERVED_LEN / AES_BLOCK_SIZE, accountSecret->reservedData, encryptReservedData);
-        KEYSTORE_PRINT_ARRAY("iv", iv, AES_IV_LEN);
-        KEYSTORE_PRINT_ARRAY("enKey", enKey, AES_KEY_LEN);
-        KEYSTORE_PRINT_ARRAY("encryptEntropy", encryptEntropy, ENTROPY_MAX_LEN);
-        KEYSTORE_PRINT_ARRAY("encryptSeed", encryptSeed, SEED_LEN);
-        KEYSTORE_PRINT_ARRAY("slip39EmsOrTonEntropyL32", slip39EmsOrTonEntropyL32, SLIP39_EMS_LEN);
-        KEYSTORE_PRINT_ARRAY("encryptReservedData", encryptReservedData, SE_DATA_RESERVED_LEN);
+        if (derivedKeyOut != NULL) {
+            DeriveAccountSubkeyFromAccountBlobAuthKey(
+                accountBlobAuthKey, accountIndex, subkeyDomain, derivedKeyOut);
+        }
+        memcpy_s(verified->preOtpEncryptKey, sizeof(verified->preOtpEncryptKey), enKey, AES_KEY_LEN);
     } while (0);
 
-    CLEAR_OBJECT(ctx);
     CLEAR_ARRAY(pieces);
     CLEAR_ARRAY(hash);
     CLEAR_ARRAY(sha512Hash);
-    CLEAR_ARRAY(accountEncryptData);
     CLEAR_ARRAY(hmacCalc);
+    if (ret != SUCCESS_CODE) {
+        CLEAR_OBJECT(*verified);
+        if (derivedKeyOut != NULL) {
+            memset_s(derivedKeyOut, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
+        }
+    }
+    return ret;
+}
+
+static int32_t DecryptAccountBlob(const VerifiedAccountBlob_t *verified, AccountSecret_t *accountSecret)
+{
+    uint8_t encryptKey[AES_KEY_LEN];
+    const uint8_t *iv = verified->accountEncryptData;
+    const uint8_t *encryptEntropy = iv + AES_IV_LEN;
+    const uint8_t *encryptSeed = encryptEntropy + ENTROPY_MAX_LEN;
+    const uint8_t *slip39EmsOrTonEntropyL32 = encryptSeed + SEED_LEN;
+    const uint8_t *encryptReservedData = slip39EmsOrTonEntropyL32 + SLIP39_EMS_LEN;
+    const AccountInfo_t *pAccountInfo = (const AccountInfo_t *)verified->param;
+    AES256_CBC_ctx ctx;
+
+    memcpy_s(encryptKey, sizeof(encryptKey), verified->preOtpEncryptKey, sizeof(encryptKey));
+    CombineInnerAesKey(encryptKey);
+    AES256_CBC_init(&ctx, encryptKey, iv);
+    AES256_CBC_decrypt(&ctx, ENTROPY_MAX_LEN / AES_BLOCK_SIZE, accountSecret->entropy, encryptEntropy);
+    AES256_CBC_decrypt(&ctx, SEED_LEN / AES_BLOCK_SIZE, accountSecret->seed, encryptSeed);
+    AES256_CBC_decrypt(&ctx, SLIP39_EMS_LEN / AES_BLOCK_SIZE, accountSecret->slip39EmsOrTonEntropyL32, slip39EmsOrTonEntropyL32);
+    AES256_CBC_decrypt(&ctx, SE_DATA_RESERVED_LEN / AES_BLOCK_SIZE, accountSecret->reservedData, encryptReservedData);
+    accountSecret->entropyLen = (pAccountInfo->entropyLen == 0) ? 32 : pAccountInfo->entropyLen;
+
+    CLEAR_OBJECT(ctx);
+    CLEAR_ARRAY(encryptKey);
+    return SUCCESS_CODE;
+}
+
+/// @brief Load account secret with the SE PIN gate.
+/// @param[in] accountIndex Account index, 0~2.
+/// @param[out] accountSecret Account secret data.
+/// @param[in] password Password string.
+/// @return err code.
+static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *accountSecret, const char *password)
+{
+    VerifiedAccountBlob_t verified;
+    int32_t ret;
+
+    CLEAR_OBJECT(verified);
+    ret = VerifyAccountBlobFromSE(accountIndex, password, &verified, NULL, NULL);
+    if (ret == SUCCESS_CODE) {
+        ret = DecryptAccountBlob(&verified, accountSecret);
+    }
+    CLEAR_OBJECT(verified);
     return ret;
 }
 #endif
@@ -752,21 +915,19 @@ static void CombineInnerAesKey(uint8_t *aesKey)
     uint8_t aesPiece[AES_KEY_LEN];
 #ifndef COMPILE_SIMULATOR
 
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy_s(aesPiece, sizeof(aesPiece), (uint8_t *)OTP_ADDR_AES_KEY, AES_KEY_LEN);
+    ReadOtpData(OTP_ADDR_AES_KEY, aesPiece, AES_KEY_LEN);
     if (CheckEntropy(aesPiece, AES_KEY_LEN) == false) {
         printf("need generate inner aes piece\r\n");
         TrngGet(aesPiece, AES_KEY_LEN);
         WriteOtpData(OTP_ADDR_AES_KEY, aesPiece, AES_KEY_LEN);
     }
-    MpuSetOtpProtection(true);
 #else
     TrngGet(aesPiece, AES_KEY_LEN);
 #endif
     for (uint32_t i = 0; i < AES_KEY_LEN; i++) {
         aesKey[i] ^= aesPiece[i];
     }
+    CLEAR_ARRAY(aesPiece);
 }
 
 /// @brief Get seed generated by passphrase.
@@ -856,7 +1017,7 @@ int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len)
 void KeyStoreTest(int argc, char *argv[])
 {
     uint8_t entropy[ENTROPY_MAX_LEN], seed[SEED_LEN], accountIndex, entropyLen, key[32], slip39Ems[SLIP39_EMS_LEN];
-    int32_t index, ret, tempI32;
+    int index, ret, tempI32;
     uint8_t byte32[BUFFER_SIZE_32] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 0};
     char tempStr[BUFFER_SIZE_32];
     uint8_t ems[BUFFER_SIZE_32];
@@ -1016,7 +1177,7 @@ void KeyStoreTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "public_info") == 0) {
         printf("login password err count=%d\r\n", GetLoginPasswordErrorCount());
         printf("current password err count=%d\r\n", GetCurrentPasswordErrorCount());
-        printf("last lock device time=%d\r\n", GetLastLockDeviceTime());
+        printf("last lock device time=%u\r\n", (unsigned int)GetLastLockDeviceTime());
     } else if (strcmp(argv[0], "set_last_lock_device_time") == 0) {
         SetLastLockDeviceTime(GetCurrentStampTime());
         printf("set last lock device time done\n");
@@ -1028,7 +1189,7 @@ void KeyStoreTest(int argc, char *argv[])
         for (accountIndex = 0; accountIndex < 3; accountIndex++) {
             printf("accountIndex %d:\r\n", accountIndex);
             printf("passphrase=%s\r\n", g_passphraseInfo[accountIndex].passphrase);
-            printf("mfp=0x%08X\r\n", *((uint32_t *)(g_passphraseInfo[accountIndex].mfp)));
+            printf("mfp=0x%08X\r\n", (unsigned int)*((uint32_t *)(g_passphraseInfo[accountIndex].mfp)));
         }
     } else if (strcmp(argv[0], "set_fp_info") == 0) {
         printf("set fp info test\r\n");

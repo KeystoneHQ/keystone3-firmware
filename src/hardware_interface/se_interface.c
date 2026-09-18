@@ -36,7 +36,8 @@ int32_t SE_DeriveKey(uint8_t slot, const uint8_t *authKey)
 //START: DS28S60
 int32_t SE_HmacEncryptRead(uint8_t *data, uint8_t page)
 {
-    int32_t ret = DS28S60_HmacEncryptRead(data, page);
+    ASSERT(page <= MAX_USER_PAGE);
+    int32_t ret = DS28S60_HmacAuthenticatedRead(data, page);
     ASSERT(ret == DS28S60_SUCCESS);
     return SUCCESS_CODE;
 }

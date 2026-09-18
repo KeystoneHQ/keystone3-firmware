@@ -1,17 +1,19 @@
 #include "service_resolve_ur.h"
-#include <string.h>
-#include <stdio.h>
-#include "user_delay.h"
+
+#include "general_msg.h"
 #include "gui_chain.h"
-#include "user_msg.h"
-#include "qrdecode_task.h"
+#include "gui_framework.h"
+#include "gui_home_widgets.h"
+#include "gui_key_derivation_request_widgets.h"
 #include "gui_lock_widgets.h"
 #include "gui_resolve_ur.h"
 #include "gui_views.h"
-#include "gui_framework.h"
-#include "general_msg.h"
-#include "gui_home_widgets.h"
-#include "gui_key_derivation_request_widgets.h"
+#include "qrdecode_task.h"
+#include "user_delay.h"
+#include "user_msg.h"
+
+#include <stdio.h>
+#include <string.h>
 
 /* DEFINES */
 #define REQUEST_ID_IDLE 0xFFFF
@@ -24,6 +26,25 @@ bool GuiIsSetup(void);
 
 /* STATIC VARIABLES */
 static uint16_t g_requestID = REQUEST_ID_IDLE;
+
+static void SetResultPageErrorMessage(EAPDUResultPage_t *resultPage, const void *data, uint32_t dataLen)
+{
+    size_t copyLen = 0;
+
+    if (resultPage == NULL) {
+        return;
+    }
+    if (data != NULL) {
+        copyLen = dataLen;
+        if (copyLen >= sizeof(resultPage->error_message)) {
+            copyLen = sizeof(resultPage->error_message) - 1;
+        }
+        if (copyLen > 0) {
+            memcpy(resultPage->error_message, data, copyLen);
+        }
+    }
+    resultPage->error_message[copyLen] = '\0';
+}
 
 static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t requestID, StatusEnum status)
 {
@@ -80,9 +101,12 @@ void HandleURResultViaUSBFunc(const void *data, uint32_t data_len, uint16_t requ
         return;
     }
     EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
+    if (resultPage == NULL) {
+        return;
+    }
     resultPage->command = CMD_RESOLVE_UR;
     resultPage->error_code = status;
-    resultPage->error_message = (char *)data;
+    SetResultPageErrorMessage(resultPage, data, data_len);
     GotoResultPage(resultPage);
     SRAM_FREE(resultPage);
 };
@@ -143,13 +167,10 @@ static bool CheckURAcceptable(void)
 
 static void GotoFailPage(StatusEnum error_code, const char *error_message)
 {
-    EAPDUResultPage_t *resultPage = (EAPDUResultPage_t *)SRAM_MALLOC(sizeof(EAPDUResultPage_t));
-    resultPage->command = CMD_RESOLVE_UR;
-    resultPage->error_code = error_code;
-    resultPage->error_message = (char *)error_message;
-    GotoResultPage(resultPage);
-    HandleURResultViaUSBFunc(error_message, strlen(error_message), g_requestID, error_code);
-    SRAM_FREE(resultPage);
+    uint32_t errorMessageLen = error_message == NULL
+                               ? 0
+                               : strnlen_s(error_message, EAPDU_RESULT_ERROR_MESSAGE_MAX_LEN - 1);
+    HandleURResultViaUSBFunc(error_message, errorMessageLen, g_requestID, error_code);
 }
 
 static bool IsRequestAllowed(uint32_t requestID)
@@ -227,6 +248,19 @@ static void HandleCheckResult(PtrT_TransactionCheckResult checkResult, UrViewTyp
     }
 }
 
+void ProcessURValidationError(EAPDURequestPayload_t *payload, const char *error_message)
+{
+    if ((payload == NULL) || (error_message == NULL)) {
+        return;
+    }
+    if (!IsRequestAllowed(payload->requestID)) {
+        return;
+    }
+
+    g_requestID = payload->requestID;
+    HandleURResultViaUSBFunc(error_message, strlen(error_message), g_requestID, PRS_PARSING_ERROR);
+}
+
 void ProcessURService(EAPDURequestPayload_t *payload)
 {
 #ifndef COMPILE_SIMULATOR
@@ -247,8 +281,7 @@ void ProcessURService(EAPDURequestPayload_t *payload)
 
         UrViewType_t urViewType = {
             .viewType = urResult->t,
-            .urType = urResult->ur_type
-        };
+            .urType = urResult->ur_type};
 
         if (urResult->ur_type == QRHardwareCall) {
             HandleHardwareCall(urResult);

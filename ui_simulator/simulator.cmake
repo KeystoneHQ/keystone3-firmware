@@ -53,7 +53,13 @@ file(GLOB_RECURSE UTILS
     "src/managers/keystore.c"
     "src/managers/account_manager.c"
     "src/managers/se_manager.c"
+    # The sandbox runtime and its chunk loop are portable C; the simulator
+    # drives them directly (ui_simulator/mpu_sandbox_sim.c), so that UR
+    # payload validation runs the same code as the device.
+    "src/tasks/mpu_sandbox_runtime.c"
+    "src/tasks/mpu_sandbox_validate.c"
 )
+list(APPEND SRC_INCLUDE_PATH src/tasks)
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/build) 
 SET(CMAKE_CXX_FLAGS "-O3")

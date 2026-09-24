@@ -77,7 +77,10 @@ use super::errors::{ErrorCodes, RustCError};
 use super::free::Free;
 use super::types::{PtrDecoder, PtrEncoder, PtrString, PtrUR};
 
-#[cfg(all(not(test), not(feature = "simulator")))]
+// The simulator links the real C sandbox chunking code (ui_simulator/
+// mpu_sandbox_sim.c drives src/tasks/mpu_sandbox_runtime.c directly), so
+// only unit tests, which have no C side, are excluded here.
+#[cfg(not(test))]
 unsafe extern "C" {
     fn MpuSandboxValidateCbor(
         input: *const u8,
@@ -85,6 +88,12 @@ unsafe extern "C" {
         validation_status: *mut u32,
     ) -> bool;
 }
+
+/// Data bytes per sandbox chunk (MPU_SANDBOX_UR_CHUNK_DATA_SIZE), so that
+/// unit tests feed the streaming validator across the same chunk boundaries the
+/// device does.
+#[cfg(test)]
+const SANDBOX_CHUNK_DATA_SIZE: usize = 224;
 
 struct KeystoneURDecoder {
     decoder: ur::Decoder,
@@ -122,7 +131,9 @@ impl KeystoneURDecoder {
 }
 
 fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
-    #[cfg(all(not(test), not(feature = "simulator")))]
+    // Device and simulator: the C side streams the payload through the MPU
+    // sandbox chunk by chunk (no copy is buffered inside the sandbox).
+    #[cfg(not(test))]
     let status = {
         let mut status = sandbox_parser::ValidationStatus::InvalidInput as u32;
         let available = unsafe { MpuSandboxValidateCbor(cbor.as_ptr(), cbor.len(), &mut status) };
@@ -134,11 +145,17 @@ fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
         status
     };
 
-    #[cfg(any(test, feature = "simulator"))]
-    let status = sandbox_parser::validate_cbor(cbor) as u32;
+    // Unit tests: same streaming validator, same chunk size, no C side.
+    #[cfg(test)]
+    let status = sandbox_parser::validate_cbor_chunked(cbor, SANDBOX_CHUNK_DATA_SIZE) as u32;
 
     if status == sandbox_parser::ValidationStatus::Ok as u32 {
         Ok(())
+    } else if status == sandbox_parser::ValidationStatus::InputTooLarge as u32 {
+        Err(URError::CborDecodeError(format!(
+            "reassembled UR of {} bytes exceeds the sandbox input limit for this firmware",
+            cbor.len()
+        )))
     } else {
         Err(URError::CborDecodeError(format!(
             "sandbox rejected reconstructed CBOR with status {status}"

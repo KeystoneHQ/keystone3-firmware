@@ -30,6 +30,9 @@ pub enum ValidationStatus {
     JsonItemLimit = 17,
     JsonTrailingData = 18,
     JsonRootType = 19,
+    /// Reported by the C side when a payload exceeds the sandbox input limit
+    /// for its build variant (`MPU_SANDBOX_*_INPUT_MAX_SIZE`).
+    InputTooLarge = 20,
 }
 
 const MINIMAL_WORDS: &[u8] = b"aeadaoaxaaahamatayasbkbdbnbtbabsbebybgbwbbbzcmchcscfcycwcecackctcxclcpcndkdadsdidedtdrdndwdpdmdldyeheyeoeeecenemetesftfrfnfsfmfhfzfpfwfxfyfefgflfdgagegrgsgtglgwgdgygmgughgohfhghdhkhthphhhlhyhehnhsidiaieihiyioisinimjejzjnjtjljojsjpjkjykpkoktkskkknkgkekikblblalylflslrlplnltloldlelulklgmnmymhmemomumwmdmtmsmknlnyndnsntnnnenboyoeotoxonolospdptpkpypspmplpepfpaprqdqzrerprlrorhrdrkrfryrnrsrtsesasrssskswstspsosgsbsfsntotktitttdtetytltbtstptatnuyuoutueurvtvyvovlvevwvavdvswlwdwmwpwewywswtwnwzwfwkykynylyaytzszoztzczezm";
@@ -150,197 +153,587 @@ impl<'a> Bytewords<'a> {
     }
 }
 
-trait CborSource {
-    fn len(&self) -> usize;
-    fn byte(&self, index: usize) -> Result<u8, ValidationStatus>;
+// ---------------------------------------------------------------------------
+// Streaming CBOR structure validator.
+//
+// Walks a CBOR item one byte at a time with an explicit stack, enforcing
+// MAX_NESTING_DEPTH and MAX_ITEMS and reporting exactly the statuses a
+// recursive-descent walk would (the recursive form is kept under `cfg(test)`
+// as `reference` and the two are checked against each other). Memory is
+// O(MAX_NESTING_DEPTH), independent of the payload: string bodies are skipped
+// by counting, never buffered, so that the MPU sandbox can validate a multipart UR
+// chunk by chunk without holding the reassembled payload.
+//
+// Sandbox constraints: no allocation, no panicking paths, and no bulk
+// zeroing or copying that LLVM would lower to a memclr/memcpy call. Calls
+// out of `.sandbox_text` are rejected by tools/check_mpu_sandbox_elf.py.
+// This has two consequences:
+// - The validator is never built as a struct literal: that makes LLVM zero
+//   the whole thing with one memclr call, so `new` writes the scalar fields
+//   one by one into a `MaybeUninit` slot.
+// - The stack and head buffers are `MaybeUninit`: initializing them would be
+//   that same bulk zeroing, and a `&mut` to the validator is only valid if
+//   every plain field holds a value.
+// Both buffers are written before they are read, and every index into them
+// is bounds-checked explicitly.
+// ---------------------------------------------------------------------------
+
+use core::mem::MaybeUninit;
+
+/// Definite-length array, map (remaining counts entries * 2) or tag (1).
+const FRAME_DEFINITE: u8 = 1;
+const FRAME_INDEF_ARRAY: u8 = 2;
+const FRAME_INDEF_MAP: u8 = 3;
+/// Indefinite-length byte/text string: `major` is the required chunk major.
+const FRAME_INDEF_STRING: u8 = 4;
+
+const PHASE_START: u8 = 0;
+const PHASE_ITEM: u8 = 1;
+const PHASE_DONE: u8 = 2;
+
+/// Containers are rejected when opened at depth MAX_NESTING_DEPTH, so at most
+/// that many array/map/tag frames are open, plus one indefinite-string frame
+/// (strings cannot nest).
+const STACK_CAPACITY: usize = MAX_NESTING_DEPTH as usize + 1;
+/// A CBOR head is at most 1 initial byte + an 8-byte argument.
+const HEAD_CAPACITY: usize = 9;
+
+#[repr(C)]
+#[derive(Clone, Copy)]
+struct Frame {
+    kind: u8,
+    major: u8,
+    /// Indefinite map: 1 while a value (not a key) is expected next.
+    expect_value: u8,
+    _pad: u8,
+    /// Items still expected in a definite frame (saturated: any declared
+    /// count beyond u32::MAX exceeds MAX_ITEMS long before it matters).
+    remaining: u32,
 }
 
-impl CborSource for Bytewords<'_> {
-    fn len(&self) -> usize {
-        self.payload_len
-    }
-
-    fn byte(&self, index: usize) -> Result<u8, ValidationStatus> {
-        self.decoded_byte(index)
-    }
-}
-
-struct RawCbor<'a>(&'a [u8]);
-
-impl CborSource for RawCbor<'_> {
-    fn len(&self) -> usize {
-        self.0.len()
-    }
-
-    fn byte(&self, index: usize) -> Result<u8, ValidationStatus> {
-        self.0
-            .get(index)
-            .copied()
-            .ok_or(ValidationStatus::CborUnexpectedEof)
-    }
-}
-
-struct CborReader<S> {
-    source: S,
-    position: usize,
-}
-
-impl<S: CborSource> CborReader<S> {
-    fn read(&mut self) -> Result<u8, ValidationStatus> {
-        if self.position >= self.source.len() {
-            return Err(ValidationStatus::CborUnexpectedEof);
-        }
-        let value = self.source.byte(self.position)?;
-        self.position += 1;
-        Ok(value)
-    }
-
-    fn peek(&self) -> Result<u8, ValidationStatus> {
-        if self.position >= self.source.len() {
-            return Err(ValidationStatus::CborUnexpectedEof);
-        }
-        self.source.byte(self.position)
-    }
-
-    fn skip(&mut self, length: u64) -> Result<(), ValidationStatus> {
-        let remaining = self.source.len() - self.position;
-        if length > remaining as u64 {
-            return Err(ValidationStatus::CborUnexpectedEof);
-        }
-        self.position += length as usize;
-        Ok(())
-    }
-}
-
-fn read_argument<S: CborSource>(
-    reader: &mut CborReader<S>,
-    additional: u8,
-) -> Result<Option<u64>, ValidationStatus> {
-    match additional {
-        0..=23 => Ok(Some(u64::from(additional))),
-        24 => Ok(Some(u64::from(reader.read()?))),
-        25..=27 => {
-            let byte_count = 1u8 << (additional - 24);
-            let mut value = 0u64;
-            let mut index = 0u8;
-            while index < byte_count {
-                value = (value << 8) | u64::from(reader.read()?);
-                index += 1;
-            }
-            Ok(Some(value))
-        }
-        31 => Ok(None),
-        _ => Err(ValidationStatus::CborInvalid),
-    }
-}
-
-fn child_depth(depth: u32) -> Result<u32, ValidationStatus> {
-    if depth >= MAX_NESTING_DEPTH {
-        Err(ValidationStatus::CborNestingLimit)
-    } else {
-        Ok(depth + 1)
-    }
-}
-
-fn consume_indefinite_string<S: CborSource>(
-    reader: &mut CborReader<S>,
-    expected_major: u8,
-) -> Result<(), ValidationStatus> {
-    loop {
-        let initial = reader.peek()?;
-        if initial == 0xff {
-            reader.read()?;
-            return Ok(());
-        }
-        reader.read()?;
-        if (initial >> 5) != expected_major {
-            return Err(ValidationStatus::CborInvalid);
-        }
-        let length = read_argument(reader, initial & 0x1f)?.ok_or(ValidationStatus::CborInvalid)?;
-        reader.skip(length)?;
-    }
-}
-
-fn validate_cbor_item<S: CborSource>(
-    reader: &mut CborReader<S>,
+#[repr(C, align(8))]
+pub struct CborStreamValidator {
+    skip_remaining: u64,
+    /// Frames `0..sp` are initialized: `push_frame` writes each before `sp`
+    /// covers it, and nothing above `sp` is ever read. `MaybeUninit` because
+    /// initializing the array would be a memclr call (see sandbox
+    /// constraints above).
+    stack: MaybeUninit<[Frame; STACK_CAPACITY]>,
+    sp: u32,
+    /// Open array/map/tag frames (indefinite-string frames excluded).
     depth: u32,
-    item_count: &mut u32,
-) -> Result<(), ValidationStatus> {
-    if *item_count >= MAX_ITEMS {
-        return Err(ValidationStatus::CborItemLimit);
-    }
-    *item_count += 1;
+    item_count: u32,
+    /// Sticky failure status (0 = none), reported by `finish`.
+    status: u32,
+    /// Bytes `0..head_len` are initialized; `MaybeUninit` for the same
+    /// reason as `stack` (see sandbox constraints above).
+    head: MaybeUninit<[u8; HEAD_CAPACITY]>,
+    head_len: u8,
+    head_need: u8,
+    phase: u8,
+    /// The current skip is an indefinite-string chunk body, not an item.
+    skip_is_chunk: u8,
+}
 
-    let initial = reader.read()?;
-    let major = initial >> 5;
-    let argument = read_argument(reader, initial & 0x1f)?;
-    match major {
-        0 | 1 => {
-            if argument.is_none() {
-                return Err(ValidationStatus::CborInvalid);
-            }
-        }
-        2 | 3 => match argument {
-            Some(length) => reader.skip(length)?,
-            None => consume_indefinite_string(reader, major)?,
-        },
-        4 => {
-            let depth = child_depth(depth)?;
-            match argument {
-                Some(length) => {
-                    let mut index = 0u64;
-                    while index < length {
-                        validate_cbor_item(reader, depth, item_count)?;
-                        index += 1;
-                    }
-                }
-                None => loop {
-                    if reader.peek()? == 0xff {
-                        reader.read()?;
-                        break;
-                    }
-                    validate_cbor_item(reader, depth, item_count)?;
-                },
-            }
-        }
-        5 => {
-            let depth = child_depth(depth)?;
-            match argument {
-                Some(length) => {
-                    let mut index = 0u64;
-                    while index < length {
-                        validate_cbor_item(reader, depth, item_count)?;
-                        validate_cbor_item(reader, depth, item_count)?;
-                        index += 1;
-                    }
-                }
-                None => loop {
-                    if reader.peek()? == 0xff {
-                        reader.read()?;
-                        break;
-                    }
-                    validate_cbor_item(reader, depth, item_count)?;
-                    if reader.peek()? == 0xff {
-                        return Err(ValidationStatus::CborInvalid);
-                    }
-                    validate_cbor_item(reader, depth, item_count)?;
-                },
-            }
-        }
-        6 => {
-            if argument.is_none() {
-                return Err(ValidationStatus::CborInvalid);
-            }
-            validate_cbor_item(reader, child_depth(depth)?, item_count)?;
-        }
-        7 => {
-            if argument.is_none() {
-                return Err(ValidationStatus::CborInvalid);
-            }
-        }
-        _ => return Err(ValidationStatus::CborInvalid),
+const _: () =
+    assert!(core::mem::size_of::<CborStreamValidator>() <= CborStreamValidator::STATE_SIZE);
+
+impl CborStreamValidator {
+    /// Bytes the C side must reserve (matches MPU_SANDBOX_CBOR_STREAM_STATE_SIZE).
+    pub const STATE_SIZE: usize = 512;
+    pub const STATE_ALIGN: usize = 8;
+
+    /// Initializes the scalar fields of a validator in place, one volatile
+    /// store each. A struct literal would not do: constructing the struct by
+    /// value makes LLVM zero the whole thing with a memclr call, which the
+    /// sandbox must not make (see sandbox constraints above). `stack` and
+    /// `head` are left uninitialized; both are written before being read.
+    ///
+    /// # Safety
+    /// `ptr` must be valid for writes of `Self`.
+    unsafe fn init_raw(ptr: *mut Self) {
+        use core::ptr::{addr_of_mut, write_volatile};
+        write_volatile(addr_of_mut!((*ptr).skip_remaining), 0);
+        write_volatile(addr_of_mut!((*ptr).sp), 0);
+        write_volatile(addr_of_mut!((*ptr).depth), 0);
+        write_volatile(addr_of_mut!((*ptr).item_count), 0);
+        write_volatile(addr_of_mut!((*ptr).status), 0);
+        write_volatile(addr_of_mut!((*ptr).head_len), 0);
+        write_volatile(addr_of_mut!((*ptr).head_need), 0);
+        write_volatile(addr_of_mut!((*ptr).phase), PHASE_START);
+        write_volatile(addr_of_mut!((*ptr).skip_is_chunk), 0);
     }
-    Ok(())
+
+    /// Creates a validator. It is built inside a `MaybeUninit` and then
+    /// assumed initialized, because a struct literal would make LLVM zero the
+    /// whole thing with a memclr call (see sandbox constraints above). Always
+    /// inlined so that the slot becomes the caller's local and the return is
+    /// not a copy.
+    #[inline(always)]
+    pub fn new() -> Self {
+        let mut slot = MaybeUninit::<Self>::uninit();
+        // SAFETY: `init_raw` initializes every field that is not itself
+        // `MaybeUninit`, which is all `assume_init` requires.
+        unsafe {
+            Self::init_raw(slot.as_mut_ptr());
+            slot.assume_init()
+        }
+    }
+
+    fn head_byte(&self, index: usize) -> u8 {
+        if index >= self.head_len as usize {
+            return 0;
+        }
+        // SAFETY: `index < head_len <= HEAD_CAPACITY`, and bytes below
+        // `head_len` were written by `set_head_byte`.
+        unsafe { *(self.head.as_ptr() as *const u8).add(index) }
+    }
+
+    fn set_head_byte(&mut self, index: usize, value: u8) -> bool {
+        if index >= HEAD_CAPACITY {
+            return false;
+        }
+        // SAFETY: `index < HEAD_CAPACITY`.
+        unsafe { (self.head.as_mut_ptr() as *mut u8).add(index).write(value) };
+        true
+    }
+
+    /// Reinitializes validator state living in caller-provided memory (the
+    /// sandbox RW region). Only scalars are written: frames are fully written
+    /// on push and the head buffer is dead while `head_len == 0`.
+    pub fn reset(&mut self) {
+        // SAFETY: `self` is valid for writes of `Self`.
+        unsafe { Self::init_raw(self) }
+    }
+
+    /// Initializes validator state in `capacity` bytes of caller-provided
+    /// memory at `ptr`, after checking size and alignment; returns whether
+    /// the validator fits. Only the scalar fields are written (see
+    /// `init_raw`), so the memory need not be initialized beforehand.
+    ///
+    /// # Safety
+    /// `ptr` must be valid for writes of `capacity` bytes.
+    pub unsafe fn init_in_raw(ptr: *mut u8, capacity: usize) -> bool {
+        if !Self::raw_fits(ptr, capacity) {
+            return false;
+        }
+        Self::init_raw(ptr as *mut Self);
+        true
+    }
+
+    /// Views validator state in caller-provided memory, after checking size
+    /// and alignment.
+    ///
+    /// # Safety
+    /// `ptr` must be valid for reads and writes of `capacity` bytes for the
+    /// returned lifetime, and the memory must not be accessed otherwise during
+    /// it. It must hold validator state: every field that is not `MaybeUninit`
+    /// is initialized, and the frames below `sp` and the head bytes below
+    /// `head_len` were written by this type. Memory initialized by
+    /// `init_in_raw`, or fully initialized memory (for example zeroed) that has
+    /// since been modified only through this type, satisfies this.
+    pub unsafe fn from_raw<'a>(ptr: *mut u8, capacity: usize) -> Option<&'a mut Self> {
+        if !Self::raw_fits(ptr, capacity) {
+            return None;
+        }
+        Some(&mut *(ptr as *mut Self))
+    }
+
+    fn raw_fits(ptr: *mut u8, capacity: usize) -> bool {
+        !ptr.is_null()
+            && capacity >= core::mem::size_of::<Self>()
+            && (ptr as usize) % core::mem::align_of::<Self>() == 0
+    }
+
+    pub fn push(&mut self, bytes: &[u8]) {
+        for byte in bytes.iter().copied() {
+            if self.status != 0 {
+                return;
+            }
+            self.feed(byte);
+        }
+    }
+
+    pub fn finish(&mut self) -> ValidationStatus {
+        if let Some(status) = status_from_u32(self.status) {
+            return status;
+        }
+        if self.phase == PHASE_DONE {
+            ValidationStatus::Ok
+        } else {
+            ValidationStatus::CborUnexpectedEof
+        }
+    }
+
+    fn fail(&mut self, status: ValidationStatus) {
+        self.status = status as u32;
+    }
+
+    fn top(&mut self) -> Option<&mut Frame> {
+        let index = (self.sp as usize).checked_sub(1)?;
+        if index >= STACK_CAPACITY {
+            return None;
+        }
+        // SAFETY: `index < sp <= STACK_CAPACITY`, and every frame below `sp`
+        // was written by `push_frame` since the last `reset`.
+        Some(unsafe { &mut *(self.stack.as_mut_ptr() as *mut Frame).add(index) })
+    }
+
+    fn top_kind(&self) -> u8 {
+        match (self.sp as usize).checked_sub(1) {
+            Some(index) if index < STACK_CAPACITY => {
+                // SAFETY: `index < sp <= STACK_CAPACITY`, and every frame below
+                // `sp` was written by `push_frame` since the last `reset`.
+                unsafe { (*(self.stack.as_ptr() as *const Frame).add(index)).kind }
+            }
+            _ => 0,
+        }
+    }
+
+    fn push_frame(&mut self, frame: Frame) -> bool {
+        let index = self.sp as usize;
+        if index >= STACK_CAPACITY {
+            return false;
+        }
+        // SAFETY: `index < STACK_CAPACITY`; the slot is fully written before
+        // `sp` is raised to cover it.
+        unsafe {
+            (self.stack.as_mut_ptr() as *mut Frame)
+                .add(index)
+                .write(frame)
+        };
+        self.sp += 1;
+        true
+    }
+
+    fn pop_frame(&mut self) {
+        self.sp = self.sp.saturating_sub(1);
+    }
+
+    fn feed(&mut self, byte: u8) {
+        if self.phase == PHASE_DONE {
+            self.fail(ValidationStatus::CborTrailingData);
+            return;
+        }
+        if self.skip_remaining > 0 {
+            self.skip_remaining -= 1;
+            if self.skip_remaining == 0 && self.skip_is_chunk == 0 {
+                self.complete_item();
+            }
+            return;
+        }
+        if self.head_len == 0 {
+            self.begin_head(byte);
+            return;
+        }
+        if !self.set_head_byte(self.head_len as usize, byte) {
+            self.fail(ValidationStatus::CborInvalid);
+            return;
+        }
+        self.head_len += 1;
+        if self.head_len >= self.head_need {
+            self.dispatch_head();
+        }
+    }
+
+    /// First byte of a head: a break, an indefinite-string chunk head, or the
+    /// start of an item (which is where items are counted).
+    fn begin_head(&mut self, byte: u8) {
+        self.phase = PHASE_ITEM;
+        let kind = self.top_kind();
+        if byte == 0xff {
+            match kind {
+                FRAME_INDEF_ARRAY => {
+                    self.pop_frame();
+                    self.depth = self.depth.saturating_sub(1);
+                    self.complete_item();
+                }
+                FRAME_INDEF_MAP => {
+                    let expect_value = self.top().map(|frame| frame.expect_value).unwrap_or(0);
+                    if expect_value != 0 {
+                        self.fail(ValidationStatus::CborInvalid);
+                    } else {
+                        self.pop_frame();
+                        self.depth = self.depth.saturating_sub(1);
+                        self.complete_item();
+                    }
+                }
+                FRAME_INDEF_STRING => {
+                    self.pop_frame();
+                    self.complete_item();
+                }
+                // A break where an item is required (top level, definite
+                // container, tag content) is major 7 with no argument.
+                _ => self.fail(ValidationStatus::CborInvalid),
+            }
+            return;
+        }
+        if kind == FRAME_INDEF_STRING {
+            // A chunk's major type is checked before its length is read, so a
+            // wrong-major chunk is Invalid even if the input ends right here.
+            let expected = self.top().map(|frame| frame.major).unwrap_or(0);
+            if (byte >> 5) != expected {
+                self.fail(ValidationStatus::CborInvalid);
+                return;
+            }
+        } else {
+            if self.item_count >= MAX_ITEMS {
+                self.fail(ValidationStatus::CborItemLimit);
+                return;
+            }
+            self.item_count += 1;
+        }
+        let need = match byte & 0x1f {
+            0..=23 | 31 => 1,
+            24 => 2,
+            25 => 3,
+            26 => 5,
+            27 => 9,
+            _ => {
+                self.fail(ValidationStatus::CborInvalid);
+                return;
+            }
+        };
+        let _ = self.set_head_byte(0, byte);
+        self.head_len = 1;
+        self.head_need = need;
+        if need == 1 {
+            self.dispatch_head();
+        }
+    }
+
+    fn head_argument(&self) -> Option<u64> {
+        let additional = self.head_byte(0) & 0x1f;
+        match additional {
+            0..=23 => Some(u64::from(additional)),
+            31 => None,
+            _ => {
+                let mut value = 0u64;
+                let mut index = 1usize;
+                while index < self.head_need as usize {
+                    value = (value << 8) | u64::from(self.head_byte(index));
+                    index += 1;
+                }
+                Some(value)
+            }
+        }
+    }
+
+    fn dispatch_head(&mut self) {
+        let major = self.head_byte(0) >> 5;
+        let argument = self.head_argument();
+        self.head_len = 0;
+        self.head_need = 0;
+
+        if self.top_kind() == FRAME_INDEF_STRING {
+            self.dispatch_string_chunk(major, argument);
+            return;
+        }
+
+        match major {
+            0 | 1 => {
+                if argument.is_none() {
+                    self.fail(ValidationStatus::CborInvalid);
+                } else {
+                    self.complete_item();
+                }
+            }
+            2 | 3 => match argument {
+                Some(0) => self.complete_item(),
+                Some(length) => {
+                    self.skip_remaining = length;
+                    self.skip_is_chunk = 0;
+                }
+                None => {
+                    if !self.push_frame(Frame {
+                        kind: FRAME_INDEF_STRING,
+                        major,
+                        expect_value: 0,
+                        _pad: 0,
+                        remaining: 0,
+                    }) {
+                        self.fail(ValidationStatus::CborNestingLimit);
+                    }
+                }
+            },
+            4 | 5 => {
+                if self.depth >= MAX_NESTING_DEPTH {
+                    self.fail(ValidationStatus::CborNestingLimit);
+                    return;
+                }
+                match argument {
+                    Some(0) => self.complete_item(),
+                    Some(count) => {
+                        let entries = if major == 5 {
+                            count.saturating_mul(2)
+                        } else {
+                            count
+                        };
+                        self.open_definite(saturate(entries));
+                    }
+                    None => {
+                        let kind = if major == 5 {
+                            FRAME_INDEF_MAP
+                        } else {
+                            FRAME_INDEF_ARRAY
+                        };
+                        if self.push_frame(Frame {
+                            kind,
+                            major: 0,
+                            expect_value: 0,
+                            _pad: 0,
+                            remaining: 0,
+                        }) {
+                            self.depth += 1;
+                        } else {
+                            self.fail(ValidationStatus::CborNestingLimit);
+                        }
+                    }
+                }
+            }
+            6 => {
+                if argument.is_none() {
+                    self.fail(ValidationStatus::CborInvalid);
+                } else if self.depth >= MAX_NESTING_DEPTH {
+                    self.fail(ValidationStatus::CborNestingLimit);
+                } else {
+                    self.open_definite(1);
+                }
+            }
+            _ => {
+                // Major 7: simple values and floats are complete; a break
+                // (no argument) is only valid where a break was expected,
+                // which `begin_head` already handled.
+                if argument.is_none() {
+                    self.fail(ValidationStatus::CborInvalid);
+                } else {
+                    self.complete_item();
+                }
+            }
+        }
+    }
+
+    fn open_definite(&mut self, remaining: u32) {
+        if self.push_frame(Frame {
+            kind: FRAME_DEFINITE,
+            major: 0,
+            expect_value: 0,
+            _pad: 0,
+            remaining,
+        }) {
+            self.depth += 1;
+            self.expect_definite_item();
+        } else {
+            self.fail(ValidationStatus::CborNestingLimit);
+        }
+    }
+
+    /// A definite frame is about to read another item: the recursive walk
+    /// checks the item budget before reading anything, so do the same here
+    /// (this decides ItemLimit vs UnexpectedEof when input ends right there).
+    fn expect_definite_item(&mut self) {
+        if self.item_count >= MAX_ITEMS {
+            self.fail(ValidationStatus::CborItemLimit);
+        }
+    }
+
+    fn dispatch_string_chunk(&mut self, major: u8, argument: Option<u64>) {
+        let expected = self.top().map(|frame| frame.major).unwrap_or(0);
+        if major != expected {
+            self.fail(ValidationStatus::CborInvalid);
+            return;
+        }
+        match argument {
+            None => self.fail(ValidationStatus::CborInvalid),
+            Some(0) => {}
+            Some(length) => {
+                self.skip_remaining = length;
+                self.skip_is_chunk = 1;
+            }
+        }
+    }
+
+    /// An item finished: close every definite frame it completes, then
+    /// arm the next expectation.
+    fn complete_item(&mut self) {
+        loop {
+            let kind = self.top_kind();
+            match kind {
+                0 => {
+                    self.phase = PHASE_DONE;
+                    return;
+                }
+                FRAME_DEFINITE => {
+                    let remaining = match self.top() {
+                        Some(frame) => {
+                            frame.remaining = frame.remaining.saturating_sub(1);
+                            frame.remaining
+                        }
+                        None => 0,
+                    };
+                    if remaining == 0 {
+                        self.pop_frame();
+                        self.depth = self.depth.saturating_sub(1);
+                        continue;
+                    }
+                    self.expect_definite_item();
+                    return;
+                }
+                FRAME_INDEF_ARRAY => return,
+                FRAME_INDEF_MAP => {
+                    if let Some(frame) = self.top() {
+                        frame.expect_value ^= 1;
+                    }
+                    return;
+                }
+                _ => {
+                    // Chunks of an indefinite string never reach here.
+                    self.fail(ValidationStatus::CborInvalid);
+                    return;
+                }
+            }
+        }
+    }
+}
+
+impl Default for CborStreamValidator {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+fn saturate(value: u64) -> u32 {
+    if value > u64::from(u32::MAX) {
+        u32::MAX
+    } else {
+        value as u32
+    }
+}
+
+fn status_from_u32(value: u32) -> Option<ValidationStatus> {
+    Some(match value {
+        1 => ValidationStatus::Ok,
+        2 => ValidationStatus::InvalidInput,
+        3 => ValidationStatus::InvalidScheme,
+        4 => ValidationStatus::InvalidType,
+        5 => ValidationStatus::InvalidMultipart,
+        6 => ValidationStatus::InvalidBytewordsLength,
+        7 => ValidationStatus::InvalidBytewordsWord,
+        8 => ValidationStatus::InvalidChecksum,
+        9 => ValidationStatus::CborUnexpectedEof,
+        10 => ValidationStatus::CborInvalid,
+        11 => ValidationStatus::CborNestingLimit,
+        12 => ValidationStatus::CborItemLimit,
+        13 => ValidationStatus::CborTrailingData,
+        14 => ValidationStatus::JsonUnexpectedEof,
+        15 => ValidationStatus::JsonInvalid,
+        16 => ValidationStatus::JsonNestingLimit,
+        17 => ValidationStatus::JsonItemLimit,
+        18 => ValidationStatus::JsonTrailingData,
+        19 => ValidationStatus::JsonRootType,
+        20 => ValidationStatus::InputTooLarge,
+        _ => return None,
+    })
 }
 
 fn find_byte(value: &[u8], needle: u8) -> Option<usize> {
@@ -462,16 +855,17 @@ pub fn validate_ur(value: &[u8]) -> ValidationStatus {
     let result = (|| {
         let body = parse_ur_body(value)?;
         let source = Bytewords::new(body)?;
-        let mut reader = CborReader {
-            source,
-            position: 0,
-        };
-        let mut item_count = 0u32;
-        validate_cbor_item(&mut reader, 0, &mut item_count)?;
-        if reader.position != reader.source.len() {
-            return Err(ValidationStatus::CborTrailingData);
+        let mut validator = CborStreamValidator::new();
+        let mut index = 0usize;
+        while index < source.payload_len {
+            let byte = source.decoded_byte(index)?;
+            validator.push(&[byte]);
+            index += 1;
         }
-        Ok(())
+        match validator.finish() {
+            ValidationStatus::Ok => Ok(()),
+            status => Err(status),
+        }
     })();
 
     match result {
@@ -481,26 +875,26 @@ pub fn validate_ur(value: &[u8]) -> ValidationStatus {
 }
 
 pub fn validate_cbor(value: &[u8]) -> ValidationStatus {
-    let result = (|| {
-        if value.is_empty() {
-            return Err(ValidationStatus::InvalidInput);
-        }
-        let mut reader = CborReader {
-            source: RawCbor(value),
-            position: 0,
-        };
-        let mut item_count = 0u32;
-        validate_cbor_item(&mut reader, 0, &mut item_count)?;
-        if reader.position != reader.source.len() {
-            return Err(ValidationStatus::CborTrailingData);
-        }
-        Ok(())
-    })();
-
-    match result {
-        Ok(()) => ValidationStatus::Ok,
-        Err(status) => status,
+    if value.is_empty() {
+        return ValidationStatus::InvalidInput;
     }
+    let mut validator = CborStreamValidator::new();
+    validator.push(value);
+    validator.finish()
+}
+
+/// `validate_cbor` fed in `chunk_len`-byte pieces, exactly as the MPU sandbox
+/// receives a reassembled multipart UR. Lets host tests cover chunk-boundary
+/// behavior of the same state machine the device runs.
+pub fn validate_cbor_chunked(value: &[u8], chunk_len: usize) -> ValidationStatus {
+    if value.is_empty() {
+        return ValidationStatus::InvalidInput;
+    }
+    let mut validator = CborStreamValidator::new();
+    for chunk in value.chunks(chunk_len.max(1)) {
+        validator.push(chunk);
+    }
+    validator.finish()
 }
 
 fn hex_digit(value: u8) -> Result<u16, ValidationStatus> {
@@ -711,6 +1105,191 @@ pub fn validate_eip712_json(value: &mut [u8]) -> ValidationStatus {
     }
 }
 
+/// The original recursive-descent validator, kept only as the oracle that
+/// the streaming implementation is checked against.
+#[cfg(test)]
+mod reference {
+    use super::{ValidationStatus, MAX_ITEMS, MAX_NESTING_DEPTH};
+
+    struct Reader<'a> {
+        source: &'a [u8],
+        position: usize,
+    }
+
+    impl Reader<'_> {
+        fn read(&mut self) -> Result<u8, ValidationStatus> {
+            let value = self
+                .source
+                .get(self.position)
+                .copied()
+                .ok_or(ValidationStatus::CborUnexpectedEof)?;
+            self.position += 1;
+            Ok(value)
+        }
+
+        fn peek(&self) -> Result<u8, ValidationStatus> {
+            self.source
+                .get(self.position)
+                .copied()
+                .ok_or(ValidationStatus::CborUnexpectedEof)
+        }
+
+        fn skip(&mut self, length: u64) -> Result<(), ValidationStatus> {
+            let remaining = self.source.len() - self.position;
+            if length > remaining as u64 {
+                return Err(ValidationStatus::CborUnexpectedEof);
+            }
+            self.position += length as usize;
+            Ok(())
+        }
+    }
+
+    fn read_argument(reader: &mut Reader, additional: u8) -> Result<Option<u64>, ValidationStatus> {
+        match additional {
+            0..=23 => Ok(Some(u64::from(additional))),
+            24 => Ok(Some(u64::from(reader.read()?))),
+            25..=27 => {
+                let byte_count = 1u8 << (additional - 24);
+                let mut value = 0u64;
+                let mut index = 0u8;
+                while index < byte_count {
+                    value = (value << 8) | u64::from(reader.read()?);
+                    index += 1;
+                }
+                Ok(Some(value))
+            }
+            31 => Ok(None),
+            _ => Err(ValidationStatus::CborInvalid),
+        }
+    }
+
+    fn child_depth(depth: u32) -> Result<u32, ValidationStatus> {
+        if depth >= MAX_NESTING_DEPTH {
+            Err(ValidationStatus::CborNestingLimit)
+        } else {
+            Ok(depth + 1)
+        }
+    }
+
+    fn consume_indefinite_string(
+        reader: &mut Reader,
+        expected_major: u8,
+    ) -> Result<(), ValidationStatus> {
+        loop {
+            let initial = reader.peek()?;
+            if initial == 0xff {
+                reader.read()?;
+                return Ok(());
+            }
+            reader.read()?;
+            if (initial >> 5) != expected_major {
+                return Err(ValidationStatus::CborInvalid);
+            }
+            let length =
+                read_argument(reader, initial & 0x1f)?.ok_or(ValidationStatus::CborInvalid)?;
+            reader.skip(length)?;
+        }
+    }
+
+    fn validate_item(
+        reader: &mut Reader,
+        depth: u32,
+        item_count: &mut u32,
+    ) -> Result<(), ValidationStatus> {
+        if *item_count >= MAX_ITEMS {
+            return Err(ValidationStatus::CborItemLimit);
+        }
+        *item_count += 1;
+
+        let initial = reader.read()?;
+        let major = initial >> 5;
+        let argument = read_argument(reader, initial & 0x1f)?;
+        match major {
+            0 | 1 => {
+                if argument.is_none() {
+                    return Err(ValidationStatus::CborInvalid);
+                }
+            }
+            2 | 3 => match argument {
+                Some(length) => reader.skip(length)?,
+                None => consume_indefinite_string(reader, major)?,
+            },
+            4 => {
+                let depth = child_depth(depth)?;
+                match argument {
+                    Some(length) => {
+                        let mut index = 0u64;
+                        while index < length {
+                            validate_item(reader, depth, item_count)?;
+                            index += 1;
+                        }
+                    }
+                    None => loop {
+                        if reader.peek()? == 0xff {
+                            reader.read()?;
+                            break;
+                        }
+                        validate_item(reader, depth, item_count)?;
+                    },
+                }
+            }
+            5 => {
+                let depth = child_depth(depth)?;
+                match argument {
+                    Some(length) => {
+                        let mut index = 0u64;
+                        while index < length {
+                            validate_item(reader, depth, item_count)?;
+                            validate_item(reader, depth, item_count)?;
+                            index += 1;
+                        }
+                    }
+                    None => loop {
+                        if reader.peek()? == 0xff {
+                            reader.read()?;
+                            break;
+                        }
+                        validate_item(reader, depth, item_count)?;
+                        if reader.peek()? == 0xff {
+                            return Err(ValidationStatus::CborInvalid);
+                        }
+                        validate_item(reader, depth, item_count)?;
+                    },
+                }
+            }
+            6 => {
+                if argument.is_none() {
+                    return Err(ValidationStatus::CborInvalid);
+                }
+                validate_item(reader, child_depth(depth)?, item_count)?;
+            }
+            7 => {
+                if argument.is_none() {
+                    return Err(ValidationStatus::CborInvalid);
+                }
+            }
+            _ => return Err(ValidationStatus::CborInvalid),
+        }
+        Ok(())
+    }
+
+    pub fn validate_cbor(value: &[u8]) -> ValidationStatus {
+        if value.is_empty() {
+            return ValidationStatus::InvalidInput;
+        }
+        let mut reader = Reader {
+            source: value,
+            position: 0,
+        };
+        let mut item_count = 0u32;
+        match validate_item(&mut reader, 0, &mut item_count) {
+            Ok(()) if reader.position != value.len() => ValidationStatus::CborTrailingData,
+            Ok(()) => ValidationStatus::Ok,
+            Err(status) => status,
+        }
+    }
+}
+
 #[cfg(test)]
 extern crate std;
 
@@ -843,6 +1422,226 @@ mod tests {
             validate_cbor(&[0xa0, 0x00]),
             ValidationStatus::CborTrailingData
         );
+    }
+
+    /// Regression for the 3.1.0 large-PCZT rejection: a `zcash-pczt` UR is a
+    /// map wrapping one byte string; a ~22 KiB one must validate when fed in
+    /// sandbox-sized chunks, with no payload buffer involved.
+    #[test]
+    fn validates_large_byte_string_payload_in_chunks() {
+        let payload_len = 22732usize;
+        let mut cbor = vec![0xa1, 0x01, 0x5a];
+        cbor.extend_from_slice(&(payload_len as u32).to_be_bytes());
+        cbor.extend(core::iter::repeat(0x5a).take(payload_len));
+        assert_eq!(validate_cbor(&cbor), ValidationStatus::Ok);
+        for chunk in [1usize, 7, 224, 4096] {
+            assert_eq!(
+                validate_cbor_chunked(&cbor, chunk),
+                ValidationStatus::Ok,
+                "chunk {chunk}"
+            );
+        }
+        // Truncated body: every chunking must agree it is EOF, never Ok.
+        cbor.truncate(cbor.len() - 1);
+        for chunk in [1usize, 7, 224, 4096] {
+            assert_eq!(
+                validate_cbor_chunked(&cbor, chunk),
+                ValidationStatus::CborUnexpectedEof
+            );
+        }
+        assert!(core::mem::size_of::<CborStreamValidator>() <= CborStreamValidator::STATE_SIZE);
+    }
+
+    fn corpus() -> Vec<Vec<u8>> {
+        #[rustfmt::skip]
+        let mut cases: Vec<Vec<u8>> = vec![
+            vec![],
+            vec![0x00],
+            vec![0x17],
+            vec![0x18, 0xff],
+            vec![0x19, 0x01],                      // truncated head
+            vec![0x1b, 0, 0, 0, 0, 0, 0, 0, 1],
+            vec![0x1c],                            // reserved additional
+            vec![0x1f],                            // major 0 with no argument
+            vec![0x3f],                            // negative int, no argument
+            vec![0x40],                            // empty bytes
+            vec![0x43, 1, 2, 3],
+            vec![0x43, 1, 2],                      // short body
+            vec![0x5a, 0, 0, 0, 5, 1, 2, 3, 4, 5],
+            vec![0x5b, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 1], // huge length
+            vec![0x5f, 0x41, 1, 0x42, 2, 3, 0xff], // indefinite bytes
+            vec![0x5f, 0x41, 1, 0x61, b'a', 0xff], // wrong major chunk
+            vec![0x5f, 0x78],                      // wrong major chunk, truncated head
+            vec![0x5f, 0x5f, 0x41, 1, 0xff, 0xff], // nested indefinite chunk
+            vec![0x5f, 0x40, 0xff],                // empty chunk
+            vec![0x5f, 0x41, 1],                   // unterminated
+            vec![0x5f, 0xff],
+            vec![0x7f, 0x61, b'x', 0xff],
+            vec![0x80],
+            vec![0x81, 0x01],
+            vec![0x81],                            // missing element
+            vec![0x82, 0x01],
+            vec![0x9f, 0xff],
+            vec![0x9f, 0x01, 0x02, 0xff],
+            vec![0x9f, 0x01],                      // unterminated indefinite array
+            vec![0xa0],
+            vec![0xa1, 0x01, 0x02],
+            vec![0xa1, 0x01],                      // missing value
+            vec![0xbf, 0xff],
+            vec![0xbf, 0x01, 0x02, 0xff],
+            vec![0xbf, 0x01, 0xff],                // odd indefinite map
+            vec![0xbf, 0x01],
+            vec![0xc0, 0x00],
+            vec![0xc0],                            // tag without content
+            vec![0xdf],                            // tag with no argument
+            vec![
+                0xd8, 0x25, 0x50, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+            ],
+            vec![0xf4],
+            vec![0xf6],
+            vec![0xf8, 0x20],
+            vec![0xf9, 0x3c, 0x00],
+            vec![0xfa, 0x3f, 0x80, 0x00, 0x00],
+            vec![0xfb, 0x3f, 0xf0, 0, 0, 0, 0, 0, 0],
+            vec![0xff],                            // break at top level
+            vec![0x81, 0xff],                      // break inside definite array
+            vec![0xa0, 0x00],                      // trailing data
+            vec![0x00, 0x00],
+            vec![
+                0xa2, 0x01, 0xd8, 0x25, 0x50, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
+                0x02, 0x43, 0xaa, 0xbb, 0xcc,
+            ],
+        ];
+        // Depth limit: exactly at, one over, and empty containers at the limit.
+        for extra in 0..=1usize {
+            let mut nested = vec![0x81; MAX_NESTING_DEPTH as usize + extra];
+            nested.push(0xf6);
+            cases.push(nested);
+            let mut nested_maps = vec![0xa1, 0x01];
+            nested_maps.clear();
+            for _ in 0..(MAX_NESTING_DEPTH as usize + extra) {
+                nested_maps.push(0xa1);
+                nested_maps.push(0x01);
+            }
+            nested_maps.push(0xf6);
+            cases.push(nested_maps);
+            let mut tags = vec![0xc0; MAX_NESTING_DEPTH as usize + extra];
+            tags.push(0x00);
+            cases.push(tags);
+            let mut empty_at_limit = vec![0x81; MAX_NESTING_DEPTH as usize + extra];
+            empty_at_limit.push(0x80);
+            cases.push(empty_at_limit);
+            let mut indef_at_limit = vec![0x9f; MAX_NESTING_DEPTH as usize + extra];
+            indef_at_limit.push(0xf6);
+            indef_at_limit
+                .extend(core::iter::repeat(0xff).take(MAX_NESTING_DEPTH as usize + extra));
+            cases.push(indef_at_limit);
+        }
+        // Item limit: exactly at, one over, and ending right where the next
+        // item would start (ItemLimit must win over UnexpectedEof there).
+        for total in [
+            MAX_ITEMS as usize - 1,
+            MAX_ITEMS as usize,
+            MAX_ITEMS as usize + 1,
+        ] {
+            let mut definite = vec![0x99, (total >> 8) as u8, total as u8];
+            definite.extend(core::iter::repeat(0xf6).take(total));
+            cases.push(definite);
+            let mut truncated = vec![0x99, (total >> 8) as u8, total as u8];
+            truncated.extend(core::iter::repeat(0xf6).take(total.saturating_sub(1)));
+            cases.push(truncated);
+            let mut indefinite = vec![0x9f];
+            indefinite.extend(core::iter::repeat(0xf6).take(total));
+            indefinite.push(0xff);
+            cases.push(indefinite);
+            let mut unterminated = vec![0x9f];
+            unterminated.extend(core::iter::repeat(0xf6).take(total));
+            cases.push(unterminated);
+        }
+        cases
+    }
+
+    /// Every corpus entry, and every prefix of it, must give the same status
+    /// from the streaming validator (at several chunk sizes) as from the
+    /// recursive oracle.
+    #[test]
+    fn streaming_matches_recursive_oracle_on_corpus() {
+        for case in corpus() {
+            for end in 0..=case.len() {
+                let input = &case[..end];
+                let expected = reference::validate_cbor(input);
+                assert_eq!(validate_cbor(input), expected, "one-shot {input:02x?}");
+                for chunk in [1usize, 2, 3, 7, 224] {
+                    assert_eq!(
+                        validate_cbor_chunked(input, chunk),
+                        expected,
+                        "chunk {chunk} {input:02x?}"
+                    );
+                }
+            }
+        }
+    }
+
+    /// Pseudo-random inputs (deterministic xorshift) biased towards CBOR
+    /// head bytes so that containers, tags and breaks are dense.
+    #[test]
+    fn streaming_matches_recursive_oracle_on_random_inputs() {
+        let interesting: [u8; 24] = [
+            0x00, 0x18, 0x1a, 0x1f, 0x40, 0x41, 0x58, 0x5f, 0x60, 0x7f, 0x80, 0x81, 0x83, 0x98,
+            0x9f, 0xa0, 0xa1, 0xbf, 0xc0, 0xd8, 0xf4, 0xf6, 0xf9, 0xff,
+        ];
+        let mut state = 0x9e37_79b9_7f4a_7c15u64;
+        let mut next = || {
+            state ^= state << 13;
+            state ^= state >> 7;
+            state ^= state << 17;
+            state
+        };
+        for _ in 0..20_000 {
+            let len = (next() % 40) as usize;
+            let mut input = Vec::with_capacity(len);
+            for _ in 0..len {
+                let r = next();
+                let byte = if r % 4 == 0 {
+                    (r >> 8) as u8
+                } else {
+                    interesting[((r >> 8) % interesting.len() as u64) as usize]
+                };
+                input.push(byte);
+            }
+            let expected = reference::validate_cbor(&input);
+            assert_eq!(validate_cbor(&input), expected, "one-shot {input:02x?}");
+            let chunk = 1 + (next() % 9) as usize;
+            assert_eq!(
+                validate_cbor_chunked(&input, chunk),
+                expected,
+                "chunk {chunk} {input:02x?}"
+            );
+        }
+    }
+
+    #[test]
+    fn stream_state_can_be_reset_and_reused_in_place() {
+        let mut storage = [0u64; CborStreamValidator::STATE_SIZE / 8];
+        let ptr = storage.as_mut_ptr() as *mut u8;
+        assert!(unsafe { CborStreamValidator::init_in_raw(ptr, storage.len() * 8) });
+        let validator = unsafe { CborStreamValidator::from_raw(ptr, storage.len() * 8) }
+            .expect("aligned storage of STATE_SIZE bytes");
+        validator.push(&[0x81]);
+        assert_eq!(validator.finish(), ValidationStatus::CborUnexpectedEof);
+        validator.reset();
+        validator.push(&[0x81, 0x01]);
+        assert_eq!(validator.finish(), ValidationStatus::Ok);
+        // Too-small or misaligned storage is refused.
+        assert!(!unsafe { CborStreamValidator::init_in_raw(ptr, 8) });
+        assert!(!unsafe { CborStreamValidator::init_in_raw(ptr.add(1), 512) });
+        assert!(
+            unsafe { CborStreamValidator::from_raw(storage.as_mut_ptr() as *mut u8, 8) }.is_none()
+        );
+        assert!(unsafe {
+            CborStreamValidator::from_raw((storage.as_mut_ptr() as *mut u8).add(1), 512)
+        }
+        .is_none());
     }
 
     #[test]

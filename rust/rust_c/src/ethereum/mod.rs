@@ -34,7 +34,9 @@ pub mod address;
 pub mod structs;
 pub(crate) mod util;
 
-#[cfg(all(not(test), not(feature = "simulator")))]
+// The simulator links the real C sandbox path (see common/ur.rs); only unit
+// tests, which have no C side, validate in-process.
+#[cfg(not(test))]
 unsafe extern "C" {
     fn MpuSandboxValidateEip712Json(
         input: *const u8,
@@ -44,7 +46,7 @@ unsafe extern "C" {
 }
 
 fn validate_eip712_json_in_sandbox(input: &[u8]) -> Result<(), EthereumError> {
-    #[cfg(all(not(test), not(feature = "simulator")))]
+    #[cfg(not(test))]
     let status = {
         let mut status = sandbox_parser::ValidationStatus::InvalidInput as u32;
         let available =
@@ -58,7 +60,7 @@ fn validate_eip712_json_in_sandbox(input: &[u8]) -> Result<(), EthereumError> {
         status
     };
 
-    #[cfg(any(test, feature = "simulator"))]
+    #[cfg(test)]
     let status = {
         let mut input = input.to_vec();
         sandbox_parser::validate_eip712_json(&mut input) as u32

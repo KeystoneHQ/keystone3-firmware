@@ -315,6 +315,10 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
         titleText = _("sign_message_invalid_characters_title");
         descText = _("sign_message_invalid_characters_desc");
         break;
+    case ERR_QRCODE_DATA_TOO_LARGE:
+        titleText = _("scan_qr_code_error_too_large");
+        descText = _("scan_qr_code_error_too_large_desc");
+        break;
     }
 
     lv_obj_t *cont = GuiCreateConfirmHintBox(imgSrc, titleText, descText, NULL, _("OK"), WHITE_COLOR_OPA20);

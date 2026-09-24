@@ -130,7 +130,16 @@ impl KeystoneURDecoder {
     }
 }
 
-fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
+/// Why the sandbox refused a reassembled multipart UR.
+#[derive(Debug)]
+enum SandboxRejection {
+    /// Larger than this build's MPU_SANDBOX_CBOR_INPUT_MAX_SIZE; shown to the
+    /// user as ERR_QRCODE_DATA_TOO_LARGE.
+    TooLarge(usize),
+    Other(URError),
+}
+
+fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), SandboxRejection> {
     // Device and simulator: the C side streams the payload through the MPU
     // sandbox chunk by chunk (no copy is buffered inside the sandbox).
     #[cfg(not(test))]
@@ -138,9 +147,9 @@ fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
         let mut status = sandbox_parser::ValidationStatus::InvalidInput as u32;
         let available = unsafe { MpuSandboxValidateCbor(cbor.as_ptr(), cbor.len(), &mut status) };
         if !available {
-            return Err(URError::CborDecodeError(
+            return Err(SandboxRejection::Other(URError::CborDecodeError(
                 "sandbox CBOR validation unavailable".to_string(),
-            ));
+            )));
         }
         status
     };
@@ -152,14 +161,11 @@ fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
     if status == sandbox_parser::ValidationStatus::Ok as u32 {
         Ok(())
     } else if status == sandbox_parser::ValidationStatus::InputTooLarge as u32 {
-        Err(URError::CborDecodeError(format!(
-            "reassembled UR of {} bytes exceeds the sandbox input limit for this firmware",
-            cbor.len()
-        )))
+        Err(SandboxRejection::TooLarge(cbor.len()))
     } else {
-        Err(URError::CborDecodeError(format!(
+        Err(SandboxRejection::Other(URError::CborDecodeError(format!(
             "sandbox rejected reconstructed CBOR with status {status}"
-        )))
+        ))))
     }
 }
 use super::ur_ext::InferViewType;
@@ -899,8 +905,12 @@ mod tests {
 
         let mut over_depth_limit = vec![0x81; 33];
         over_depth_limit.push(0xf6);
-        let error = validate_reassembled_cbor(&over_depth_limit).unwrap_err();
-        assert!(error.to_string().contains("status 11"));
+        match validate_reassembled_cbor(&over_depth_limit).unwrap_err() {
+            SandboxRejection::Other(URError::CborDecodeError(message)) => {
+                assert!(message.contains("status 11"))
+            }
+            other => panic!("unexpected rejection: {other:?}"),
+        }
     }
 }
 
@@ -1078,8 +1088,14 @@ fn _receive_ur<T: RegistryItem + TryFrom<Vec<u8>, Error = URError> + InferViewTy
         Ok(cbor) => cbor,
         Err(error) => return URParseMultiResult::from(error),
     };
-    if let Err(error) = validate_reassembled_cbor(&cbor) {
-        return URParseMultiResult::from(error);
+    match validate_reassembled_cbor(&cbor) {
+        Ok(()) => {}
+        Err(SandboxRejection::TooLarge(length)) => {
+            return URParseMultiResult::from(RustCError::UrInputTooLarge(format!(
+                "reassembled UR of {length} bytes exceeds this firmware's limit"
+            )));
+        }
+        Err(SandboxRejection::Other(error)) => return URParseMultiResult::from(error),
     }
     match T::try_from(cbor) {
         Ok(data) => match InferViewType::infer(&data) {

@@ -93,6 +93,8 @@ typedef enum {
     ERR_AR_AUTH_REQUIRED,
     ERR_AR_DATA_INVALID,
     ERR_AR_STORAGE,
+
+    ERR_QRCODE_DATA_TOO_LARGE,
     ERR_END,
 } Error_Code;
 

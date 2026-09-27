@@ -2,6 +2,7 @@
 #include "define.h"
 #include "drv_trng.h"
 #include "user_memory.h"
+#include <stdio.h>
 
 #define HEX_STRING_MAX_LENGTH 4096
 

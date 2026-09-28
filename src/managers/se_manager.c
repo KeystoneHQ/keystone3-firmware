@@ -27,6 +27,13 @@ static int32_t GetKeyPieceFromDs28s60(uint8_t accountIndex, uint8_t *piece, cons
 static int32_t SetSeHash(uint8_t page, const uint8_t *info);
 static bool VerifySeHash(uint8_t page, uint8_t *info);
 
+#ifdef COMPILE_SIMULATOR
+static uint8_t g_simulatorFpEncryptedPassword[10][32] = {0};
+static uint8_t g_simulatorFpStateInfo[32] = {0};
+static uint8_t g_simulatorFpCommAesKey[32] = {0};
+static uint8_t g_simulatorFpResetKey[32] = {0};
+#endif
+
 // gen-1-specific 608 derivation lives in se_backend_gen1.c; gen-2 in se_backend_gen2.c. This file keeps
 // the generation-agnostic pieces: the shared DS28S60 key piece, GetAccountSlot, the SeBackend() dispatcher
 // and SE_* helpers.
@@ -318,6 +325,10 @@ int32_t SE_GetAccountStatus(uint8_t accountIndex, AccountStatus_t *state)
 int32_t SetFpEncryptedPassword(uint32_t index, const uint8_t *encryptedPassword)
 {
     ASSERT(index < 10);
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(g_simulatorFpEncryptedPassword[index], sizeof(g_simulatorFpEncryptedPassword[index]), encryptedPassword, 32);
+    return SUCCESS_CODE;
+#endif
     return SE_HmacEncryptWrite(encryptedPassword, PAGE_PF_ENCRYPTED_PASSWORD + index);
 }
 
@@ -326,6 +337,10 @@ int32_t SetFpEncryptedPassword(uint32_t index, const uint8_t *encryptedPassword)
 /// @return err code.
 int32_t SetFpStateInfo(uint8_t *info)
 {
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(g_simulatorFpStateInfo, sizeof(g_simulatorFpStateInfo), info, 32);
+    return SUCCESS_CODE;
+#endif
     uint8_t data[32] = {0};
     int32_t ret;
 
@@ -339,6 +354,10 @@ int32_t SetFpStateInfo(uint8_t *info)
 /// @return err code.
 int32_t GetFpStateInfo(uint8_t *info)
 {
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(info, 32, g_simulatorFpStateInfo, sizeof(g_simulatorFpStateInfo));
+    return SUCCESS_CODE;
+#endif
     uint8_t data[32];
     int32_t ret;
 
@@ -427,6 +446,10 @@ bool VerifyMultisigWalletDataHash(uint8_t index, uint8_t *info)
 int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword)
 {
     ASSERT(index < 10);
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(encryptedPassword, 32, g_simulatorFpEncryptedPassword[index], sizeof(g_simulatorFpEncryptedPassword[index]));
+    return SUCCESS_CODE;
+#endif
     return SE_HmacEncryptRead(encryptedPassword, PAGE_PF_ENCRYPTED_PASSWORD + index);
 }
 
@@ -435,6 +458,10 @@ int32_t GetFpEncryptedPassword(uint32_t index, uint8_t *encryptedPassword)
 /// @return err code.
 int32_t SetFpCommAesKey(const uint8_t *aesKey)
 {
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(g_simulatorFpCommAesKey, sizeof(g_simulatorFpCommAesKey), aesKey, 32);
+    return SUCCESS_CODE;
+#endif
     return SE_HmacEncryptWrite(aesKey, PAGE_PF_AES_KEY);
 }
 
@@ -443,6 +470,10 @@ int32_t SetFpCommAesKey(const uint8_t *aesKey)
 /// @return err code.
 int32_t GetFpCommAesKey(uint8_t *aesKey)
 {
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(aesKey, 32, g_simulatorFpCommAesKey, sizeof(g_simulatorFpCommAesKey));
+    return SUCCESS_CODE;
+#endif
     int32_t ret = SE_HmacEncryptRead(aesKey, PAGE_PF_AES_KEY);
     return ret;
 }
@@ -452,6 +483,10 @@ int32_t GetFpCommAesKey(uint8_t *aesKey)
 /// @return err code.
 int32_t SetFpResetKey(const uint8_t *resetKey)
 {
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(g_simulatorFpResetKey, sizeof(g_simulatorFpResetKey), resetKey, 32);
+    return SUCCESS_CODE;
+#endif
     return SE_HmacEncryptWrite(resetKey, PAGE_PF_RESET_KEY);
 }
 
@@ -460,6 +495,10 @@ int32_t SetFpResetKey(const uint8_t *resetKey)
 /// @return err code.
 int32_t GetFpResetKey(uint8_t *resetKey)
 {
+#ifdef COMPILE_SIMULATOR
+    memcpy_s(resetKey, 32, g_simulatorFpResetKey, sizeof(g_simulatorFpResetKey));
+    return SUCCESS_CODE;
+#endif
     return SE_HmacEncryptRead(resetKey, PAGE_PF_RESET_KEY);
 }
 
@@ -467,6 +506,9 @@ int32_t GetFpResetKey(uint8_t *resetKey)
 /// @return true - exists.
 bool FpAesKeyExist()
 {
+#ifdef COMPILE_SIMULATOR
+    return CheckEntropy(g_simulatorFpCommAesKey, sizeof(g_simulatorFpCommAesKey));
+#endif
     uint8_t key[32];
     bool ret;
 

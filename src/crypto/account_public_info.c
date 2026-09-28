@@ -24,6 +24,9 @@
 #include "rsa.h"
 #include "secret_cache.h"
 #include "gui_model.h"
+#ifdef COMPILE_SIMULATOR
+#include "simulator_cmd_server.h"
+#endif
 
 #define PUB_KEY_MAX_LENGTH                  1024 + 1
 #define VERSION_MAX_LENGTH                  64
@@ -879,8 +882,15 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     int seedLen = GetCurrentAccountSeedLen();
 
     do {
+#ifdef COMPILE_SIMULATOR
+        if (!SimulatorCommandServerIsHandlingCommand()) {
+            GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
+            generationStarted = true;
+        }
+#else
         GuiApiEmitSignal(SIG_START_GENERATE_XPUB, NULL, 0);
         generationStarted = true;
+#endif
         char* icarusMasterKey = NULL;
         char* ledgerBitbox02Key = NULL;
         printf("regenerate pub key!\r\n");
@@ -994,7 +1004,13 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
     CLEAR_ARRAY(seed);
     CLEAR_ARRAY(entropy);
     if (generationStarted) {
+#ifdef COMPILE_SIMULATOR
+        if (!SimulatorCommandServerIsHandlingCommand()) {
+            GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+        }
+#else
         GuiApiEmitSignal(SIG_END_GENERATE_XPUB, NULL, 0);
+#endif
     }
     return ret;
 }
@@ -1513,6 +1529,23 @@ char *GetCurrentAccountPublicKey(ChainType chain)
         return NULL;
     }
     return g_accountPublicInfo[index].value;
+}
+
+char *GetCurrentAccountPublicKeyByName(const char *name)
+{
+    uint8_t accountIndex;
+
+    accountIndex = GetCurrentAccountIndex();
+    if (name == NULL || accountIndex > 2) {
+        return NULL;
+    }
+
+    for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(g_chainTable); i++) {
+        if (strcmp(name, g_chainTable[i].name) == 0) {
+            return g_accountPublicInfo[i].value;
+        }
+    }
+    return NULL;
 }
 
 /// @brief Get if the xPub already Exists.

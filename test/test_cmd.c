@@ -54,6 +54,13 @@
 #include "presetting.h"
 #include "usb_task.h"
 #include "device_setting.h"
+#include "err_code.h"
+#include "cjson/cJSON.h"
+#include "flash_address.h"
+#include "gui_model.h"
+#ifdef WEB3_VERSION
+#include "gui_wallet.h"
+#endif
 
 #define CMD_MAX_ARGC                                16
 #define DEFAULT_TEST_BUFF_LEN                       1024
@@ -103,6 +110,8 @@ static void ETHDBContractsTest(int argc, char *argv[]);
 static void BackgroundTestFunc(int argc, char *argv[]);
 static void GetReceiveAddress(int argc, char *argv[]);
 static void AccountPublicInfoTestFunc(int argc, char *argv[]);
+static void AddressTestFunc(int argc, char *argv[]);
+static void MigrationTestFunc(int argc, char *argv[]);
 static void FingerTestFunc(int argc, char *argv[]);
 static void MotorTestFunc(int argc, char *argv[]);
 static void LcdTestFunc(int argc, char *argv[]);
@@ -145,6 +154,8 @@ static void RustGetConnectKeplrUR(int argc, char *argv[]);
 static void RustGetConnectXrpToolKitUR(int argc, char *argv[]);
 static void RustTestMemory(int argc, char *argv[]);
 static void RustGetConnectMetaMaskUR(int argc, char *argv[]);
+static void RustGetConnectSolflareUR(int argc, char *argv[]);
+static void RustGetConnectKeystoneNexusUR(int argc, char *argv[]);
 static void RustTestGetAddressLTCSucceed(int argc, char *argv[]);
 static void RustTestGetAddressTronSucceed(int argc, char *argv[]);
 static void RustTestGetAddressSolanaSucceed(int argc, char *argv[]);
@@ -159,6 +170,8 @@ static void testCosmosGetAddress(int argc, char *argv[]);
 static void testCardanoTx(int argc, char *argv[]);
 static void RustGetEthAddress(int argc, char *argv[]);
 static void RustParseEthPersonalMessage(int argc, char *argv[]);
+static void RustTestEthEip1559Tx(int argc, char *argv[]);
+static void RustTestEthTypedData(int argc, char *argv[]);
 static void RustParseEthContractData(int argc, char *argv[]);
 static void testXRPGetAddress(int argc, char *argv[]);
 static void testXRPSignTx(int argc, char *argv[]);
@@ -243,6 +256,8 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"background test:", BackgroundTestFunc},
     {"get receive address:", GetReceiveAddress},
     {"account public info test:", AccountPublicInfoTestFunc},
+    {"address test:", AddressTestFunc},
+    {"migration test:", MigrationTestFunc},
     {"finger test:", FingerTestFunc},
     {"motor:", MotorTestFunc},
     {"lcd:", LcdTestFunc},
@@ -271,6 +286,8 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test get connect keplr wallet ur", RustGetConnectKeplrUR},
     {"rust test get connect xrp toolkit ur", RustGetConnectXrpToolKitUR},
     {"rust test connect metamask", RustGetConnectMetaMaskUR},
+    {"rust test connect solflare:", RustGetConnectSolflareUR},
+    {"rust test connect keystone nexus", RustGetConnectKeystoneNexusUR},
     {"rust test solana parse:", testSolanaParseTx},
     {"rust test xrp parse:", testXrpParseTx},
     {"rust test near get address:", testNearGetAddress},
@@ -278,6 +295,8 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"rust test cardano tx:", testCardanoTx},
     {"rust test get eth address", RustGetEthAddress},
     {"rust test parse eth personal message:", RustParseEthPersonalMessage},
+    {"rust test eth eip1559 tx:", RustTestEthEip1559Tx},
+    {"rust test eth typed data:", RustTestEthTypedData},
     {"rust test parse eth contract data", RustParseEthContractData},
     {"rust test xrp get address:", testXRPGetAddress},
     {"rust test xrp sign:", testXRPSignTx},
@@ -330,6 +349,14 @@ bool CompareAndRunTestCmd(const char *inputString)
     uint32_t tableSize, compareLen, argc, argvLen;
     char *inputHead, *argvHead, *argv[CMD_MAX_ARGC];
     bool content = false;
+
+    const char *solflareCmd = "rust test connect solflare ";
+    compareLen = strlen(solflareCmd);
+    if (strncmp(inputString, solflareCmd, compareLen) == 0) {
+        argv[0] = (char *)inputString + compareLen;
+        RustGetConnectSolflareUR(1, argv);
+        return true;
+    }
 
     tableSize = sizeof(g_uartTestCmdTable) / sizeof(g_uartTestCmdTable[0]);
     for (uint32_t i = 0; i < tableSize; i++) {
@@ -913,6 +940,446 @@ static void GetReceiveAddress(int argc, char *argv[])
 static void AccountPublicInfoTestFunc(int argc, char *argv[])
 {
     AccountPublicInfoTest(argc, argv);
+}
+
+
+#ifdef WEB3_VERSION
+#define MIGRATION_AR_PUBLIC_KEY_MAX_LEN        (1024 + 1)
+
+static int32_t MigrationReadStoredArPublicKey(uint8_t accountIndex, char *publicKey, uint32_t publicKeyLen)
+{
+    uint32_t addr, size;
+    int32_t ret;
+    char *jsonString = NULL;
+    cJSON *rootJson = NULL;
+    cJSON *keyJson = NULL;
+    cJSON *arJson = NULL;
+    cJSON *valueJson = NULL;
+
+    if (accountIndex > 2 || publicKey == NULL || publicKeyLen == 0) {
+        return ERR_GENERAL_FAIL;
+    }
+    publicKey[0] = '\0';
+    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    if (ret != sizeof(size)) {
+        return ret;
+    }
+    if (size == 0 || size == 0xFFFFFFFF || size > SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4) {
+        return ERR_GENERAL_FAIL;
+    }
+
+    jsonString = SRAM_MALLOC(size + 1);
+    if (jsonString == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    if (ret != size) {
+        SRAM_FREE(jsonString);
+        return ret;
+    }
+    jsonString[size] = '\0';
+
+    rootJson = cJSON_Parse(jsonString);
+    if (rootJson != NULL) {
+        keyJson = cJSON_GetObjectItem(rootJson, "key");
+        if (keyJson != NULL) {
+            arJson = cJSON_GetObjectItem(keyJson, "ar");
+            if (arJson != NULL) {
+                valueJson = cJSON_GetObjectItem(arJson, "value");
+                if (cJSON_IsString(valueJson) && valueJson->valuestring != NULL && valueJson->valuestring[0] != '\0') {
+                    strncpy(publicKey, valueJson->valuestring, publicKeyLen - 1);
+                    publicKey[publicKeyLen - 1] = '\0';
+                }
+            }
+        }
+    }
+
+    if (rootJson != NULL) {
+        cJSON_Delete(rootJson);
+    }
+    SRAM_FREE(jsonString);
+    return publicKey[0] == '\0' ? ERR_GENERAL_FAIL : SUCCESS_CODE;
+}
+
+
+#ifdef WEB3_VERSION
+static void AddressPrintResult(SimpleResponse_c_char *result)
+{
+    if (result == NULL) {
+        printf("address error_code: -1\r\n");
+        return;
+    }
+    printf("address error_code: %d\r\n", result->error_code);
+    if (result->error_message != NULL) {
+        printf("address error_message: %s\r\n", result->error_message);
+    }
+    if (result->error_code == 0 && result->data != NULL) {
+        printf("address=%s\r\n", result->data);
+    }
+    free_simple_response_c_char(result);
+}
+
+static bool AddressValidateXpub(char *xpub)
+{
+    if (xpub == NULL) {
+        printf("address error_code: -1\r\n");
+        printf("address error_message: missing xpub\r\n");
+        return false;
+    }
+    return true;
+}
+
+static bool AddressArgIsDecimal(const char *arg)
+{
+    if (arg == NULL || arg[0] == '\0') {
+        return false;
+    }
+    for (const char *p = arg; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return false;
+        }
+    }
+    return true;
+}
+
+static char *AddressGetXpubArg(char *arg)
+{
+    char *xpub = GetCurrentAccountPublicKeyByName(arg);
+    if (xpub != NULL) {
+        return xpub;
+    }
+    if (!AddressArgIsDecimal(arg)) {
+        return NULL;
+    }
+    int32_t xpubType = 0;
+    sscanf(arg, "%d", &xpubType);
+    return GetCurrentAccountPublicKey(xpubType);
+}
+
+static void AddressTestUtxo(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 3);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(utxo_get_address(argv[2], xpub));
+}
+
+static void AddressTestEth(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(eth_get_address(argv[3], xpub, argv[2]));
+}
+
+static void AddressTestAvaxXp(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(avalanche_get_x_p_address(argv[3], xpub, argv[2]));
+}
+
+static void AddressTestCosmos(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 5);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(cosmos_get_address(argv[3], xpub, argv[2], argv[4]));
+}
+
+static void AddressTestTron(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 3);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(tron_get_address(argv[2], xpub));
+}
+
+static void AddressTestXrp(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(xrp_get_address(argv[3], xpub, argv[2]));
+}
+
+static void AddressTestXpubOnly(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 2);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    if (strcmp(argv[0], "sui") == 0) {
+        AddressPrintResult(sui_generate_address(xpub));
+    } else if (strcmp(argv[0], "iota") == 0) {
+        AddressPrintResult(iota_get_address_from_pubkey(xpub));
+    } else if (strcmp(argv[0], "aptos") == 0) {
+        AddressPrintResult(aptos_generate_address(xpub));
+    } else if (strcmp(argv[0], "stellar") == 0) {
+        AddressPrintResult(stellar_get_address(xpub));
+    } else if (strcmp(argv[0], "ton") == 0) {
+        AddressPrintResult(ton_get_address(xpub));
+    } else {
+        printf("unknown address command: %s\r\n", argv[0]);
+    }
+}
+
+static void AddressTestCardano(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    uint32_t index = 0;
+    sscanf(argv[3], "%u", &index);
+    char *xpub = AddressGetXpubArg(argv[2]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    if (strcmp(argv[1], "base") == 0) {
+        AddressPrintResult(cardano_get_base_address(xpub, index, 1));
+    } else if (strcmp(argv[1], "enterprise") == 0) {
+        AddressPrintResult(cardano_get_enterprise_address(xpub, index, 1));
+    } else if (strcmp(argv[1], "stake") == 0) {
+        AddressPrintResult(cardano_get_stake_address(xpub, index, 1));
+    } else {
+        printf("unknown cardano address type: %s\r\n", argv[1]);
+    }
+}
+
+static void AddressTestArweave(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 3);
+    (void)argv[1];
+    (void)argv[2];
+    char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(arweave_get_address(xpub));
+}
+
+static void AddressTestSolana(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    int32_t index = 0;
+    sscanf(argv[1], "%d", &index);
+    uint8_t seed[64] = {0};
+    uint32_t seedLen = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int32_t seedRet = GetAccountSeed(index, seed, argv[2]);
+    if (seedRet != 0) {
+        printf("GetAccountSeed=%d\r\n", seedRet);
+        printf("address error_code: %d\r\n", seedRet);
+        printf("address error_message: get seed failed\r\n");
+        memset_s(seed, sizeof(seed), 0, sizeof(seed));
+        return;
+    }
+
+    SimpleResponse_c_char *pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, argv[3]);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    if (pubkey == NULL || pubkey->error_code != 0 || pubkey->data == NULL) {
+        AddressPrintResult(pubkey);
+        return;
+    }
+    SimpleResponse_c_char *result = solana_get_address(pubkey->data);
+    free_simple_response_c_char(pubkey);
+    AddressPrintResult(result);
+}
+#endif
+
+static void AddressTestFunc(int argc, char *argv[])
+{
+#ifndef WEB3_VERSION
+    (void)argc;
+    (void)argv;
+    printf("address error_code: -1\r\n");
+    printf("address error_message: unsupported\r\n");
+#else
+    if (argc <= 0) {
+        printf("input err!\r\n");
+        return;
+    }
+
+    if (strcmp(argv[0], "utxo") == 0) {
+        AddressTestUtxo(argc, argv);
+    } else if (strcmp(argv[0], "eth") == 0) {
+        AddressTestEth(argc, argv);
+    } else if (strcmp(argv[0], "avax_xp") == 0) {
+        AddressTestAvaxXp(argc, argv);
+    } else if (strcmp(argv[0], "cosmos") == 0) {
+        AddressTestCosmos(argc, argv);
+    } else if (strcmp(argv[0], "tron") == 0) {
+        AddressTestTron(argc, argv);
+    } else if (strcmp(argv[0], "xrp") == 0) {
+        AddressTestXrp(argc, argv);
+    } else if (strcmp(argv[0], "solana") == 0) {
+        AddressTestSolana(argc, argv);
+    } else if (strcmp(argv[0], "cardano") == 0) {
+        AddressTestCardano(argc, argv);
+    } else if (strcmp(argv[0], "arweave") == 0) {
+        AddressTestArweave(argc, argv);
+    } else {
+        AddressTestXpubOnly(argc, argv);
+    }
+#endif
+}
+
+static void MigrationPrintArReceiveFromPublicKey(uint8_t accountIndex, const char *publicKey)
+{
+    if (publicKey == NULL || publicKey[0] == '\0') {
+        printf("MigrationArPublicInfo=absent\r\n");
+        printf("MigrationArReceive=0,accountIndex=%d,status=no_ar_pubkey\r\n", accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+        return;
+    }
+    printf("MigrationArPublicInfo=present\r\n");
+    SimpleResponse_c_char *address = arweave_get_address((char *)publicKey);
+    if (address == NULL || address->error_code != SUCCESS_CODE || address->data == NULL || address->data[0] == '\0') {
+        int32_t ret = address == NULL ? ERR_GENERAL_FAIL : address->error_code;
+        printf("MigrationArReceive=%d,accountIndex=%d,status=address_error\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+        if (address != NULL) {
+            free_simple_response_c_char(address);
+        }
+        return;
+    }
+    printf("MigrationArReceive=0,accountIndex=%d,status=address\r\n", accountIndex);
+    printf("MigrationArReceiveAddress=%s\r\n", address->data);
+    printf("MigrationArReceiveDone=1\r\n");
+    free_simple_response_c_char(address);
+}
+
+static void MigrationPrintValidatedArReceive(uint8_t accountIndex, const char *password, bool allowGenerate)
+{
+    SecretCacheSetPassword((char *)password);
+    SimpleResponse_c_char *publicKey = NULL;
+    int32_t ret = RsaGenerateKeyPair(false, allowGenerate, &publicKey);
+    if (ret == SUCCESS_CODE) {
+        MigrationPrintArReceiveFromPublicKey(accountIndex, publicKey->data);
+    } else if (ret == ERR_AR_NOT_SETUP) {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=no_ar_pubkey\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    } else if (ret == ERR_AR_DATA_INVALID) {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=dirty_ar_public_info\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    } else if (ArKeyNeedsSetup(ret)) {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=not_setup\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    } else {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=ar_validation_error\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    }
+    if (publicKey != NULL) {
+        free_simple_response_c_char(publicKey);
+    }
+}
+#endif
+
+static void MigrationTestFunc(int argc, char *argv[])
+{
+    if (argc < 1) {
+        printf("input err!\r\n");
+        return;
+    }
+    if (strcmp(argv[0], "ar_setup") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret == SUCCESS_CODE) {
+            SecretCacheSetPassword(argv[1]);
+            ret = RsaGenerateKeyPair(false, true, NULL);
+        }
+        printf("MigrationArSetup=%d,accountIndex=%d\r\n", ret, accountIndex);
+#else
+        printf("MigrationArSetup=-1,accountIndex=0\r\n");
+#endif
+    } else if (strcmp(argv[0], "ar_receive_probe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        MigrationPrintValidatedArReceive(accountIndex, argv[1], false);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "ar_receive_display_probe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        MigrationPrintValidatedArReceive(accountIndex, argv[1], false);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "ar_receive_probe_safe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        char publicKey[MIGRATION_AR_PUBLIC_KEY_MAX_LEN] = {0};
+        ret = MigrationReadStoredArPublicKey(accountIndex, publicKey, sizeof(publicKey));
+        printf("MigrationArPublicInfo=%s\r\n", ret == SUCCESS_CODE ? "present" : "absent");
+        MigrationPrintValidatedArReceive(accountIndex, argv[1], false);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "address_display_probe") == 0) {
+#ifdef WEB3_VERSION
+        if (argc < 3) {
+            printf("input err!\r\n");
+            return;
+        }
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationAddressDisplay=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationAddressDisplayDone=1\r\n");
+            return;
+        }
+        printf("MigrationAddressDisplay=0,accountIndex=%d,status=ready\r\n", accountIndex);
+        AddressTestFunc(argc - 2, &argv[2]);
+        printf("MigrationAddressDisplayDone=1\r\n");
+#else
+        printf("MigrationAddressDisplay=-1,accountIndex=0,status=unsupported\r\n");
+        printf("MigrationAddressDisplayDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "reboot") == 0) {
+        printf("MigrationReboot=0\r\n");
+        SystemReboot();
+    } else {
+        printf("unsupported migration test: %s\r\n", argv[0]);
+    }
 }
 
 static void FingerTestFunc(int argc, char *argv[])
@@ -1913,6 +2380,89 @@ static void RustGetConnectMetaMaskUR(int argc, char *argv[])
     printf("error_message is %s\r\n", ur->error_message);
 }
 
+static void RustGetConnectSolflareUR(int argc, char *argv[])
+{
+    int pathIndex;
+    VALUE_CHECK(argc, 1);
+    if (sscanf(argv[0], "%d", &pathIndex) != 1 || pathIndex < 0 || pathIndex > 2) {
+        printf("input err!\r\n");
+        return;
+    }
+
+    printf("solflare path_index is %d\r\n", pathIndex);
+    uint8_t mfp[4] = {0};
+    GetMasterFingerPrint(mfp);
+
+    ExtendedPublicKey keys[10];
+    PtrT_CSliceFFI_ExtendedPublicKey publicKeys = SRAM_MALLOC(sizeof(CSliceFFI_ExtendedPublicKey));
+    publicKeys->data = keys;
+    if (pathIndex == 0) {
+        publicKeys->size = 10;
+        for (int i = XPUB_TYPE_SOL_BIP44_0; i <= XPUB_TYPE_SOL_BIP44_9; i++) {
+            int keyIndex = i - XPUB_TYPE_SOL_BIP44_0;
+            keys[keyIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(keys[keyIndex].path, BUFFER_SIZE_32, "m/44'/501'/%d'", keyIndex);
+            keys[keyIndex].xpub = GetCurrentAccountPublicKey(i);
+        }
+    } else if (pathIndex == 1) {
+        publicKeys->size = 1;
+        keys[0].path = SRAM_MALLOC(BUFFER_SIZE_32);
+        snprintf_s(keys[0].path, BUFFER_SIZE_32, "m/44'/501'");
+        keys[0].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_SOL_BIP44_ROOT);
+    } else {
+        publicKeys->size = 10;
+        for (int i = XPUB_TYPE_SOL_BIP44_CHANGE_0; i <= XPUB_TYPE_SOL_BIP44_CHANGE_9; i++) {
+            int keyIndex = i - XPUB_TYPE_SOL_BIP44_CHANGE_0;
+            keys[keyIndex].path = SRAM_MALLOC(BUFFER_SIZE_32);
+            snprintf_s(keys[keyIndex].path, BUFFER_SIZE_32, "m/44'/501'/%d'/0'", keyIndex);
+            keys[keyIndex].xpub = GetCurrentAccountPublicKey(i);
+        }
+    }
+
+    PtrT_UREncodeResult ur = generate_common_crypto_multi_accounts_ur(mfp, sizeof(mfp), publicKeys, "SOL");
+    printf("encode ur\r\n");
+    if (ur->error_code == 0) {
+        printf("is_multi_part is %d\r\n", ur->is_multi_part);
+        printf("data is %s\r\n", ur->data);
+        printf("error_code is %d\r\n", ur->error_code);
+    } else {
+        printf("error_code is %d\r\n", ur->error_code);
+        printf("error_message is %s\r\n", ur->error_message);
+    }
+    for (int i = 0; i < publicKeys->size; i++) {
+        SRAM_FREE(publicKeys->data[i].path);
+    }
+    SRAM_FREE(publicKeys);
+    free_ur_encode_result(ur);
+}
+
+static void RustGetConnectKeystoneNexusUR(int argc, char *argv[])
+{
+    printf("RustGetConnectKeystoneNexusUR\r\n");
+    PtrT_UREncodeResult ur = NULL;
+    if (GetMnemonicType() == MNEMONIC_TYPE_SLIP39) {
+        ur = GuiGetKeystoneConnectWalletDataSlip39();
+    } else {
+        ur = GuiGetKeystoneConnectWalletDataBip39();
+    }
+
+    printf("encode ur\r\n");
+    if (ur == NULL) {
+        printf("error_code is -1\r\n");
+        printf("error_message is failed to generate Keystone Nexus UR\r\n");
+        return;
+    }
+    if (ur->error_code == 0) {
+        printf("is_multi_part is %d\r\n", ur->is_multi_part);
+        printf("data is %s\r\n", ur->data);
+        printf("error_code is %d\r\n", ur->error_code);
+    } else {
+        printf("error_code is %d\r\n", ur->error_code);
+        printf("error_message is %s\r\n", ur->error_message);
+    }
+    free_ur_encode_result(ur);
+}
+
 static void RustTestKeyDerivation(int argc, char *argv[])
 {
     int32_t index;
@@ -1930,13 +2480,29 @@ static void RustTestKeyDerivation(int argc, char *argv[])
     printf("FreeHeapSize = %d\n", xPortGetFreeHeapSize());
 }
 
+static bool ParseOptionalEthPath(int argc, char *argv[], int pathArgIndex, char **path)
+{
+    *path = "m/44'/60'/0'/0/0";
+    if (argc == pathArgIndex) {
+        return true;
+    }
+    if (argc != pathArgIndex + 1) {
+        return false;
+    }
+    *path = argv[pathArgIndex];
+    return true;
+}
 
 static void testEthTx(int argc, char *argv[])
 {
     int32_t index;
-    VALUE_CHECK(argc, 2);
+    char *path;
+    if (!ParseOptionalEthPath(argc, argv, 2, &path)) {
+        printf("input err!\r\n");
+        return;
+    }
     sscanf(argv[0], "%d", &index);
-    URParseResult *result = test_get_eth_sign_request();
+    URParseResult *result = test_get_eth_sign_request_for_c_path(path);
     char *xpub = "xpub6ELHKXNimKbxMCytPh7EdC2QXx46T9qLDJWGnTraz1H9kMMFdcduoU69wh9cxP12wDxqAAfbaESWGYt5rREsX1J8iR2TEunvzvddduAPYcY";
     TransactionParseResult_DisplayETH *eth = eth_parse(result->data, xpub);
     printf("parse result: \r\n");
@@ -1951,6 +2517,48 @@ static void testEthTx(int argc, char *argv[])
     printf("sign result error_code: %d\r\n", sign_result->error_code);
     printf("sign result error_message: %s\r\n", sign_result->error_message);
     printf("sign result data: %s\r\n", sign_result->data);
+}
+
+static void RustTestEthEip1559Tx(int argc, char *argv[])
+{
+    int32_t index;
+    char *path;
+    if (!ParseOptionalEthPath(argc, argv, 2, &path)) {
+        printf("input err!\r\n");
+        return;
+    }
+    sscanf(argv[0], "%d", &index);
+    URParseResult *result = test_get_eth_eip1559_sign_request_for_c_path(path);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(index, seed, argv[1]);
+    UREncodeResult *sign_result = eth_sign_tx(result->data, seed, len);
+    printf("sign result error_code: %d\r\n", sign_result->error_code);
+    printf("sign result error_message: %s\r\n", sign_result->error_message);
+    printf("sign result data: %s\r\n", sign_result->data);
+    free_ur_encode_result(sign_result);
+    free_ur_parse_result(result);
+}
+
+static void RustTestEthTypedData(int argc, char *argv[])
+{
+    int32_t index;
+    char *path;
+    if (!ParseOptionalEthPath(argc, argv, 3, &path)) {
+        printf("input err!\r\n");
+        return;
+    }
+    sscanf(argv[0], "%d", &index);
+    URParseResult *result = test_get_eth_typed_data_sign_request_for_c_path(argv[2], path);
+    uint8_t seed[64];
+    int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    GetAccountSeed(index, seed, argv[1]);
+    UREncodeResult *sign_result = eth_sign_tx(result->data, seed, len);
+    printf("sign result error_code: %d\r\n", sign_result->error_code);
+    printf("sign result error_message: %s\r\n", sign_result->error_message);
+    printf("sign result data: %s\r\n", sign_result->data);
+    free_ur_encode_result(sign_result);
+    free_ur_parse_result(result);
 }
 
 static void testSolanaTx(int argc, char *argv[])
@@ -2403,9 +3011,13 @@ static void RustParseEthPersonalMessage(int argc, char *argv[])
 {
 
     int32_t index;
-    VALUE_CHECK(argc, 2);
+    char *path;
+    if (!ParseOptionalEthPath(argc, argv, 2, &path)) {
+        printf("input err!\r\n");
+        return;
+    }
     sscanf(argv[0], "%d", &index);
-    URParseResult *result = test_get_eth_sign_request_for_personal_message();
+    URParseResult *result = test_get_eth_sign_request_for_personal_message_c_path(path);
     char *xpub = "xpub6ELHKXNimKbxMCytPh7EdC2QXx46T9qLDJWGnTraz1H9kMMFdcduoU69wh9cxP12wDxqAAfbaESWGYt5rREsX1J8iR2TEunvzvddduAPYcY";
 
     PtrT_TransactionParseResult_DisplayETHPersonalMessage eth = eth_parse_personal_message(result->data, xpub);
@@ -2418,7 +3030,7 @@ static void RustParseEthPersonalMessage(int argc, char *argv[])
     free_TransactionParseResult_DisplayETHPersonalMessage(eth);
     uint8_t seed[64];
     int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-    GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+    GetAccountSeed(index, seed, argv[1]);
     UREncodeResult *sign_result = eth_sign_tx(result->data, seed, len);
     printf("sign result error_code: %d\r\n", sign_result->error_code);
     printf("sign result error_message: %s\r\n", sign_result->error_message);

@@ -32,6 +32,23 @@ use crate::common::ur::{
 };
 use crate::common::utils::{convert_c_char, recover_c_char};
 
+fn eth_key_path(path: String) -> CryptoKeyPath {
+    CryptoKeyPath::from_path(path, Some([18, 52, 86, 120])).unwrap()
+}
+
+fn default_eth_path() -> String {
+    "m/44'/60'/0'/0/0".to_string()
+}
+
+fn eth_request_id() -> Option<Vec<u8>> {
+    Some(
+        [
+            155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
+        ]
+        .to_vec(),
+    )
+}
+
 #[no_mangle]
 pub unsafe extern "C" fn test_get_bch_keystone_succeed_bytes() -> *mut URParseResult {
     let bytes = Bytes::new(hex::decode("1f8b0800000000000003658dbb4e0241144003361b1a818a58c1c604b3c966e73db39d819858aa7f70e7ce5c88aeac3c43f8173b7b0b3b3fc1da0fe003d4c6c2d8496f72aa539c9334bbc7d78b711d62ff6a51af6aacab9397e6c12656a20ec0207d6ab68e46e3cbee2962a98c8f22775161ae848f3948c1736d404b70489a9bfef3d7fef5979d25379f8de4add37ecfd2c746ebdcb8e049490dca033990e8a3e1589205a7b577b204511a292df1923312a06244a4084c4783e0796fff3348474c781f6df018c879210cd79281333690e58e796ea1645e39415691b0d2f8c3890549569ba84414dc669dfb42a961c1951e16ec40c1b28b56367f704b0ad3c96d35376e5aedeea0ac70b95de16cb3decc02dbceb7eb09ed76a8db1fdf835e23fd97e17f24a9ccb649010000").unwrap());
@@ -70,22 +87,19 @@ pub unsafe extern "C" fn test_get_tron_check_failed_keystone_bytes() -> *mut URP
 
 #[no_mangle]
 pub unsafe extern "C" fn test_get_eth_sign_request() -> *mut URParseResult {
-    let path1 = PathComponent::new(Some(44), true).unwrap();
-    let path2 = PathComponent::new(Some(60), true).unwrap();
-    let path3 = PathComponent::new(Some(0), true).unwrap();
-    let path4 = PathComponent::new(Some(0), false).unwrap();
-    let path5 = PathComponent::new(Some(0), false).unwrap();
+    test_get_eth_sign_request_for_path(default_eth_path())
+}
 
-    let source_fingerprint: [u8; 4] = [18, 52, 86, 120];
-    let components = vec![path1, path2, path3, path4, path5];
-    let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+fn test_get_eth_sign_request_for_path(path: String) -> *mut URParseResult {
+    // The pointer is created from an owned Rust string and consumed immediately by the C-path wrapper.
+    unsafe { test_get_eth_sign_request_for_c_path(convert_c_char(path)) }
+}
 
-    let request_id = Some(
-        [
-            155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
-        ]
-        .to_vec(),
-    );
+#[no_mangle]
+pub unsafe extern "C" fn test_get_eth_sign_request_for_c_path(
+    path: *mut c_char,
+) -> *mut URParseResult {
+    let path = recover_c_char(path);
     let sign_data = [
         248, 73, 128, 134, 9, 24, 78, 114, 160, 0, 130, 39, 16, 148, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 128, 164, 127, 116, 101, 115, 116, 50, 0, 0, 0, 0, 0, 0, 0,
@@ -93,11 +107,11 @@ pub unsafe extern "C" fn test_get_eth_sign_request() -> *mut URParseResult {
     ]
     .to_vec();
     let eth_sign_request = EthSignRequest::new(
-        request_id,
+        eth_request_id(),
         sign_data,
         DataType::Transaction,
         Some(1),
-        crypto_key_path,
+        eth_key_path(path),
         None,
         Some("metamask".to_string()),
     );
@@ -111,31 +125,27 @@ pub unsafe extern "C" fn test_get_eth_sign_request() -> *mut URParseResult {
 
 #[no_mangle]
 pub unsafe extern "C" fn test_get_eth_sign_request_for_personal_message() -> *mut URParseResult {
-    let path1 = PathComponent::new(Some(44), true).unwrap();
-    let path2 = PathComponent::new(Some(60), true).unwrap();
-    let path3 = PathComponent::new(Some(0), true).unwrap();
-    let path4 = PathComponent::new(Some(0), false).unwrap();
-    let path5 = PathComponent::new(Some(0), false).unwrap();
+    test_get_eth_sign_request_for_personal_message_path(default_eth_path())
+}
 
-    let source_fingerprint: [u8; 4] = [18, 52, 86, 120];
-    let components = vec![path1, path2, path3, path4, path5];
-    let crypto_key_path = CryptoKeyPath::new(components, Some(source_fingerprint), None);
+fn test_get_eth_sign_request_for_personal_message_path(path: String) -> *mut URParseResult {
+    // The pointer is created from an owned Rust string and consumed immediately by the C-path wrapper.
+    unsafe { test_get_eth_sign_request_for_personal_message_c_path(convert_c_char(path)) }
+}
 
-    let request_id = Some(
-        [
-            155, 29, 235, 77, 59, 125, 75, 173, 155, 221, 43, 13, 123, 61, 203, 109,
-        ]
-        .to_vec(),
-    );
-
+#[no_mangle]
+pub unsafe extern "C" fn test_get_eth_sign_request_for_personal_message_c_path(
+    path: *mut c_char,
+) -> *mut URParseResult {
+    let path = recover_c_char(path);
     let sign_data =
         hex::decode("4578616d706c652060706572736f6e616c5f7369676e60206d657373616765").unwrap();
     let eth_sign_request = EthSignRequest::new(
-        request_id,
+        eth_request_id(),
         sign_data,
         DataType::PersonalMessage,
         Some(1),
-        crypto_key_path,
+        eth_key_path(path),
         None,
         Some("metamask".to_string()),
     );
@@ -193,9 +203,73 @@ pub unsafe extern "C" fn test_get_aptos_sign_request(cbor: *mut c_char) -> *mut 
 
 #[no_mangle]
 pub unsafe extern "C" fn test_get_eth_eip1559_sign_request() -> *mut URParseResult {
-    let eth_sign_request = EthSignRequest::try_from(hex::decode("a601d825504f755f57cd6942f2bf7d8f90d2ddb2e702583102ef053f8459682f0085037ca764c782520894d6cbd2038a6653993009c56912cb45117ab930d88761069ce3a68a9e80c00304040505d90130a2018a182cf5183cf500f500f400f4021a707eed6c0654fe040716ac4afbba08ee723f3f47d5d814fc48c1").unwrap());
+    test_get_eth_eip1559_sign_request_for_path(default_eth_path())
+}
+
+fn test_get_eth_eip1559_sign_request_for_path(path: String) -> *mut URParseResult {
+    // The pointer is created from an owned Rust string and consumed immediately by the C-path wrapper.
+    unsafe { test_get_eth_eip1559_sign_request_for_c_path(convert_c_char(path)) }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn test_get_eth_eip1559_sign_request_for_c_path(
+    path: *mut c_char,
+) -> *mut URParseResult {
+    let path = recover_c_char(path);
+    let sign_data = hex::decode(
+        "02ef053f8459682f0085037ca764c782520894d6cbd2038a6653993009c56912cb45117ab930d88761069ce3a68a9e80c0",
+    )
+    .unwrap();
+    let eth_sign_request = EthSignRequest::new(
+        eth_request_id(),
+        sign_data,
+        DataType::TypedTransaction,
+        Some(1),
+        eth_key_path(path),
+        None,
+        Some("metamask".to_string()),
+    );
     URParseResult::single(
         ViewType::EthTx,
+        QRCodeType::EthSignRequest,
+        eth_sign_request,
+    )
+    .c_ptr()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn test_get_eth_typed_data_sign_request(
+    sign_data_hex: *mut c_char,
+) -> *mut URParseResult {
+    test_get_eth_typed_data_sign_request_for_path(sign_data_hex, default_eth_path())
+}
+
+fn test_get_eth_typed_data_sign_request_for_path(
+    sign_data_hex: *mut c_char,
+    path: String,
+) -> *mut URParseResult {
+    // The path pointer is created from an owned Rust string and consumed immediately by the C-path wrapper.
+    unsafe { test_get_eth_typed_data_sign_request_for_c_path(sign_data_hex, convert_c_char(path)) }
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn test_get_eth_typed_data_sign_request_for_c_path(
+    sign_data_hex: *mut c_char,
+    path: *mut c_char,
+) -> *mut URParseResult {
+    let sign_data_hex = recover_c_char(sign_data_hex);
+    let path = recover_c_char(path);
+    let eth_sign_request = EthSignRequest::new(
+        eth_request_id(),
+        hex::decode(sign_data_hex).unwrap(),
+        DataType::TypedData,
+        Some(1),
+        eth_key_path(path),
+        None,
+        Some("metamask".to_string()),
+    );
+    URParseResult::single(
+        ViewType::EthTypedData,
         QRCodeType::EthSignRequest,
         eth_sign_request,
     )

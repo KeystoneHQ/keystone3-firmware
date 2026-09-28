@@ -26,6 +26,7 @@
 #include "log_print.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
+#include "simulator_storage.h"
 #endif
 
 #define VERSION_MAX_LENGTH      32
@@ -457,6 +458,15 @@ void SetLanguage(uint32_t language)
 /// @brief Wipe device.
 void WipeDevice(void)
 {
+#ifdef COMPILE_SIMULATOR
+    DestroyAccount(0);
+    DestroyAccount(1);
+    DestroyAccount(2);
+    SimulatorWipeStorage();
+    SetSetupStep(DEFAULT_SETUP_STEP);
+    SaveDeviceSettingsSync();
+    return;
+#endif
     // reset all account address index in receive page
     {
         void GuiResetAllUtxoAddressIndex(void);

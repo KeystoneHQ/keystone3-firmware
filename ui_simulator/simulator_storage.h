@@ -19,5 +19,6 @@ int32_t SimulatorVerifyCurrentPasswordAndDeriveSubkey(
     uint8_t accountIndex, const char *password,
     const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
     uint8_t derivedKey[AUTH_KEY_LEN]);
+int32_t SimulatorWipeStorage(void);
 
 #endif

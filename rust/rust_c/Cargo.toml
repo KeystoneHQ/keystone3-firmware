@@ -136,9 +136,9 @@ debug-multi-coins = ["test_cmd", "use-allocator", "multi-coins"]
 debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]
 debug-cypherpunk = ["test_cmd", "use-allocator", "cypherpunk"]
 # simulator
-simulator-multi-coins = ["simulator", "multi-coins"]
-simulator-btc-only = ["simulator", "btc-only"]
-simulator-cypherpunk = ["simulator", "cypherpunk"]
+simulator-multi-coins = ["test_cmd", "simulator", "multi-coins"]
+simulator-btc-only = ["test_cmd", "simulator", "btc-only"]
+simulator-cypherpunk = ["test_cmd", "simulator", "cypherpunk"]
 # make IDE happy
 default = ["debug-cypherpunk"]
 

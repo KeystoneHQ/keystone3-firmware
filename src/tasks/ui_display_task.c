@@ -20,7 +20,7 @@
 #include "gui_api.h"
 #include "drv_gd25qxx.h"
 
-#define LVGL_FAST_TICK_MS                   5
+#define LVGL_FAST_TICK_MS                   2
 #define LVGL_IDLE_TICK_MS                   100
 #define LVGL_GRAM_PIXEL                     LCD_DISPLAY_WIDTH * 450
 

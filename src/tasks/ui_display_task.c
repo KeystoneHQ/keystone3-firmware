@@ -2,6 +2,7 @@
 #include "stdio.h"
 #include "cmsis_os.h"
 #include "hal_lcd.h"
+#include "drv_parallel8080.h"
 #include "lvgl.h"
 #include "log_print.h"
 #include "user_msg.h"
@@ -76,7 +77,14 @@ static void UiDisplayTask(void *argument)
     dispDrv.flush_cb = LcdFlush;
     dispDrv.draw_buf = &g_dispBuf;
     lv_disp_drv_register(&dispDrv);
-    lv_disp_draw_buf_init(&g_dispBuf, g_lvglCache, NULL, LVGL_GRAM_PIXEL);
+    /* Two half-size draw buffers so LVGL can render one while the DMA transfers
+     * the other (render/transfer overlap). No extra RAM: the existing
+     * g_lvglCache region is split in half. QR decode / draw_on_lcd still receive
+     * the full contiguous region via GetLvglGramAddr()/GetLvglGramSize(); they
+     * run only while the LVGL handler is disabled, so there is no concurrent use. */
+    lv_disp_draw_buf_init(&g_dispBuf, g_lvglCache,
+                          g_lvglCache + (LVGL_GRAM_PIXEL / 2),
+                          LVGL_GRAM_PIXEL / 2);
 
     lv_indev_drv_init(&indevDrv);
     indevDrv.type = LV_INDEV_TYPE_POINTER;
@@ -238,13 +246,24 @@ static void LvglTickTimerFunc(void *argument)
     lv_tick_inc(g_dynamicTick);
 }
 
+static lv_disp_drv_t *g_flushDisp;
+
+/* Runs in the DMA completion IRQ (lv_disp_flush_ready is ISR-safe in LVGL v8). */
+static void LcdFlushDoneCb(void)
+{
+    lv_disp_flush_ready(g_flushDisp);
+}
+
 static void LcdFlush(struct _lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
+    /* Non-blocking flush: kick the DMA and return immediately. The transfer
+     * completion IRQ calls lv_disp_flush_ready via the one-shot callback, so the
+     * UI task is free to render the second draw buffer meanwhile instead of
+     * busy-waiting on osDelay(1). The callback is registered only here, so the
+     * shared DMA IRQ never signals LVGL for blocking (non-LVGL) LCD writes. */
+    g_flushDisp = disp_drv;
+    Parallel8080SetDoneCallback(LcdFlushDoneCb);
     LcdDraw(area->x1, area->y1, area->x2, area->y2, (uint16_t *)color_p);
-    while (LcdBusy()) {
-        osDelay(1);
-    }
-    lv_disp_flush_ready(disp_drv);
 }
 
 static void InputDevReadCb(struct _lv_indev_drv_t *indev_drv, lv_indev_data_t *data)

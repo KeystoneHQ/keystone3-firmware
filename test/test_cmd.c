@@ -54,6 +54,10 @@
 #include "presetting.h"
 #include "usb_task.h"
 #include "device_setting.h"
+#include "err_code.h"
+#include "gui_model.h"
+#include "flash_address.h"
+#include "cjson/cJSON.h"
 
 #define CMD_MAX_ARGC                                16
 #define DEFAULT_TEST_BUFF_LEN                       1024
@@ -103,6 +107,7 @@ static void ETHDBContractsTest(int argc, char *argv[]);
 static void BackgroundTestFunc(int argc, char *argv[]);
 static void GetReceiveAddress(int argc, char *argv[]);
 static void AccountPublicInfoTestFunc(int argc, char *argv[]);
+static void MigrationTestFunc(int argc, char *argv[]);
 static void FingerTestFunc(int argc, char *argv[]);
 static void MotorTestFunc(int argc, char *argv[]);
 static void LcdTestFunc(int argc, char *argv[]);
@@ -243,6 +248,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"background test:", BackgroundTestFunc},
     {"get receive address:", GetReceiveAddress},
     {"account public info test:", AccountPublicInfoTestFunc},
+    {"migration test:", MigrationTestFunc},
     {"finger test:", FingerTestFunc},
     {"motor:", MotorTestFunc},
     {"lcd:", LcdTestFunc},
@@ -913,6 +919,192 @@ static void GetReceiveAddress(int argc, char *argv[])
 static void AccountPublicInfoTestFunc(int argc, char *argv[])
 {
     AccountPublicInfoTest(argc, argv);
+}
+
+
+#ifdef WEB3_VERSION
+#define MIGRATION_AR_PUBLIC_KEY_MAX_LEN        (1024 + 1)
+
+static int32_t MigrationReadStoredArPublicKey(uint8_t accountIndex, char *publicKey, uint32_t publicKeyLen)
+{
+    uint32_t addr, size;
+    int32_t ret;
+    char *jsonString = NULL;
+    cJSON *rootJson = NULL;
+    cJSON *keyJson = NULL;
+    cJSON *arJson = NULL;
+    cJSON *valueJson = NULL;
+
+    if (accountIndex > 2 || publicKey == NULL || publicKeyLen == 0) {
+        return ERR_GENERAL_FAIL;
+    }
+    publicKey[0] = '\0';
+    addr = SPI_FLASH_ADDR_USER1_MUTABLE_DATA + accountIndex * SPI_FLASH_ADDR_EACH_SIZE;
+    ret = Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size));
+    if (ret != sizeof(size)) {
+        return ret;
+    }
+    if (size == 0 || size == 0xFFFFFFFF || size > SPI_FLASH_SIZE_USER1_MUTABLE_DATA - 4) {
+        return ERR_GENERAL_FAIL;
+    }
+
+    jsonString = SRAM_MALLOC(size + 1);
+    if (jsonString == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    ret = Gd25FlashReadBuffer(addr + 4, (uint8_t *)jsonString, size);
+    if (ret != size) {
+        SRAM_FREE(jsonString);
+        return ret;
+    }
+    jsonString[size] = '\0';
+
+    rootJson = cJSON_Parse(jsonString);
+    if (rootJson != NULL) {
+        keyJson = cJSON_GetObjectItem(rootJson, "key");
+        if (keyJson != NULL) {
+            arJson = cJSON_GetObjectItem(keyJson, "ar");
+            if (arJson != NULL) {
+                valueJson = cJSON_GetObjectItem(arJson, "value");
+                if (cJSON_IsString(valueJson) && valueJson->valuestring != NULL && valueJson->valuestring[0] != '\0') {
+                    strncpy(publicKey, valueJson->valuestring, publicKeyLen - 1);
+                    publicKey[publicKeyLen - 1] = '\0';
+                }
+            }
+        }
+    }
+
+    if (rootJson != NULL) {
+        cJSON_Delete(rootJson);
+    }
+    SRAM_FREE(jsonString);
+    return publicKey[0] == '\0' ? ERR_GENERAL_FAIL : SUCCESS_CODE;
+}
+
+static void MigrationPrintArReceiveFromPublicKey(uint8_t accountIndex, const char *publicKey)
+{
+    if (publicKey == NULL || publicKey[0] == '\0') {
+        printf("MigrationArPublicInfo=absent\r\n");
+        printf("MigrationArReceive=0,accountIndex=%d,status=no_ar_pubkey\r\n", accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+        return;
+    }
+    printf("MigrationArPublicInfo=present\r\n");
+    SimpleResponse_c_char *address = arweave_get_address((char *)publicKey);
+    if (address == NULL || address->error_code != SUCCESS_CODE || address->data == NULL || address->data[0] == '\0') {
+        int32_t ret = address == NULL ? ERR_GENERAL_FAIL : address->error_code;
+        printf("MigrationArReceive=%d,accountIndex=%d,status=address_error\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+        if (address != NULL) {
+            free_simple_response_c_char(address);
+        }
+        return;
+    }
+    printf("MigrationArReceive=0,accountIndex=%d,status=address\r\n", accountIndex);
+    printf("MigrationArReceiveAddress=%s\r\n", address->data);
+    printf("MigrationArReceiveDone=1\r\n");
+    free_simple_response_c_char(address);
+}
+
+static void MigrationPrintValidatedArReceive(uint8_t accountIndex, const char *password)
+{
+    SecretCacheSetPassword((char *)password);
+    SimpleResponse_c_char *publicKey = NULL;
+    int32_t ret = LoadAndValidateArKey(password, NULL, &publicKey);
+    if (ret == SUCCESS_CODE) {
+        MigrationPrintArReceiveFromPublicKey(accountIndex, publicKey->data);
+    } else if (ret == ERR_AR_NOT_SETUP) {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=ar_not_setup\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    } else if (ret == ERR_AR_DATA_INVALID) {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=ar_data_invalid\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    } else if (ArKeyNeedsSetup(ret)) {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=not_setup\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    } else {
+        printf("MigrationArReceive=%d,accountIndex=%d,status=ar_validation_error\r\n", ret, accountIndex);
+        printf("MigrationArReceiveDone=1\r\n");
+    }
+    if (publicKey != NULL) {
+        free_simple_response_c_char(publicKey);
+    }
+}
+#endif
+
+static void MigrationTestFunc(int argc, char *argv[])
+{
+    if (argc < 1) {
+        printf("input err!\r\n");
+        return;
+    }
+    if (strcmp(argv[0], "ar_setup") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret == SUCCESS_CODE) {
+            SecretCacheSetPassword(argv[1]);
+            ret = RsaGenerateKeyPair(false, true, NULL);
+        }
+        printf("MigrationArSetup=%d,accountIndex=%d\r\n", ret, accountIndex);
+#else
+        printf("MigrationArSetup=-1\r\n");
+#endif
+    } else if (strcmp(argv[0], "ar_receive_probe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        MigrationPrintValidatedArReceive(accountIndex, argv[1]);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "ar_receive_display_probe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        MigrationPrintValidatedArReceive(accountIndex, argv[1]);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "ar_receive_probe_safe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPassword(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        char publicKey[MIGRATION_AR_PUBLIC_KEY_MAX_LEN] = {0};
+        ret = MigrationReadStoredArPublicKey(accountIndex, publicKey, sizeof(publicKey));
+        printf("MigrationArPublicInfo=%s\r\n", ret == SUCCESS_CODE ? "present" : "absent");
+        MigrationPrintValidatedArReceive(accountIndex, argv[1]);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "reboot") == 0) {
+        printf("MigrationReboot=0\r\n");
+        SystemReboot();
+    } else {
+        printf("unsupported migration test: %s\r\n", argv[0]);
+    }
 }
 
 static void FingerTestFunc(int argc, char *argv[])

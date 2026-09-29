@@ -86,6 +86,7 @@ void GetBootVersionNumber(char *version)
 #ifndef COMPILE_SIMULATOR
 bool NeedUpdateBoot(void)
 {
+    return false;
     #ifndef BUILD_PRODUCTION
         return false;
     #endif

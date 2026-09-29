@@ -521,6 +521,27 @@ void DeviceSettingsTest(int argc, char *argv[])
         printf("usbSwitch=%d\n", (int)GetUSBSwitch());
         printf("language=%d\n", (int)GetLanguage());
         printf("enableBlindSigning=%d\n", (int)GetEnableBlindSigning());
+    } else if (strcmp(argv[0], "automation") == 0) {
+        SetSetupStep(0);
+        SetBright(50);
+        SetAutoLockScreen(0);
+        SetAutoPowerOff(0);
+        SetVibration(0);
+        SetDarkMode(0);
+        SetUSBSwitch(1);
+        SetShowPowerOffPage(false);
+        SetPageLockScreen(false);
+        SetLockScreen(false);
+        ClearLockScreenTime();
+        ClearShutdownTime();
+        g_deviceSettings.lastVersion = 2;
+        SetLanguage(DEFAULT_LANGUAGE);
+        SetEnableBlindSigning(false);
+        SaveDeviceSettings();
+        printf("automation device settings test\n");
+        printf("autoLockScreen=%d\n", (int)GetAutoLockScreen());
+        printf("autoPowerOff=%d\n", (int)GetAutoPowerOff());
+        printf("usbSwitch=%d\n", (int)GetUSBSwitch());
     } else if (strcmp(argv[0], "set") == 0) {
         SetSetupStep(0);
         SetBright(50);

@@ -122,6 +122,7 @@ static void CrcTestFunc(int argc, char *argv[]);
 static void PresettingTestFunc(int argc, char *argv[]);
 static void UsbTestFunc(int argc, char *argv[]);
 static void DeviceSettingsTestFunc(int argc, char *argv[]);
+static void FirmwareTestFunc(int argc, char *argv[]);
 static void ScreenShotFunc(int argc, char *argv[]);
 static void BpkPrintFunc(int argc, char *argv[]);
 static void SdCardTestFunc(int argc, char *argv[]);
@@ -268,6 +269,7 @@ const static UartTestCmdItem_t g_uartTestCmdTable[] = {
     {"presetting:", PresettingTestFunc},
     {"usb test:", UsbTestFunc},
     {"device settings test:", DeviceSettingsTestFunc},
+    {"firmware test:", FirmwareTestFunc},
     {"screen shot", ScreenShotFunc},
     {"bpk print:", BpkPrintFunc},
     {"sd card test:", SdCardTestFunc},
@@ -1452,6 +1454,26 @@ static void UsbTestFunc(int argc, char *argv[])
 static void DeviceSettingsTestFunc(int argc, char *argv[])
 {
     DeviceSettingsTest(argc, argv);
+}
+
+static void FirmwareTestFunc(int argc, char *argv[])
+{
+    char firmwareVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
+    char updateVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
+    char bootVersion[SOFTWARE_VERSION_MAX_LEN] = {0};
+
+    if (argc < 1 || strcmp(argv[0], "version") != 0) {
+        printf("firmware test arg err\r\n");
+        return;
+    }
+
+    GetSoftWareVersionNumber(firmwareVersion);
+    GetUpdateVersionNumber(updateVersion);
+    GetBootVersionNumber(bootVersion);
+    printf("FirmwareVersion=%s\r\n", firmwareVersion);
+    printf("FirmwareUpdateVersion=%s\r\n", updateVersion);
+    printf("FirmwareSoftwareVersion=%s\r\n", GetSoftwareVersionString());
+    printf("BootVersion=%s\r\n", bootVersion);
 }
 
 static void ScreenShotFunc(int argc, char *argv[])

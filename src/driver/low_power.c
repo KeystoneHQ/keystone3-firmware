@@ -100,7 +100,7 @@ uint32_t EnterLowPower(void)
     SetRtcWakeUp(sleepSecond);
     wakeUpSecond = GetRtcCounter() + sleepSecond;
     EnterDeepSleep();
-    while ((ButtonPress() == false) && (FingerPress() == false)) {
+    while ((ButtonPress() == false) && (FingerPress() == false) && (GetUsbDetectState() == false)) {
         RecoverFromDeepSleep();
         Uart0OpenPort();
         wakeUpCount++;
@@ -127,8 +127,10 @@ uint32_t EnterLowPower(void)
     }
     if (ButtonPress() == true) {
         g_wakeUpMethod = WAKE_UP_BY_BUTTON;
-    } else {
+    } else if (FingerPress() == true) {
         g_wakeUpMethod = WAKE_UP_BY_FINGER;
+    } else {
+        g_wakeUpMethod = WAKE_UP_BY_BUTTON;
     }
     return wakeUpCount;
 }
@@ -170,7 +172,7 @@ void EnterDeepSleep(void)
 {
     GPIO_WakeEvenConfig(GPIO_PortSourceGPIOE, GPIO_Pin_14, ENABLE);     //woken up by button.
     GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_14, ENABLE);     //woken up by fingerprint.
-    //GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_15, ENABLE);     //woken up by USB.
+    GPIO_WakeEvenConfig(GPIO_PortSourceGPIOF, GPIO_Pin_15, ENABLE);     //woken up by USB.
     GPIO_WakeModeConfig(GPIO_WakeMode_Now);
     SYSCTRL->MSR_CR1 |= BIT(27);
     /************************* power down ROM *************************/

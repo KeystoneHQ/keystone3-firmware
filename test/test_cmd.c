@@ -1030,6 +1030,251 @@ static void MigrationPrintValidatedArReceive(uint8_t accountIndex, const char *p
         free_simple_response_c_char(publicKey);
     }
 }
+
+static void AddressPrintResult(SimpleResponse_c_char *result)
+{
+    if (result == NULL) {
+        printf("address error_code: -1\r\n");
+        return;
+    }
+    printf("address error_code: %d\r\n", result->error_code);
+    if (result->error_message != NULL) {
+        printf("address error_message: %s\r\n", result->error_message);
+    }
+    if (result->error_code == 0 && result->data != NULL) {
+        printf("address=%s\r\n", result->data);
+    }
+    free_simple_response_c_char(result);
+}
+
+static bool AddressValidateXpub(char *xpub)
+{
+    if (xpub == NULL) {
+        printf("address error_code: -1\r\n");
+        printf("address error_message: missing xpub\r\n");
+        return false;
+    }
+    return true;
+}
+
+static bool AddressArgIsDecimal(const char *arg)
+{
+    if (arg == NULL || arg[0] == '\0') {
+        return false;
+    }
+    for (const char *p = arg; *p != '\0'; p++) {
+        if (*p < '0' || *p > '9') {
+            return false;
+        }
+    }
+    return true;
+}
+
+static char *AddressGetXpubArg(char *arg)
+{
+    if (!AddressArgIsDecimal(arg)) {
+        return NULL;
+    }
+    int32_t xpubType = 0;
+    sscanf(arg, "%d", &xpubType);
+    return GetCurrentAccountPublicKey(xpubType);
+}
+
+static void AddressTestUtxo(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 3);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(utxo_get_address(argv[2], xpub));
+}
+
+static void AddressTestEth(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(eth_get_address(argv[3], xpub, argv[2]));
+}
+
+static void AddressTestAvaxXp(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(avalanche_get_x_p_address(argv[3], xpub, argv[2]));
+}
+
+static void AddressTestCosmos(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 5);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(cosmos_get_address(argv[3], xpub, argv[2], argv[4]));
+}
+
+static void AddressTestTron(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 3);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(tron_get_address(argv[2], xpub));
+}
+
+static void AddressTestXrp(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    AddressPrintResult(xrp_get_address(argv[3], xpub, argv[2]));
+}
+
+static void AddressTestXpubOnly(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 2);
+    char *xpub = AddressGetXpubArg(argv[1]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    if (strcmp(argv[0], "sui") == 0) {
+        AddressPrintResult(sui_generate_address(xpub));
+    } else if (strcmp(argv[0], "iota") == 0) {
+        AddressPrintResult(iota_get_address_from_pubkey(xpub));
+    } else if (strcmp(argv[0], "aptos") == 0) {
+        AddressPrintResult(aptos_generate_address(xpub));
+    } else if (strcmp(argv[0], "stellar") == 0) {
+        AddressPrintResult(stellar_get_address(xpub));
+    } else if (strcmp(argv[0], "ton") == 0) {
+        AddressPrintResult(ton_get_address(xpub));
+    } else {
+        printf("unknown address command: %s\r\n", argv[0]);
+    }
+}
+
+static void AddressTestCardano(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    uint32_t index = 0;
+    sscanf(argv[3], "%u", &index);
+    char *xpub = AddressGetXpubArg(argv[2]);
+    if (!AddressValidateXpub(xpub)) {
+        return;
+    }
+    if (strcmp(argv[1], "base") == 0) {
+        AddressPrintResult(cardano_get_base_address(xpub, index, 1));
+    } else if (strcmp(argv[1], "enterprise") == 0) {
+        AddressPrintResult(cardano_get_enterprise_address(xpub, index, 1));
+    } else if (strcmp(argv[1], "stake") == 0) {
+        AddressPrintResult(cardano_get_stake_address(xpub, index, 1));
+    } else {
+        printf("unknown cardano address type: %s\r\n", argv[1]);
+    }
+}
+
+static void AddressTestArweave(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 3);
+    SimpleResponse_c_char *publicKey = NULL;
+    int32_t ret = LoadAndValidateArKey(argv[2], NULL, &publicKey);
+    if (ret != SUCCESS_CODE || publicKey == NULL) {
+        printf("address error_code: %d\r\n", ret);
+        printf("address error_message: ar key unavailable\r\n");
+        return;
+    }
+    AddressPrintResult(arweave_get_address(publicKey->data));
+    free_simple_response_c_char(publicKey);
+}
+
+static void AddressTestSolana(int argc, char *argv[])
+{
+    VALUE_CHECK(argc, 4);
+    int32_t index = 0;
+    sscanf(argv[1], "%d", &index);
+    uint8_t seed[64] = {0};
+    uint32_t seedLen = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
+    int32_t seedRet = GetAccountSeed(index, seed, argv[2]);
+    if (seedRet != 0) {
+        printf("GetAccountSeed=%d\r\n", seedRet);
+        printf("address error_code: %d\r\n", seedRet);
+        printf("address error_message: get seed failed\r\n");
+        memset_s(seed, sizeof(seed), 0, sizeof(seed));
+        return;
+    }
+
+    SimpleResponse_c_char *pubkey = get_ed25519_pubkey_by_seed(seed, seedLen, argv[3]);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    if (pubkey == NULL || pubkey->error_code != 0 || pubkey->data == NULL) {
+        AddressPrintResult(pubkey);
+        return;
+    }
+    SimpleResponse_c_char *result = solana_get_address(pubkey->data);
+    free_simple_response_c_char(pubkey);
+    AddressPrintResult(result);
+}
+
+static void AddressTestFunc(int argc, char *argv[])
+{
+    if (argc <= 0) {
+        printf("input err!\r\n");
+        return;
+    }
+
+    if (strcmp(argv[0], "utxo") == 0) {
+        AddressTestUtxo(argc, argv);
+    } else if (strcmp(argv[0], "eth") == 0) {
+        AddressTestEth(argc, argv);
+    } else if (strcmp(argv[0], "avax_xp") == 0) {
+        AddressTestAvaxXp(argc, argv);
+    } else if (strcmp(argv[0], "cosmos") == 0) {
+        AddressTestCosmos(argc, argv);
+    } else if (strcmp(argv[0], "tron") == 0) {
+        AddressTestTron(argc, argv);
+    } else if (strcmp(argv[0], "xrp") == 0) {
+        AddressTestXrp(argc, argv);
+    } else if (strcmp(argv[0], "solana") == 0) {
+        AddressTestSolana(argc, argv);
+    } else if (strcmp(argv[0], "cardano") == 0) {
+        AddressTestCardano(argc, argv);
+    } else if (strcmp(argv[0], "arweave") == 0) {
+        AddressTestArweave(argc, argv);
+    } else {
+        AddressTestXpubOnly(argc, argv);
+    }
+}
+
+static uint8_t g_migrationAddressCachedAccountIndex = 0xFF;
+static char g_migrationAddressCachedPassword[32] = {0};
+
+static int32_t MigrationPrepareAddressDisplayProbe(uint8_t *accountIndex, char *password)
+{
+    if (g_migrationAddressCachedAccountIndex != 0xFF &&
+        GetCurrentAccountIndex() == g_migrationAddressCachedAccountIndex &&
+        strcmp(g_migrationAddressCachedPassword, password) == 0 &&
+        GetCurrentAccountPublicKey(XPUB_TYPE_BTC) != NULL) {
+        *accountIndex = g_migrationAddressCachedAccountIndex;
+        SecretCacheSetPassword(password);
+        return SUCCESS_CODE;
+    }
+
+    int32_t ret = VerifyPasswordAndLogin(accountIndex, password);
+    if (ret == SUCCESS_CODE) {
+        g_migrationAddressCachedAccountIndex = *accountIndex;
+        strcpy_s(g_migrationAddressCachedPassword, sizeof(g_migrationAddressCachedPassword), password);
+        SecretCacheSetPassword(password);
+    }
+    return ret;
+}
 #endif
 
 static void MigrationTestFunc(int argc, char *argv[])
@@ -1092,13 +1337,7 @@ static void MigrationTestFunc(int argc, char *argv[])
             printf("MigrationArReceiveDone=1\r\n");
             return;
         }
-        ret = AccountPublicInfoSwitch(accountIndex, argv[1], true);
-        printf("MigrationArRebuild=%d,accountIndex=%d\r\n", ret, accountIndex);
-        if (ret != SUCCESS_CODE) {
-            printf("MigrationArReceive=%d,accountIndex=%d,status=rebuild_error\r\n", ret, accountIndex);
-            printf("MigrationArReceiveDone=1\r\n");
-            return;
-        }
+        printf("MigrationArRebuild=0,accountIndex=%d,status=login_path\r\n", accountIndex);
         MigrationPrintValidatedArReceive(accountIndex, argv[1]);
 #else
         printf("MigrationArReceive=-1,status=unsupported\r\n");
@@ -1108,7 +1347,7 @@ static void MigrationTestFunc(int argc, char *argv[])
 #ifdef WEB3_VERSION
         VALUE_CHECK(argc, 2);
         uint8_t accountIndex = 0;
-        int32_t ret = VerifyPassword(&accountIndex, argv[1]);
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
         if (ret != SUCCESS_CODE) {
             printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
             printf("MigrationArReceiveDone=1\r\n");
@@ -1121,6 +1360,26 @@ static void MigrationTestFunc(int argc, char *argv[])
 #else
         printf("MigrationArReceive=-1,status=unsupported\r\n");
         printf("MigrationArReceiveDone=1\r\n");
+#endif
+    } else if (strcmp(argv[0], "address_display_probe") == 0) {
+#ifdef WEB3_VERSION
+        if (argc < 3) {
+            printf("input err!\r\n");
+            return;
+        }
+        uint8_t accountIndex = 0;
+        int32_t ret = MigrationPrepareAddressDisplayProbe(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationAddressDisplay=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationAddressDisplayDone=1\r\n");
+            return;
+        }
+        printf("MigrationAddressDisplay=0,accountIndex=%d,status=ready\r\n", accountIndex);
+        AddressTestFunc(argc - 2, &argv[2]);
+        printf("MigrationAddressDisplayDone=1\r\n");
+#else
+        printf("MigrationAddressDisplay=-1,accountIndex=0,status=unsupported\r\n");
+        printf("MigrationAddressDisplayDone=1\r\n");
 #endif
     } else if (strcmp(argv[0], "reboot") == 0) {
         printf("MigrationReboot=0\r\n");

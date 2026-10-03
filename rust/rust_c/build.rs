@@ -27,7 +27,7 @@ fn main() {
     //feature toggle
     config.after_includes = config.after_includes.map(|mut v| {
         #[cfg(feature = "cypherpunk")]
-        v.push_str("#define BUILD_CYBERPUNK\n");
+        v.push_str("#define BUILD_CYPHERPUNK\n");
         #[cfg(feature = "multi-coins")]
         v.push_str("#define BUILD_MULTI_COINS\n");
 

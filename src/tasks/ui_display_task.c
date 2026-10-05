@@ -273,7 +273,7 @@ static void __SetLvglHandlerAndSnapShot(uint32_t value)
         tick1 = osKernelGetTickCount();
         snapShotAddr = GetActSnapShot();
         tick2 = osKernelGetTickCount();
-        printf("t=%d\r\n", tick2 - tick1);
+        printf("t=%d\r\n", (int)(tick2 - tick1));
         //PrintU16Array("snapShotAddr", (uint16_t *)snapShotAddr, LCD_DISPLAY_WIDTH * 100);
         g_lvglHandlerEnable = enable;
     } else if (g_lvglHandlerEnable == false && enable == true) {

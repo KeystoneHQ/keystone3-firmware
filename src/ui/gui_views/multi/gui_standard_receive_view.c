@@ -4,10 +4,11 @@
 #include "gui_standard_receive_widgets.h"
 #include "gui_pending_hintbox.h"
 #include "gui_model.h"
+#include "gui_home_widgets.h"
 
-static int32_t GuiStandardReceiveViewInit(uint8_t chain)
+static int32_t GuiStandardReceiveViewInit(uint8_t chain, const char *address)
 {
-    GuiStandardReceiveInit(chain);
+    GuiStandardReceiveInit(chain, address);
     return SUCCESS_CODE;
 }
 
@@ -27,7 +28,15 @@ int32_t GuiStandardReceiveViewEventProcess(void *self, uint16_t usEvent, void *p
         } else {
             return ERR_GUI_ERROR;
         }
-        return GuiStandardReceiveViewInit(chain);
+#ifdef WEB3_VERSION
+        if (chain == HOME_WALLET_CARD_ARWEAVE &&
+                (usLen != sizeof(StandardReceiveParams_t) ||
+                 strnlen_s(((StandardReceiveParams_t *)param)->address, 44) != 43)) {
+            return ERR_GUI_ERROR;
+        }
+#endif
+        return GuiStandardReceiveViewInit(chain, usLen == sizeof(StandardReceiveParams_t) ?
+                                          ((StandardReceiveParams_t *)param)->address : NULL);
     case GUI_EVENT_OBJ_DEINIT:
         return GuiStandardReceiveViewDeInit();
     case GUI_EVENT_DISACTIVE:

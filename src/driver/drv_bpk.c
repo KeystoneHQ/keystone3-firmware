@@ -38,11 +38,11 @@ void PrintBpkValue(uint32_t offset)
     uint32_t data[BPK_KEY_LENGTH] = {0};
     ErrorStatus ret = GetBpkValue(data, BPK_KEY_LENGTH, offset);
     if (ret == ERROR) {
-        printf("get value failed: %d\n", offset);
+        printf("get value failed: %d\n", (int)offset);
         return;
     }
     for (int i = 0; i < BPK_KEY_LENGTH; i++) {
-        printf("%08x ", data[i]);
+        printf("%08x ", (unsigned int)data[i]);
         if (3 == i % 4) {
             printf("\n");
         }

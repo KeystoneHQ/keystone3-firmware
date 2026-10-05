@@ -510,10 +510,15 @@ pub unsafe extern "C" fn cardano_parse_tx(
     let parse_context =
         prepare_parse_context(cardano_sign_reqeust, master_fingerprint, cardano_xpub);
     match parse_context {
-        Ok(parse_context) => match app_cardano::transaction::parse_tx(tx_hex, parse_context) {
-            Ok(v) => TransactionParseResult::success(DisplayCardanoTx::from(v).c_ptr()).c_ptr(),
-            Err(e) => TransactionParseResult::from(e).c_ptr(),
-        },
+        Ok(parse_context) => {
+            match app_cardano::transaction::parse_tx(tx_hex.clone(), parse_context) {
+                Ok(v) => {
+                    let display = DisplayCardanoTx::from_with_raw_data(v, &tx_hex);
+                    TransactionParseResult::success(display.c_ptr()).c_ptr()
+                }
+                Err(e) => TransactionParseResult::from(e).c_ptr(),
+            }
+        }
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
 }

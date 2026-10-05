@@ -54,7 +54,7 @@ uint32_t FatfsFileGetSize(const TCHAR *path)
         return 0;
     }
     fileSize = f_size(&fpSource);
-    printf("filesize = %d\n", fileSize);
+    printf("filesize = %d\n", (int)fileSize);
     f_close(&fpSource);
 
     return fileSize;
@@ -76,7 +76,7 @@ int FatfsFileWrite(const TCHAR* path, const uint8_t *data, uint32_t len)
         return RES_ERROR;
     }
     f_close(&fp);
-    printf("write %s %d btyes success\r\n", path, writeBytes);
+    printf("write %s %d btyes success\r\n", path, (int)writeBytes);
 
     return RES_OK;
 }
@@ -111,7 +111,7 @@ int FatfsFileAppend(const TCHAR* path, const uint8_t *data, uint32_t len)
         return RES_ERROR;
     }
     f_close(&fp);
-    printf("write %s %d btyes success\r\n", path, writeBytes);
+    printf("write %s %d btyes success\r\n", path, (int)writeBytes);
 
     return RES_OK;
 }
@@ -330,14 +330,14 @@ char *FatfsFileRead(const TCHAR* path)
 
     // Check file size limit
     if (fileSize > MAX_FILE_CONTENT_LEN) {
-        printf("File too large: %u > %u\n", fileSize, MAX_FILE_CONTENT_LEN);
+        printf("File too large: %u > %u\n", (unsigned int)fileSize, MAX_FILE_CONTENT_LEN);
         f_close(&fp);
         return NULL;
     }
 
     char *fileContent = EXT_MALLOC(MAX_FILE_CONTENT_LEN);
     memset_s(fileContent, MAX_FILE_CONTENT_LEN, 0, MAX_FILE_CONTENT_LEN);
-    printf("%s size = %d\n", path, fileSize);
+    printf("%s size = %d\n", path, (int)fileSize);
     res = f_read(&fp, (void*)fileContent, fileSize, &readBytes);
     if (res) {
         FatfsError(res);
@@ -364,14 +364,14 @@ uint8_t *FatfsFileReadBytes(const TCHAR* path, uint32_t* readBytes)
     fileSize = f_size(&fp);
 
     if (fileSize > MAX_FILE_CONTENT_LEN) {
-        printf("File too large: %u > %u\n", fileSize, MAX_FILE_CONTENT_LEN);
+        printf("File too large: %u > %u\n", (unsigned int)fileSize, MAX_FILE_CONTENT_LEN);
         f_close(&fp);
         return NULL;
     }
 
     fileBuf = EXT_MALLOC(fileSize);
     res = f_read(&fp, (void*)fileBuf, fileSize, readBytes);
-    printf("%s filesize = %u  readSize = %u\n", path, fileSize, *readBytes);
+    printf("%s filesize = %u  readSize = %u\n", path, (unsigned int)fileSize, (unsigned int)*readBytes);
     if (res) {
         FatfsError(res);
         f_close(&fp);
@@ -619,5 +619,5 @@ void FatfsError(FRESULT errNum)
     for (i = FR_OK; i != errNum && *str; i++) {
         while (*str++) ;
     }
-    printf("errNum = %u FR_%s\n", (UINT)errNum, str);
+    printf("errNum = %u FR_%s\n", (unsigned int)errNum, str);
 }

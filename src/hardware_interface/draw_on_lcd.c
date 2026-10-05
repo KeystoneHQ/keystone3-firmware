@@ -55,6 +55,32 @@ void PrintOnLcd(const lv_font_t *font, uint16_t color, const char *text)
     yCursor = DrawStringOnLcd(PAGE_MARGINS, yCursor, text, color, font);
 }
 
+void ClearRectOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height)
+{
+    uint8_t *gram = GetLvglGramAddr();
+    while (LcdBusy());
+    LcdDraw(x, y, x + width - 1, y + height - 1, (uint16_t *)gram);
+    while (LcdBusy());
+}
+
+uint16_t GetStringWidthOnLcd(const char *string, const lv_font_t *font)
+{
+    uint32_t len = strlen(string);
+    uint16_t width = 0;
+    for (uint32_t i = 0; i < len; i++) {
+        width += lv_font_get_glyph_width(font, string[i], string[i + 1]);
+    }
+    return width;
+}
+
+void RedrawCenteredLineOnLcd(uint16_t y, const char *text, uint16_t color, const lv_font_t *font)
+{
+    uint16_t textWidth = GetStringWidthOnLcd(text, font);
+    uint16_t x = textWidth < LCD_DISPLAY_WIDTH ? (LCD_DISPLAY_WIDTH - textWidth) / 2 : PAGE_MARGINS;
+    ClearRectOnLcd(PAGE_MARGINS, y, LCD_DISPLAY_WIDTH - 2 * PAGE_MARGINS, lv_font_get_line_height(font));
+    DrawStringOnLcd(x, y, text, color, font);
+}
+
 /// @brief Draw string on lcd.
 /// @param[in] x Coordinate x.
 /// @param[in] y Coordinate y.

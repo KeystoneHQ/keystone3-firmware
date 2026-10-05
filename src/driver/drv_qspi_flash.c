@@ -73,10 +73,10 @@ void QspiFlashEraseAndWrite(uint32_t addr, const uint8_t *data, uint32_t len)
         CACHE_CleanAll(CACHE);
         AES_Program(&g_cmdType, NULL, addr, len, (uint8_t *)data);
         if (memcmp(data, (uint8_t *)addr, len) == 0) {
-            printf("read back check ok %#x\n", addr);
+            printf("read back check ok %#x\n", (unsigned int)addr);
             break;
         } else {
-            printf("encrypt check error....... %#x\n", addr);
+            printf("encrypt check error....... %#x\n", (unsigned int)addr);
             PrintArray("write", data, len);
             PrintArray("read", (uint8_t *)addr, len);
         }
@@ -96,13 +96,13 @@ static uint32_t CheckFlashType(void)
     ROM_QSPI_ReleaseDeepPowerDown(NULL);
 
     chip_type = ROM_QSPI_ReadID(NULL);
-    printf("FLASH ID = %#x \n", chip_type);
+    printf("FLASH ID = %#x \n", (unsigned int)chip_type);
     if (chip_type == 0xffffff) {
         test_cmd.Instruction = 0x9F;
         test_cmd.BusMode = QSPI_BUSMODE_444;
         test_cmd.CmdFormat = QSPI_CMDFORMAT_CMD8_RREG24;
         chip_type = ROM_QSPI_ReadID(&test_cmd);
-        printf("ReRead_FLASH ID = %#x \n", chip_type);
+        printf("ReRead_FLASH ID = %#x \n", (unsigned int)chip_type);
     }
 
     chip_type = chip_type >> 16;

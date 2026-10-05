@@ -12,13 +12,13 @@
 #include "account_public_info.h"
 
 PtrT_TransactionCheckResult GuiGetArCheckResult(void);
+void GuiArSetMessageAddress(const char *address);
 void GuiSetArUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 void *GuiGetArData(void);
 void FreeArMemory(void);
 void GuiArTxOverview(lv_obj_t *parent, void *totalData);
 void GuiArTxDetails(lv_obj_t *parent, void *totalData);
 void GuiArMessageOverview(lv_obj_t *parent, void *totalData);
-bool IsArweaveSetupComplete(void);
 UREncodeResult *GuiGetArweaveSignQrCodeData(void);
 void GuiArDataItemOverview(lv_obj_t *parent, void *totalData);
 void GuiArDataItemDetail(lv_obj_t *parent, void *totalData);

@@ -236,7 +236,7 @@ static void OnTextareaValueChangeHandler(lv_event_t *e)
 
         }
 
-        lv_label_set_text_fmt(g_rollsLabel, "%d", length);
+        lv_label_set_text_fmt(g_rollsLabel, "%d", (int)length);
         if (length >= DICE_ROLLS_128_BIT_MIN_LEN) {
             if (!g_confirmValid) {
                 g_confirmValid = true;

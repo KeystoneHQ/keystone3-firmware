@@ -5,6 +5,7 @@
 extern crate alloc;
 
 mod bindings;
+mod sandbox_parser;
 mod trng;
 
 #[cfg(feature = "use-allocator")]

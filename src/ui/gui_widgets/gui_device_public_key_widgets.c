@@ -82,7 +82,7 @@ void GuiDevicePublicKeyEntranceWidget(lv_obj_t *parent)
     if (ret == 0) {
         ByteArrayToHexStr(pubkey, sizeof(pubkey), hexStr);
     } else {
-        snprintf_s(hexStr, sizeof(hexStr), "%s%d", "get pubkey error, error code is ", ret);
+        snprintf_s(hexStr, sizeof(hexStr), "%s%d", "get pubkey error, error code is ", (int)ret);
     }
 
     printf("pubkey is %s\n", hexStr);

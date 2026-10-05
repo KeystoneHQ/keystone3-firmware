@@ -29,7 +29,7 @@ void PowerOnSelfCheck(void)
 
     // flash read id
     flashId = Gd25FlashReadID();
-    printf("spi flash id = %#x\n", flashId);
+    printf("spi flash id = %#x\n", (unsigned int)flashId);
     if (flashId != GD25_FLASH_ID && flashId != PY25_FLASH_ID) {
         ret = ERR_GD25_BAD_PARAM;
     }
@@ -62,7 +62,7 @@ void PowerOnSelfCheck(void)
         DestroyAccount(2);
         for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
             Gd25FlashBlockErase(addr);
-            printf("flash erase address: %#x\n", addr);
+            printf("flash erase address: %#x\n", (unsigned int)addr);
         }
         ErasePublicInfo();
         NVIC_SystemReset();

@@ -637,7 +637,7 @@ bool GetDBContract(const char* address, const char *selector, const uint32_t cha
     char index = address[2]; // [0,f]
 
     char contractDBPath[BUFFER_SIZE_128] = {0};
-    snprintf_s(contractDBPath, BUFFER_SIZE_128, "0:contracts/%u_%c_contracts.db", chainId, index);
+    snprintf_s(contractDBPath, BUFFER_SIZE_128, "0:contracts/%u_%c_contracts.db", (unsigned int)chainId, index);
     if (OpenDb(contractDBPath, &db)) {
         return NULL;
     }

@@ -474,7 +474,7 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
     // Forget-pass prove-ownership counts toward loginPasswordErrorCount (cap MAX_LOGIN) and, at the
     // cap, opens the existing wipe-device view. Every other caller uses the settings device-lock cap
     // (MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) and the in-modal device-lock hintbox.
-    uint16_t signal = passwordVerifyResult->signal != NULL ? *(uint16_t *)passwordVerifyResult->signal : 0;
+    uint16_t signal = passwordVerifyResult->signal;
     bool proveOwnership = (signal == SIG_FORGET_PASSWORD_PROVE_OWNERSHIP);
     uint8_t maxCount = proveOwnership ? MAX_LOGIN_PASSWORD_ERROR_COUNT
                                       : MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
@@ -505,14 +505,14 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
             if (GuiCheckIfViewOpened(&g_lockView)) {
                 int32_t closeRet = GuiCloseToTargetView(&g_lockView);
                 printf("prove-ownership wipe transition: closeToLock ret=%d lock=%d forget=%d wipe=%d\r\n",
-                       closeRet, g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
+                       (int)closeRet, g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
             } else {
                 printf("prove-ownership wipe transition: lock view not opened, skip closeToLock\r\n");
             }
             GuiWipeDeviceSetForced(true);
             int32_t openRet = GuiFrameOpenView(&g_wipeDeviceView);
             printf("prove-ownership wipe transition: openWipe ret=%d lock=%d forget=%d wipe=%d\r\n",
-                   openRet, g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
+                   (int)openRet, g_lockView.isActive, g_forgetPassView.isActive, g_wipeDeviceView.isActive);
         } else {
             GuiShowPasswordErrorHintBox(keyboardWidget);
         }

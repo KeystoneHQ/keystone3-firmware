@@ -2,7 +2,6 @@
 #define _MPU_H
 
 #include "mhscpu.h"
-#include "drv_otp.h"
 
 #define MPU_HFNMI_PRIVDEF_NONE              (0x00000000U)
 #define MPU_HARDFAULT_NMI                   (MPU_CTRL_HFNMIENA_Msk)
@@ -87,12 +86,6 @@ typedef struct {
     uint8_t IsBufferable;
 } MPU_Region_InitTypeDef;
 
-void MpuSetOtpProtection(bool noAccess);
-
-void MpuConfiguration(MPU_Region_InitTypeDef* MPU_Init);
-
-void MpuSetProtection(uint32_t BaseAddress, uint32_t RegionSize, uint32_t RegionNum, uint8_t DisableExec,
-                      uint8_t AccessPermission, uint8_t Shareable, uint8_t Cacheable, uint8_t Bufferable);
 void MpuInit(void);
 
 #endif

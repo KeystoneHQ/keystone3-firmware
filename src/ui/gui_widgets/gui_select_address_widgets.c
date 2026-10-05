@@ -1,3 +1,5 @@
+#include "secret_cache.h"
+#include "assert.h"
 #include "gui_select_address_widgets.h"
 #include "gui_home_widgets.h"
 #include "account_public_info.h"
@@ -84,29 +86,39 @@ static void SelectAddressHandler(lv_event_t *e)
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
+    bool valid = false;
+    const char *address = NULL;
     switch (g_chainCoinType) {
 #ifdef WEB3_VERSION
     case CHAIN_XRP:
-        item->index = index;
-        strcpy(item->address, GuiGetXrpAddressByIndex(index));
+        if (index <= 200) {
+            address = GuiGetXrpAddressByIndex(index);
+        }
         break;
     case CHAIN_ADA:
-        item->index = index;
-        char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
-                GetConnectWalletPathIndex(GetWalletNameByIndex(GuiConnectWalletGetWalletIndex())),
-                index));
-        strcpy(item->address, GuiGetADABaseAddressByXPub(xpub));
+        if (index <= XPUB_TYPE_ADA_23 - XPUB_TYPE_ADA_0) {
+            char *xpub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndexAndDerivationType(
+                    GetConnectWalletPathIndex(GetWalletNameByIndex(GuiConnectWalletGetWalletIndex())), index));
+            address = GuiGetADABaseAddressByXPub(xpub);
+        }
         break;
     case CHAIN_ATOM:
-        item->index = index;
-        // we dont need to show the address,only show the account index. thus the address is empty.
-        strcpy(item->address, "");
+        valid = index <= GENERAL_ADDRESS_INDEX_MAX;
         break;
 #endif
     default:
-        printf("ModelGetAddress cannot match %d\r\n", index);
-        return;
+        break;
     }
+    if (address != NULL && address[0] != '\0' && strnlen_s(address, sizeof(item->address)) < sizeof(item->address)) {
+        valid = strcpy_s(item->address, sizeof(item->address), address) == 0;
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
+    item->index = index;
 }
 
 static void SetCurrentSelectIndex(uint32_t selectIndex)
@@ -145,10 +157,6 @@ static void RefreshSwitchAccount(void)
     uint32_t index = g_showIndex;
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
-        ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
-        CutAndFormatString(string, sizeof(string), addressDataItem.address, 28);
-        lv_label_set_text(g_selectAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_selectAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_selectAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
@@ -157,6 +165,10 @@ static void RefreshSwitchAccount(void)
             lv_obj_add_flag(g_selectAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             continue;
         }
+        ModelGetAddress(index, &addressDataItem);
+        lv_label_set_text_fmt(g_selectAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (unsigned int)addressDataItem.index);
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 28);
+        lv_label_set_text(g_selectAddressWidgets[i].addressLabel, string);
         lv_obj_clear_flag(g_selectAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_selectAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_selectAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
@@ -384,6 +396,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     lv_obj_draw_part_dsc_t *dsc;
     const char *txt;
     char input[16];
+    unsigned int parsedIndex;
     uint32_t len;
     uint64_t longInt;
 
@@ -392,13 +405,15 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
         strcpy_s(input, sizeof(input), lv_label_get_text(g_standardJumpButtonWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_standardJumpButtonWidgets.g_inputAccountValid) {
-                sscanf(input, "%u", &g_standardJumpButtonWidgets.g_inputTmpIndex);
-                g_showIndex = g_standardJumpButtonWidgets.g_inputTmpIndex / 5 * 5;
-                g_selectIndex = g_standardJumpButtonWidgets.g_inputTmpIndex;
-                RefreshSwitchAccount();
-                UpdateConfirmBtn();
-                lv_obj_add_flag(g_standardJumpButtonWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
-                g_standardJumpButtonWidgets.g_inputAccountValid = false;
+                if (sscanf(input, "%u", &parsedIndex) == 1) {
+                    g_standardJumpButtonWidgets.g_inputTmpIndex = parsedIndex;
+                    g_showIndex = g_standardJumpButtonWidgets.g_inputTmpIndex / 5 * 5;
+                    g_selectIndex = g_standardJumpButtonWidgets.g_inputTmpIndex;
+                    RefreshSwitchAccount();
+                    UpdateConfirmBtn();
+                    lv_obj_add_flag(g_standardJumpButtonWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                    g_standardJumpButtonWidgets.g_inputAccountValid = false;
+                }
             }
         } else if (strcmp(txt, "-") == 0) {
             len = strlen(input);

@@ -63,9 +63,9 @@ static bool ParseSolDerivationPath(const uint8_t *data, uint32_t len, char *path
         size_t available = pathSize - used;
         int written;
         if (used == 0) {
-            written = snprintf(path, pathSize, "%u'", component);
+            written = snprintf(path, pathSize, "%u'", (unsigned int)component);
         } else {
-            written = snprintf(path + used, available, "/%u'", component);
+            written = snprintf(path + used, available, "/%u'", (unsigned int)component);
         }
         if (written < 0 || (size_t)written >= available) {
             return false;

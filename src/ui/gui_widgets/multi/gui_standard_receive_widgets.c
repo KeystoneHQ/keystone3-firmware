@@ -1,3 +1,4 @@
+#include "secret_cache.h"
 #include "gui_standard_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
@@ -72,6 +73,7 @@ typedef struct {
     lv_obj_t *inputAccountCont;
     lv_obj_t *inputAccountKeyboard;
     SwitchAddressWidgetsItem_t switchAddressWidgets[5];
+    char arAddress[44];
 } StandardReceiveWidgets_t;
 
 typedef struct {
@@ -223,11 +225,6 @@ static void RefreshSwitchAddress(void)
     uint32_t index = g_showIndex;
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
-        ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("Address"), (addressDataItem.index));
-        char string[128] = {0};
-        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
-        lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
@@ -236,6 +233,11 @@ static void RefreshSwitchAddress(void)
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             continue;
         }
+        ModelGetAddress(index, &addressDataItem);
+        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("Address"), (unsigned int)(addressDataItem.index));
+        char string[128] = {0};
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
+        lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
@@ -250,7 +252,7 @@ static void RefreshSwitchAddress(void)
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
-        if (index == GetMaxAddressIndex()) {
+        if (index + 1 >= GetMaxAddressIndex()) {
             end = true;
         }
         index++;
@@ -265,6 +267,7 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
     lv_obj_draw_part_dsc_t *dsc;
     const char *txt;
     char input[16];
+    unsigned int parsedIndex;
     uint32_t len;
     uint64_t longInt;
 
@@ -273,12 +276,14 @@ static void InputAddressIndexKeyboardHandler(lv_event_t *e)
         strcpy_s(input, sizeof(input), lv_label_get_text(g_standardReceiveWidgets.inputAccountLabel));
         if (strcmp(txt, LV_SYMBOL_OK) == 0) {
             if (g_inputAccountValid) {
-                sscanf(input, "%u", &g_tmpIndex);
-                g_showIndex = g_tmpIndex / 5 * 5;
-                RefreshSwitchAddress();
-                lv_obj_add_flag(g_standardReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
-                g_inputAccountValid = false;
-                UpdateConfirmIndexBtn();
+                if (sscanf(input, "%u", &parsedIndex) == 1) {
+                    g_tmpIndex = parsedIndex;
+                    g_showIndex = g_tmpIndex / 5 * 5;
+                    RefreshSwitchAddress();
+                    lv_obj_add_flag(g_standardReceiveWidgets.inputAccountCont, LV_OBJ_FLAG_HIDDEN);
+                    g_inputAccountValid = false;
+                    UpdateConfirmIndexBtn();
+                }
             }
         } else if (strcmp(txt, "-") == 0) {
             len = strlen(input);
@@ -377,7 +382,7 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
         lv_label_set_text_fmt(label, "%s-", _("Address"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 108 + 270);
         g_standardReceiveWidgets.inputAccountLabel = GuiCreateTextLabel(cont, "");
-        lv_obj_align(g_standardReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 270);
+        lv_obj_align(g_standardReceiveWidgets.inputAccountLabel, LV_ALIGN_TOP_LEFT, 38 + lv_obj_get_self_width(label), 108 + 260);
         label = GuiCreateIllustrateLabel(cont, _("receive_btc_receive_change_address_limit"));
         lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 170 + 270);
         lv_obj_set_style_text_color(label, RED_COLOR, LV_PART_MAIN);
@@ -402,9 +407,13 @@ static void GuiCreateGotoAddressWidgets(lv_obj_t *parent)
     }
 }
 
-void GuiStandardReceiveInit(uint8_t chain)
+void GuiStandardReceiveInit(uint8_t chain, const char *address)
 {
     g_chainCard = chain;
+    memset(g_standardReceiveWidgets.arAddress, 0, sizeof(g_standardReceiveWidgets.arAddress));
+    if (address != NULL) {
+        strcpy_s(g_standardReceiveWidgets.arAddress, sizeof(g_standardReceiveWidgets.arAddress), address);
+    }
     g_showIndex = GetCurrentSelectIndex() / 5 * 5;
     g_pageWidget = CreatePageWidget();
     g_standardReceiveWidgets.cont = g_pageWidget->contentZone;
@@ -743,7 +752,7 @@ static void RefreshQrCode(void)
         lv_label_set_text(g_standardReceiveWidgets.addressLabel, addressDataItem.address);
     }
 #endif
-    lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
+    lv_label_set_text_fmt(g_standardReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (unsigned int)addressDataItem.index);
 }
 
 static void RefreshSwitchAccount(void)
@@ -753,10 +762,6 @@ static void RefreshSwitchAccount(void)
     uint32_t index = g_showIndex;
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
-        ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), addressDataItem.index);
-        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
-        lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
@@ -765,6 +770,10 @@ static void RefreshSwitchAccount(void)
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             continue;
         }
+        ModelGetAddress(index, &addressDataItem);
+        lv_label_set_text_fmt(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (unsigned int)addressDataItem.index);
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
+        lv_label_set_text(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
@@ -779,7 +788,7 @@ static void RefreshSwitchAccount(void)
             lv_obj_add_flag(g_standardReceiveWidgets.switchAddressWidgets[i].checkedImg, LV_OBJ_FLAG_HIDDEN);
             lv_obj_clear_flag(g_standardReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
         }
-        if (index == GetMaxAddressIndex()) {
+        if (index + 1 >= GetMaxAddressIndex()) {
             end = true;
         }
         index++;
@@ -912,15 +921,17 @@ static void OpenSwitchAddressHandler(lv_event_t *e)
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char hdPath[BUFFER_SIZE_128];
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
+    char hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
 
 #ifdef CYPHERPUNK_VERSION
     if (g_chainCard == HOME_WALLET_CARD_ZEC) {
         char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
-        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-
-        result = generate_zcash_default_address(ufvk);
+        if (GetZcashUFVK(GetCurrentAccountIndex(), ufvk) == SUCCESS_CODE && ufvk[0] != '\0') {
+            result = generate_zcash_default_address(ufvk);
+        }
+        memset_s(ufvk, sizeof(ufvk), 0, sizeof(ufvk));
     }
 #endif
 
@@ -929,43 +940,80 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
     switch (g_chainCard) {
     case HOME_WALLET_CARD_TRX:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TRX);
-        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/195'/0'/0/%u", index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/195'/0'/0/%u", (unsigned int)index);
         result = tron_get_address(hdPath, xPub);
         break;
     case HOME_WALLET_CARD_SUI:
+        if (index > XPUB_TYPE_SUI_9 - XPUB_TYPE_SUI_0) {
+            break;
+        }
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_SUI_0 + index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
         result = sui_generate_address(xPub);
         break;
     case HOME_WALLET_CARD_IOTA:
+        if (index > XPUB_TYPE_IOTA_9 - XPUB_TYPE_IOTA_0) {
+            break;
+        }
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_IOTA_0 + index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
         result = iota_get_address_from_pubkey(xPub);
         break;
     case HOME_WALLET_CARD_APT:
+        if (index > XPUB_TYPE_APT_9 - XPUB_TYPE_APT_0) {
+            break;
+        }
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_APT_0 + index);
-        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/637'/%u'/0'/0'", index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/637'/%u'/0'/0'", (unsigned int)index);
         result = aptos_generate_address(xPub);
         break;
     case HOME_WALLET_CARD_XRP:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_XRP);
-        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/144'/0'/0/%u", index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/144'/0'/0/%u", (unsigned int)index);
         result = xrp_get_address(hdPath, xPub, "m/44'/144'/0'/");
         break;
     case HOME_WALLET_CARD_ARWEAVE:
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ARWEAVE);
-        result = arweave_get_address(xPub);
-        break;
+        item->index = index;
+        strcpy_s(item->address, ADDRESS_MAX_LEN, g_standardReceiveWidgets.arAddress);
+        item->path[0] = '\0';
+        return;
     case HOME_WALLET_CARD_ZEC:
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ZEC_TRANSPARENT_LEGACY);
-        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/133'/0'/0/%u", index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/44'/133'/0'/0/%u", (unsigned int)index);
         result = utxo_get_address(hdPath, xPub);
         break;
     case HOME_WALLET_CARD_XLM:
+        if (index > XPUB_TYPE_STELLAR_4 - XPUB_TYPE_STELLAR_0) {
+            break;
+        }
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_STELLAR_0 + index);
-        snprintf_s(hdPath, BUFFER_SIZE_64, "m/44'/148'/%u'", index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        snprintf_s(hdPath, BUFFER_SIZE_64, "m/44'/148'/%u'", (unsigned int)index);
         result = stellar_get_address(xPub);
         break;
     case HOME_WALLET_CARD_TON: {
         xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
         result = ton_get_address(xPub);
         break;
     }
@@ -973,17 +1021,27 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         if (IsCosmosChain(g_chainCard)) {
             result = (SimpleResponse_c_char *) GetCosmosChainAddressByCoinTypeAndIndex(g_chainCard, index);
         } else {
-            printf("Standard Receive ModelGetAddress cannot match %d\r\n", index);
-            return;
+            printf("Standard Receive ModelGetAddress cannot match %d\r\n", (int)index);
+            break;
         }
     }
 #endif
-    if (result->error_code == 0) {
-        item->index = index;
-        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-        strcpy_s(item->path, 32, hdPath);
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(item->address)) < sizeof(item->address);
+    if (valid) {
+        valid = strcpy_s(item->address, sizeof(item->address), result->data) == 0;
+        valid = valid && strnlen_s(hdPath, sizeof(item->path)) < sizeof(item->path) &&
+                strcpy_s(item->path, sizeof(item->path), hdPath) == 0;
     }
-    free_simple_response_c_char(result);
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
+    item->index = index;
 }
 
 void GuiResetCurrentStandardAddressIndex(uint8_t index)

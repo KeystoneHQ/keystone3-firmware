@@ -197,16 +197,18 @@ static uint32_t Gd25FlashPageProgram(uint32_t addr, const uint8_t *buffer, uint3
 ***********************************************************************/
 int32_t Gd25FlashSectorErase(uint32_t addr)
 {
+    if (addr >= GD25QXX_FLASH_SIZE) {
+        return ERR_GD25_BAD_PARAM;
+    }
 #if (FLASH_USE_MUTEX)
     osMutexAcquire(g_flashMutex, osWaitForever);
 #endif
 
-    if (addr >= GD25QXX_FLASH_SIZE) {
-        return ERR_GD25_BAD_PARAM;
-    }
-
     Gd25FlashWriteEnable();
     if (GD25QXX_FLASH_STATUS_WEL != Gd25FlashReadStatus()) {
+#if (FLASH_USE_MUTEX)
+        osMutexRelease(g_flashMutex);
+#endif
         return ERR_GD25_WEL_FAILED;
     }
 

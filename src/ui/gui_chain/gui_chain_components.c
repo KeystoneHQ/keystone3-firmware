@@ -213,12 +213,12 @@ lv_obj_t *CreateValueOverviewValue(lv_obj_t *parent, const char *valueKey, const
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
 
     if (feeKey != NULL) {
-        label = GuiCreateIllustrateLabel(container, feeKey);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 98);
-        lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
+        lv_obj_t *feeKeyLabel = GuiCreateIllustrateLabel(container, feeKey);
+        lv_obj_align(feeKeyLabel, LV_ALIGN_TOP_LEFT, 24, 98);
+        lv_obj_set_style_text_opa(feeKeyLabel, LV_OPA_64, LV_PART_MAIN);
 
         label = GuiCreateIllustrateLabel(container, fee);
-        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 73, 98);
+        lv_obj_align_to(label, feeKeyLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
     }
 
     return container;
@@ -316,6 +316,11 @@ lv_obj_t *CreateNoticeCard(lv_obj_t *parent, const char *notice)
 
 lv_obj_t *CreateNoticeCardWithWidth(lv_obj_t *parent, const char *notice, uint16_t width)
 {
+    return CreateTitledNoticeCard(parent, "Notice", notice, width);
+}
+
+lv_obj_t *CreateTitledNoticeCard(lv_obj_t *parent, const char *title, const char *notice, uint16_t width)
+{
     uint16_t height = 24 + 36 + 8 + 24;
     lv_obj_t* card = GuiCreateContainerWithParent(parent, width, 24);
     lv_obj_set_style_radius(card, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
@@ -325,7 +330,7 @@ lv_obj_t *CreateNoticeCardWithWidth(lv_obj_t *parent, const char *notice, uint16
     lv_obj_t* noticeIcon = GuiCreateImg(card, &imgNotice);
     lv_obj_align(noticeIcon, LV_ALIGN_TOP_LEFT, 24, 24);
 
-    lv_obj_t* title_label = GuiCreateTextLabel(card, "Notice");
+    lv_obj_t* title_label = GuiCreateTextLabel(card, title);
     lv_obj_set_style_text_color(title_label, lv_color_hex(0xF5870A), LV_PART_MAIN);
     lv_obj_align_to(title_label, noticeIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
@@ -361,7 +366,13 @@ lv_obj_t *CreateNoticeView(lv_obj_t *parent, uint16_t width, uint16_t height, co
 
     label = GuiCreateIllustrateLabel(noticeContainer, notice);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 68);
-    lv_obj_set_width(label, 360);
+    lv_obj_set_width(label, width - 48);
+
+    lv_obj_update_layout(label);
+    uint16_t needed = 68 + lv_obj_get_self_height(label) + 24;
+    if (needed > height) {
+        lv_obj_set_height(noticeContainer, needed);
+    }
 
     return noticeContainer;
 }

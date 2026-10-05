@@ -1,5 +1,6 @@
-set(CMAKE_SYSTEM_NAME Generic)
 cmake_minimum_required(VERSION 3.10)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
 
@@ -123,7 +124,7 @@ set(EXTERNAL_INCLUDE_PATH
     external/cryptoauthlib/lib
     external/FreeRTOS
     external/FreeRTOS/Source/include
-    external/FreeRTOS/Source/portable/GCC/ARM_CM4F
+    external/FreeRTOS/Source/portable/GCC/ARM_CM4_MPU
     external/FreeRTOS/CMSIS_RTOS_V2
     external/lvgl
     external/lvgl/src
@@ -171,7 +172,7 @@ set(SRC_INCLUDE_PATH
 )
 
 set(INCLUDE_DIR
-    build/rust-builds
+    ${CMAKE_BINARY_DIR}/rust-builds
     ${SRC_INCLUDE_PATH}
     ${CRYPTO_INCLUDE_PATH}
     ${GUI_INCLUDE_PATH}
@@ -239,7 +240,16 @@ file(GLOB_RECURSE CRYPTO_SLIP39
 )
 
 if(COMPILE_KEYSTONE)
+    set(CMAKE_SYSTEM_NAME Generic)
     message(STATUS "Compiling for MAIN target")
+    set(CROSS_COMPILE_PREFIX arm-none-eabi)
+    set(CMAKE_C_COMPILER ${CROSS_COMPILE_PREFIX}-gcc)
+    set(CMAKE_CXX_COMPILER ${CROSS_COMPILE_PREFIX}-g++)
+    set(CMAKE_ASM_COMPILER ${CROSS_COMPILE_PREFIX}-gcc)
+    set(CMAKE_OBJCOPY ${CROSS_COMPILE_PREFIX}-objcopy)
+    set(CMAKE_OBJDUMP ${CROSS_COMPILE_PREFIX}-objdump)
+    set(CMAKE_SIZE ${CROSS_COMPILE_PREFIX}-size)
+    set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
     project(mh1903)
     include(firmware.cmake)
 
@@ -314,6 +324,33 @@ if(COMPILE_KEYSTONE)
         list(REMOVE_ITEM objsrc ${excluded_files})
     endforeach()
 
+    set_property(SOURCE
+        ${MH1903_DRIVER}
+        ${FREERTOS}
+        ${EXTERNAL}
+        ${USB_DRIVER}
+        ${LVGL}
+        ${SAFE_C}
+        ${CM_BACKTRACE}
+        APPEND PROPERTY COMPILE_OPTIONS
+        -Wno-format
+        -Wno-format-security
+    )
+
+    if(NOT BUILD_PRODUCTION)
+        set_property(SOURCE test/test_cmd.c APPEND PROPERTY COMPILE_OPTIONS
+            -Wno-error=format
+        )
+    endif()
+
+    set_property(SOURCE
+        src/tasks/mpu_sandbox_runtime.c
+        src/webusb_protocol/general/eapdu_framing.c
+        APPEND PROPERTY COMPILE_OPTIONS
+        -fno-builtin
+        -fno-tree-loop-distribute-patterns
+    )
+
     add_executable(${PROJECT_NAME}.elf ${objsrc})
     target_compile_definitions(${PROJECT_NAME}.elf PRIVATE ${COMMON_DEFINITIONS})
     target_include_directories(${PROJECT_NAME}.elf PRIVATE ${INCLUDE_DIR})
@@ -328,17 +365,19 @@ if(COMPILE_KEYSTONE)
     set(ELF_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.elf)
     set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
     set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
-
+    file(RELATIVE_PATH ELF_FILE_FROM_SOURCE ${CMAKE_CURRENT_SOURCE_DIR} ${ELF_FILE})
     add_custom_command(TARGET "${PROJECT_NAME}.elf" POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E chdir ${CMAKE_CURRENT_SOURCE_DIR}
+                python tools/check_mpu_sandbox_elf.py
+                ${ELF_FILE_FROM_SOURCE} --objdump ${CMAKE_OBJDUMP}
         COMMAND ${CMAKE_OBJCOPY} -Obinary ${ELF_FILE} ${BIN_FILE}
         COMMAND ${CMAKE_OBJCOPY} -Oihex ${ELF_FILE} ${HEX_FILE}
-        COMMENT "Building ${PROJECT_NAME}.bin and ${PROJECT_NAME}.hex"
 
         COMMAND ${CMAKE_COMMAND} -E copy ${HEX_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.hex"
         COMMAND ${CMAKE_COMMAND} -E copy ${BIN_FILE} "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.bin"
 
         COMMAND ${CMAKE_SIZE} --format=berkeley ${PROJECT_NAME}.elf ${PROJECT_NAME}.hex
-        COMMENT "Invoking: Cross ARM GNU Print Size"
+        COMMENT "Building firmware images and printing their sizes"
     )
 else()
     project(simulator)

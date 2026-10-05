@@ -7,6 +7,7 @@
 #endif
 #include "mhscpu.h"
 
+#ifndef BUILD_PRODUCTION
 #define TEST_CMD_MAX_LENGTH     3072
 
 static void CmdTask(void *pvParameter);
@@ -37,9 +38,7 @@ static void CmdTask(void *pvParameter)
         switch (rcvMsg.id) {
         case MSG_TEST_CMD_FRAME:
             g_testCmdRcvBuffer[rcvMsg.value - 3] = 0;
-#ifndef BUILD_PRODUCTION
             CompareAndRunTestCmd((char *)g_testCmdRcvBuffer + 1);
-#endif
             break;
         default:
             break;
@@ -49,16 +48,20 @@ static void CmdTask(void *pvParameter)
         }
     }
 }
+#endif
 
 void __inline CmdIsrRcvByte(uint8_t byte)
 {
+#ifndef BUILD_PRODUCTION
     static uint32_t lastTick = 0;
     uint32_t tick;
+#endif
     static uint32_t rxF8Count = 0;
 
     if (osKernelGetState() < osKernelRunning) {
         return;
     }
+#ifndef BUILD_PRODUCTION
     tick = osKernelGetTickCount();
     if (g_testCmdRcvCount != 0) {
         if (tick - lastTick > 200) {
@@ -67,6 +70,7 @@ void __inline CmdIsrRcvByte(uint8_t byte)
         }
     }
     lastTick = tick;
+#endif
     if (byte == 0xF8) {
         if (rxF8Count++ > 10) {
             NVIC_SystemReset();
@@ -75,6 +79,7 @@ void __inline CmdIsrRcvByte(uint8_t byte)
         rxF8Count = 0;
     }
 
+#ifndef BUILD_PRODUCTION
     if (g_testCmdRcvCount == 0) {
         if (byte == '#') {
             g_testCmdRcvBuffer[g_testCmdRcvCount] = byte;
@@ -91,4 +96,5 @@ void __inline CmdIsrRcvByte(uint8_t byte)
         g_testCmdRcvBuffer[g_testCmdRcvCount] = byte;
         g_testCmdRcvCount++;
     }
+#endif
 }

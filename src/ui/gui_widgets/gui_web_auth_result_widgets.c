@@ -12,7 +12,6 @@
 #include "screen_manager.h"
 #include "gui_page.h"
 
-static void *g_web_auth_data;
 static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
@@ -31,8 +30,6 @@ typedef struct WebAuthResultWidget {
 static WebAuthResultWidget_t g_WebAuthResultTileView;
 
 static WebAuthSuccessCb g_webAuthSuccessCb = NULL;
-void GuiWebAuthCalculateAuthCode();
-
 void GuiWebAuthResultRenderAuthCode(lv_obj_t *parent);
 void GuiWebAuthResultAreaInit();
 void GuiWebAuthResultHidePending();
@@ -59,7 +56,6 @@ void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiR
     g_urResult = urResult;
     g_urMultiResult = multiResult;
     g_isMulti = multi;
-    g_web_auth_data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
 }
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
@@ -222,9 +218,12 @@ void GuiWebAuthResultAreaInit()
     g_WebAuthResultTileView.cont = cont;
 
     lv_obj_set_tile_id(g_WebAuthResultTileView.tileView, g_WebAuthResultTileView.currentTile, 0, LV_ANIM_OFF);
-    if (g_web_auth_data != NULL) {
+    void *webAuthData = g_isMulti
+                        ? (g_urMultiResult != NULL ? g_urMultiResult->data : NULL)
+                        : (g_urResult != NULL ? g_urResult->data : NULL);
+    if (webAuthData != NULL) {
         GuiWebAuthResultShowPending();
-        GuiWebAuthCalculateAuthCode();
+        GuiModelCalculateWebAuthCode(webAuthData);
     }
 }
 
@@ -235,15 +234,15 @@ void GuiWebAuthResultAreaDeInit()
     g_WebAuthResultTileView.cont = NULL;
     g_webAuthSuccessCb = NULL;
     GuiWebAuthResultHidePending();
-    if (g_urResult != NULL) {
-        if (g_isMulti) {
+    if (g_isMulti) {
+        if (g_urMultiResult != NULL) {
             free_ur_parse_multi_result(g_urMultiResult);
-        } else {
-            free_ur_parse_result(g_urResult);
         }
-        g_urResult = NULL;
-        g_urMultiResult = NULL;
+    } else if (g_urResult != NULL) {
+        free_ur_parse_result(g_urResult);
     }
+    g_urResult = NULL;
+    g_urMultiResult = NULL;
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -311,11 +310,6 @@ void GuiWebAuthResultHidePending()
 {
     GuiDeleteAnimHintBox();
     g_WebAuthResultPendingCont = NULL;
-}
-
-void GuiWebAuthCalculateAuthCode()
-{
-    GuiModelCalculateWebAuthCode(g_web_auth_data);
 }
 
 void GuiWebAuthShowAuthCode(char *authCode)

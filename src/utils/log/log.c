@@ -176,14 +176,14 @@ void LogExportSync(void)
             break;
         }
     }
-    printf("the earliest log addr=0x%08X\r\n", readAddr);
+    printf("the earliest log addr=0x%08X\r\n", (unsigned int)readAddr);
     writeIndex = 0;
     sectorCount = 0;
     sectorNow = readAddr / GD25QXX_SECTOR_SIZE * GD25QXX_SECTOR_SIZE;
     while (1) {
         if (sectorNow != readAddr / GD25QXX_SECTOR_SIZE * GD25QXX_SECTOR_SIZE) {
             sectorNow = readAddr / GD25QXX_SECTOR_SIZE * GD25QXX_SECTOR_SIZE;
-            printf("sectorCount=%d\r\n", sectorCount);
+            printf("sectorCount=%d\r\n", (int)sectorCount);
             if (sectorCount++ > SPI_FLASH_SIZE_LOG / GD25QXX_SECTOR_SIZE) {
                 printf("log export overlap\r\n");
                 LogEraseSync();
@@ -195,7 +195,7 @@ void LogExportSync(void)
         pLogData = (LogData_t *)(logFileData + writeIndex);
         if (pLogData->event == NEXT_SECTOR_MARK) {
             readAddr = GetNextSectorAddr(readAddr);
-            printf("goto next sector:0x%08X\r\n", readAddr);
+            printf("goto next sector:0x%08X\r\n", (unsigned int)readAddr);
             continue;
         }
         //printf("event=%d,length=%d,dataType=%d,checksum=0x%04X,timeStamp=%d\r\n", pLogData->event, pLogData->length, pLogData->dataType, pLogData->checksum, pLogData->timeStamp);
@@ -219,7 +219,7 @@ void LogExportSync(void)
     printf("logname = %s\n", g_logName);
     do {
         uint32_t leftSize = FatfsGetSize("0:");
-        printf("start save log file,size=%d left size=%d\r\n", writeIndex, leftSize);
+        printf("start save log file,size=%d left size=%d\r\n", (int)writeIndex, (int)leftSize);
         if (writeIndex >= leftSize) {
             GuiApiEmitSignalWithValue(SIG_SETTING_LOG_EXPORT_NOT_ENOUGH_SPACE, ERROR_LOG_NOT_ENOUGH_SPACE);
             break;
@@ -234,7 +234,7 @@ void LogExportSync(void)
             } else {
                 GuiApiEmitSignalWithValue(SIG_SETTING_LOG_EXPORT_FAIL, ERROR_LOG_EXPORT_ERROR);
             }
-            printf("save log file ret=%d,used tick=%d,rate=%dbytes/s\r\n", ret, tick, writeIndex * 1000 / tick);
+            printf("save log file ret=%d,used tick=%d,rate=%dbytes/s\r\n", (int)ret, (int)tick, (int)(writeIndex * 1000 / tick));
         }
     } while (0);
     EXT_FREE(logFileData);
@@ -262,12 +262,12 @@ void LogEraseSync(void)
 
 void LogTest(int argc, char *argv[])
 {
-    uint32_t event;
+    unsigned int event;
     if (strcmp(argv[0], "export") == 0) {
         LogExport();
     } else if (strcmp(argv[0], "write_string") == 0) {
         VALUE_CHECK(argc, 3);
-        sscanf(argv[1], "%d", &event);
+        sscanf(argv[1], "%u", &event);
         WriteLogFormat(event, "test:%s", argv[2]);
     } else if (strcmp(argv[0], "erase") == 0) {
         LogErase();
@@ -406,12 +406,12 @@ static void CheckLogData(void)
             break;
         }
     }
-    printf("the earliest log addr=0x%08X\r\n", readAddr);
+    printf("the earliest log addr=0x%08X\r\n", (unsigned int)readAddr);
     if (needErase == false) {
         while (1) {
             memcpy_s(&logData, LOG_DATA_HEAD_SIZE, &originalData[readAddr - SPI_FLASH_ADDR_LOG], LOG_DATA_HEAD_SIZE);
             if (readAddr >= SPI_FLASH_ADDR_LOG + SPI_FLASH_SIZE_LOG) {
-                printf("log data overlap,addr=0x%08X\n", readAddr);
+                printf("log data overlap,addr=0x%08X\n", (unsigned int)readAddr);
                 needErase = true;
                 break;
             }
@@ -426,14 +426,14 @@ static void CheckLogData(void)
             }
             if (logData.event == 0xFFFF && readAddr > g_logAddr) {
                 printf("unexpected event\n");
-                printf("readAddr=%d\n");
+                printf("readAddr=%d\n", (int)readAddr);
                 needErase = true;
                 break;
             }
             crcCalc = crc16_ccitt((uint8_t *)&logData.timeStamp, 4);
             if (logData.checksum != (crcCalc & 0x000F)) {
                 printf("log crc err,logData.checksum=0x%X,crcCalc=0x%X\n", logData.checksum, crcCalc);
-                printf("readAddr=%d\n");
+                printf("readAddr=%d\n", (int)readAddr);
                 needErase = true;
                 break;
             }

@@ -134,6 +134,7 @@ int32_t DS28S60_GetRng(uint8_t *rngArray, uint32_t num);
 int32_t DS28S60_HmacAuthentication(uint8_t page);
 
 int32_t DS28S60_HmacEncryptRead(uint8_t *data, uint8_t page);
+int32_t DS28S60_HmacAuthenticatedRead(uint8_t *data, uint8_t page);
 int32_t DS28S60_HmacEncryptWrite(const uint8_t *data, uint8_t page);
 
 void DS28S60_Test(int argc, char *argv[]);

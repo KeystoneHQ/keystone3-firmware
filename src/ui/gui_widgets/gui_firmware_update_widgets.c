@@ -8,6 +8,7 @@
 #include "gui_status_bar.h"
 #include "gui_lock_widgets.h"
 #include "gui_setup_widgets.h"
+#include "gui_wallet_tutorial_widgets.h"
 #include "background_task.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_page.h"
@@ -28,6 +29,8 @@ typedef enum {
 #endif
     FIRMWARE_UPDATE_USB_UPDATING,
 
+    FIRMWARE_UPDATE_CHECK,
+
     FIRMWARE_UPDATE_BUTT,
 } FIRMWARE_UPDATE_ENUM;
 
@@ -38,6 +41,7 @@ typedef struct {
     lv_obj_t *tileSelect;
     lv_obj_t *tileUsbInstruction;
     lv_obj_t *tileSdInstruction;
+    lv_obj_t *tileCheck;
 #ifndef BTC_ONLY
     lv_obj_t *tileMultiToBtcWarning;
 #endif
@@ -54,6 +58,14 @@ static void GuiFirmwareUpdateViewSha256(uint8_t percent);
 static void CloseQrcodeHandler(lv_event_t *e);
 static int GetEntryEnum(void);
 static void GuiCreateSdCardnstructionTile(lv_obj_t *parent);
+static void GuiCreateFirmwareCheckTile(lv_obj_t *parent);
+static void GuiFirmwareUpdateToSelectHandler(lv_event_t *e);
+static void GuiFirmwareUpToDateHandler(lv_event_t *e);
+static void GuiOpenSkipWarningHandler(lv_event_t *e);
+static void GuiSkipWarningHandler(lv_event_t *e);
+static void GuiSkipWarningUpdateHandler(lv_event_t *e);
+static void FirmwareSkipWarningTimerHandler(lv_timer_t *timer);
+static void FirmwareSkipWarningTimerStop(void);
 #ifndef BTC_ONLY
 static void GuiCreateMultiToBtcWarningTile(lv_obj_t *parent);
 static void KnownWarningHandler(lv_event_t *e);
@@ -79,6 +91,9 @@ static PageWidget_t *g_pageWidget;
 static lv_timer_t *g_knownWarningCountDownTimer = NULL;
 static lv_obj_t *g_knownWarningBtn;
 #endif
+static lv_timer_t *g_firmwareSkipWarningTimer = NULL;
+static lv_obj_t *g_firmwareSkipWarningBtn = NULL;
+static uint8_t g_firmwareSkipWarningSeconds = 0;
 
 static void UrlInit()
 {
@@ -147,12 +162,16 @@ void GuiFirmwareUpdateInit(void *param)
 
     g_firmwareUpdateWidgets.tileSdInstruction = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_SD_INSTRUCTION, 0, LV_DIR_HOR);
     GuiCreateSdCardnstructionTile(g_firmwareUpdateWidgets.tileSdInstruction);
+    g_firmwareUpdateWidgets.tileCheck = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_CHECK, 0, LV_DIR_HOR);
+    GuiCreateFirmwareCheckTile(g_firmwareUpdateWidgets.tileCheck);
 #ifndef BTC_ONLY
     g_firmwareUpdateWidgets.tileMultiToBtcWarning = lv_tileview_add_tile(tileView, FIRMWARE_UPDATE_MULTI_TO_BTC_WARNING, 0, LV_DIR_HOR);
     GuiCreateMultiToBtcWarningTile(g_firmwareUpdateWidgets.tileMultiToBtcWarning);
 #endif
 
-    g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_SELECT;
+    g_firmwareUpdateWidgets.currentTile = GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP ?
+                                          FIRMWARE_UPDATE_CHECK : FIRMWARE_UPDATE_SELECT;
+    lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
 }
 
 void GuiFirmwareSdCardCopy(void)
@@ -185,6 +204,8 @@ void GuiFirmwareSdCardCopyResult(bool en)
 
 void GuiFirmwareWindowDeinit(void)
 {
+    FirmwareSkipWarningTimerStop();
+    g_firmwareSkipWarningBtn = NULL;
     GUI_DEL_OBJ(g_noticeWindow)
 }
 
@@ -196,10 +217,13 @@ void GuiFirmwareUpdateDeInit(void)
         g_knownWarningCountDownTimer = NULL;
     }
 #endif
+    FirmwareSkipWarningTimerStop();
+    g_firmwareSkipWarningBtn = NULL;
     GuiDeleteKeyboardWidget(g_keyboardWidget);
     g_param = NULL;
     printf("GuiFirmwareUpdateDeInit\n");
     GUI_DEL_OBJ(g_noticeWindow)
+    GUI_DEL_OBJ(g_firmwareUpdateWidgets.qrCodeCont)
     GuiDeleteAnimHintBox();
     g_waitAnimCont = NULL;
     lv_obj_del(g_firmwareUpdateWidgets.cont);
@@ -226,7 +250,7 @@ void GuiFirmwareUpdateRefresh(void)
 #endif
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP && g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
-        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, OpenViewHandler, &g_purposeView);
+        SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, GuiOpenSkipWarningHandler, NULL);
     } else {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
     }
@@ -241,7 +265,11 @@ void GuiFirmwareUpdateRefresh(void)
             }
         }
     }
-    GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
+    if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_CHECK) {
+        GuiCreateFirmwareCheckTile(g_firmwareUpdateWidgets.tileCheck);
+    } else if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
+        GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
+    }
     PassWordPinHintRefresh(g_keyboardWidget);
 }
 
@@ -253,8 +281,17 @@ void GuiFirmwareUpdateWidgetRefresh(void)
 void GuiFirmwareUpdatePrevTile(void)
 {
     switch (g_firmwareUpdateWidgets.currentTile) {
-    case FIRMWARE_UPDATE_SELECT:
+    case FIRMWARE_UPDATE_CHECK:
         GuiCloseCurrentWorkingView();
+        return;
+    case FIRMWARE_UPDATE_SELECT:
+        if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP) {
+            g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_CHECK;
+            lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, FIRMWARE_UPDATE_CHECK, 0, LV_ANIM_OFF);
+            GuiFirmwareUpdateRefresh();
+        } else {
+            GuiCloseCurrentWorkingView();
+        }
         return;
     case FIRMWARE_UPDATE_SD_INSTRUCTION:
         g_firmwareUpdateWidgets.currentTile--;
@@ -271,7 +308,7 @@ void GuiFirmwareUpdatePrevTile(void)
     }
     printf("g_firmwareUpdateWidgets.currentTile=%d\n", g_firmwareUpdateWidgets.currentTile);
     lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, g_firmwareUpdateWidgets.currentTile, 0, LV_ANIM_OFF);
-    if (g_firmwareUpdateWidgets.tileView == FIRMWARE_UPDATE_SELECT) {
+    if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
         GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
     }
     GuiFirmwareUpdateRefresh();
@@ -295,7 +332,6 @@ void GuiFirmwareUpdateSha256Percent(uint8_t percent)
 static void GuiCreateSelectTile(lv_obj_t *parent)
 {
     lv_obj_clean(parent);
-    uint8_t memberCnt = 3;
     lv_obj_t *label, *img, *button, *imgArrow, *line;
     label = GuiCreateScrollTitleLabel(parent, _("firmware_update_title"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
@@ -303,44 +339,197 @@ static void GuiCreateSelectTile(lv_obj_t *parent)
     lv_obj_set_width(label, 408);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
 
-    img = GuiCreateImg(parent, &imgMicroSd);
-    label = GuiCreateScrollLittleTitleLabel(parent, _("firmware_update_via_sd"), 280);
-    imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table1[4] = {
-        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
-        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
-        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
-    };
-
-    if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
-        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, _("firmware_update_title"));
-        lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
-        table1[3].align = LV_ALIGN_DEFAULT;
-        table1[3].position.x = 76;
-        table1[3].position.y = 81;
-        table1[3].obj = versionLabel;
-        memberCnt = 4;
-    }
-
-    button = GuiCreateButton(parent, 408, 120, table1, memberCnt, GuiViaSdCardHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 210);
-
     img = GuiCreateImg(parent, &imgUsbConnection);
     label = GuiCreateLittleTitleLabel(parent, _("firmware_update_via_usb"));
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
-    GuiButton_t table2[] = {
+    GuiButton_t table1[] = {
         {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
         {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
         {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
     };
-    button = GuiCreateButton(parent, 408, 120, table2, NUMBER_OF_ARRAYS(table2), GuiViaUsbHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 330);
+    button = GuiCreateButton(parent, 408, 120, table1, NUMBER_OF_ARRAYS(table1), GuiViaUsbHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 168);
+
+    uint8_t memberCnt = 3;
+    img = GuiCreateImg(parent, &imgMicroSd);
+    label = GuiCreateScrollLittleTitleLabel(parent, _("firmware_update_via_sd"), 280);
+    imgArrow = GuiCreateImg(parent, &imgArrowRight);
+    GuiButton_t table2[4] = {
+        {.obj = img, .align = LV_ALIGN_DEFAULT, .position = {24, 40},},
+        {.obj = label, .align = LV_ALIGN_DEFAULT, .position = {76, 40},},
+        {.obj = imgArrow, .align = LV_ALIGN_DEFAULT, .position = {372, 40},},
+    };
+    if (FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
+        lv_obj_t *versionLabel = GuiCreateIllustrateLabel(parent, _("firmware_update_title"));
+        lv_obj_set_style_text_color(versionLabel, ORANGE_COLOR, LV_PART_MAIN);
+        table2[3].align = LV_ALIGN_DEFAULT;
+        table2[3].position.x = 76;
+        table2[3].position.y = 81;
+        table2[3].obj = versionLabel;
+        memberCnt = 4;
+    }
+    button = GuiCreateButton(parent, 408, 120, table2, memberCnt, GuiViaSdCardHandler, NULL);
+    lv_obj_align(button, LV_ALIGN_TOP_MID, 0, 288);
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 210);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 168);
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 330);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 288);
     line = GuiCreateDividerLine(parent);
-    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 450);
+    lv_obj_align(line, LV_ALIGN_DEFAULT, 0, 408);
+}
+
+static void GuiCreateFirmwareCheckTile(lv_obj_t *parent)
+{
+    lv_obj_t *label, *button, *img;
+    lv_obj_clean(parent);
+
+    label = GuiCreateScrollTitleLabel(parent, _("firmware_check_title"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 12);
+
+    label = GuiCreateNoticeLabel(parent, _("firmware_check_desc"));
+    lv_obj_set_width(label, 408);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 72);
+
+    label = GuiCreateOrangeIllustrateLabel(parent, "1");
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 210);
+    label = GuiCreateIllustrateLabel(parent, _("firmware_check_step1"));
+    lv_obj_set_width(label, 384);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 60, 210);
+
+    label = GuiCreateIllustrateLabel(parent, FIRMWARE_CHECK_LINK);
+    lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 0);
+    lv_obj_add_flag(label, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(label, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
+    img = GuiCreateImg(parent, &imgQrcodeTurquoise);
+    GuiAlignToPrevObj(img, LV_ALIGN_OUT_RIGHT_MID, 12, 0);
+    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_add_event_cb(img, GuiQrcodeHandler, LV_EVENT_CLICKED, NULL);
+
+    lv_obj_t *tempLabel = GuiCreateOrangeIllustrateLabel(parent, "2");
+    lv_obj_align_to(tempLabel, label, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 0);
+    label = GuiCreateIllustrateLabel(parent, _("firmware_check_step2"));
+    lv_obj_set_width(label, 384);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 24, 0);
+
+    label = GuiCreateOrangeIllustrateLabel(parent, "3");
+    GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, -24, 0);
+    label = GuiCreateIllustrateLabel(parent, _("firmware_check_step3"));
+    lv_obj_set_width(label, 384);
+    GuiAlignToPrevObj(label, LV_ALIGN_DEFAULT, 24, 0);
+
+    label = GuiCreateIllustrateLabel(parent, "");
+    lv_label_set_text_fmt(label, _("firmware_check_version_fmt"), GetSoftwareVersionString());
+    lv_obj_set_style_text_color(label, WHITE_COLOR_OPA64, LV_PART_MAIN);
+    lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 498);
+
+    button = GuiCreateTextBtn(parent, _("firmware_check_update"));
+    lv_obj_set_size(button, 408, 66);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -62);
+    lv_obj_add_event_cb(button, GuiFirmwareUpdateToSelectHandler, LV_EVENT_CLICKED, NULL);
+
+    button = GuiCreateTextBtn(parent, _("firmware_check_up_to_date"));
+    lv_obj_set_size(button, 408, 50);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -2);
+    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_set_style_text_color(lv_obj_get_child(button, 0), ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_text_font(lv_obj_get_child(button, 0), g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_add_event_cb(button, GuiFirmwareUpToDateHandler, LV_EVENT_CLICKED, NULL);
+}
+
+static void GuiFirmwareUpdateToSelectHandler(lv_event_t *e)
+{
+    g_firmwareUpdateWidgets.currentTile = FIRMWARE_UPDATE_SELECT;
+    lv_obj_set_tile_id(g_firmwareUpdateWidgets.tileView, FIRMWARE_UPDATE_SELECT, 0, LV_ANIM_OFF);
+    GuiFirmwareUpdateRefresh();
+}
+
+static void GuiFirmwareUpToDateHandler(lv_event_t *e)
+{
+    GuiFrameOpenView(&g_purposeView);
+}
+
+static void FirmwareSkipWarningTimerStop(void)
+{
+    if (g_firmwareSkipWarningTimer != NULL) {
+        lv_timer_del(g_firmwareSkipWarningTimer);
+        g_firmwareSkipWarningTimer = NULL;
+    }
+    g_firmwareSkipWarningSeconds = 0;
+}
+
+static void FirmwareSkipWarningTimerHandler(lv_timer_t *timer)
+{
+    if (g_firmwareSkipWarningBtn == NULL || !lv_obj_is_valid(g_firmwareSkipWarningBtn)) {
+        FirmwareSkipWarningTimerStop();
+        return;
+    }
+    if (g_firmwareSkipWarningSeconds > 0) {
+        g_firmwareSkipWarningSeconds--;
+    }
+    if (g_firmwareSkipWarningSeconds == 0) {
+        lv_obj_clear_state(g_firmwareSkipWarningBtn, LV_STATE_DISABLED);
+        lv_label_set_text(lv_obj_get_child(g_firmwareSkipWarningBtn, 0), _("Skip"));
+        g_firmwareSkipWarningTimer = NULL;
+        lv_timer_del(timer);
+    } else {
+        lv_label_set_text_fmt(lv_obj_get_child(g_firmwareSkipWarningBtn, 0),
+                              _("firmware_update_skip_fmt"),
+                              g_firmwareSkipWarningSeconds);
+    }
+}
+
+static void GuiOpenSkipWarningHandler(lv_event_t *e)
+{
+    lv_obj_t *img, *label, *button, *title;
+    if (g_noticeWindow != NULL) {
+        return;
+    }
+
+    g_noticeWindow = GuiCreateHintBox(386);
+    img = GuiCreateImg(g_noticeWindow, &imgInformation);
+    lv_obj_align(img, LV_ALIGN_BOTTOM_LEFT, 36, -266);
+
+    title = GuiCreateLittleTitleLabel(g_noticeWindow, _("firmware_update_recommended_title"));
+    lv_obj_align(title, LV_ALIGN_BOTTOM_LEFT, 36, -202);
+    label = GuiCreateNoticeLabel(g_noticeWindow, _("firmware_update_recommended_desc"));
+    lv_obj_set_width(label, 408);
+    lv_obj_align_to(label, title, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+
+    button = GuiCreateTextBtn(g_noticeWindow, "");
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_LEFT, 36, -24);
+    lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN);
+    lv_obj_set_style_bg_color(button, DARK_GRAY_COLOR, LV_PART_MAIN | LV_STATE_DISABLED);
+    lv_obj_set_style_text_color(lv_obj_get_child(button, 0), WHITE_COLOR_OPA64, LV_PART_MAIN | LV_STATE_DISABLED);
+    lv_obj_add_state(button, LV_STATE_DISABLED);
+    lv_obj_add_event_cb(button, GuiSkipWarningHandler, LV_EVENT_CLICKED, NULL);
+    g_firmwareSkipWarningBtn = button;
+    g_firmwareSkipWarningSeconds = 5;
+    lv_label_set_text_fmt(lv_obj_get_child(button, 0), _("firmware_update_skip_fmt"),
+                          g_firmwareSkipWarningSeconds);
+
+    button = GuiCreateTextBtn(g_noticeWindow, _("Update"));
+    lv_obj_set_size(button, 192, 66);
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -36, -24);
+    lv_obj_add_event_cb(button, GuiSkipWarningUpdateHandler, LV_EVENT_CLICKED, NULL);
+
+    g_firmwareSkipWarningTimer = lv_timer_create(FirmwareSkipWarningTimerHandler, 1000, NULL);
+}
+
+static void GuiSkipWarningHandler(lv_event_t *e)
+{
+    FirmwareSkipWarningTimerStop();
+    g_firmwareSkipWarningBtn = NULL;
+    GUI_DEL_OBJ(g_noticeWindow)
+    GuiFrameOpenView(&g_purposeView);
+}
+
+static void GuiSkipWarningUpdateHandler(lv_event_t *e)
+{
+    FirmwareSkipWarningTimerStop();
+    g_firmwareSkipWarningBtn = NULL;
+    GUI_DEL_OBJ(g_noticeWindow)
 }
 
 static void GuiViaSdCardHandler(lv_event_t *e)
@@ -624,10 +813,23 @@ static void KnownWarningCancelHandler(lv_event_t *e)
 static void GuiQrcodeHandler(lv_event_t *e)
 {
     lv_obj_t *parent, *button, *qrCodeCont, *qrCode, *label;
+    const char *qrLink;
+    const char *qrTitle;
 
     if (g_firmwareUpdateWidgets.qrCodeCont == NULL) {
         g_firmwareUpdateWidgets.qrCodeCont = GuiCreateHintBox(654);
         parent = g_firmwareUpdateWidgets.qrCodeCont;
+
+        if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_CHECK) {
+            qrLink = FIRMWARE_CHECK_LINK;
+            qrTitle = _("firmware_check_qr_title");
+        } else if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
+            qrLink = _("firmware_update_usb_qr_link");
+            qrTitle = _("firmware_update_usb_qr_title");
+        } else {
+            qrLink = g_firmwareSdUpdateUrl;
+            qrTitle = _("firmware_update_usb_qr_title");
+        }
 
         qrCodeCont = lv_obj_create(parent);
         lv_obj_set_size(qrCodeCont, 408, 408);
@@ -642,19 +844,11 @@ static void GuiQrcodeHandler(lv_event_t *e)
 
         qrCode = lv_qrcode_create(qrCodeCont, 360, BLACK_COLOR, WHITE_COLOR);
         lv_obj_align(qrCode, LV_ALIGN_CENTER, 0, 0);
-        if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
-            lv_qrcode_update(qrCode, _("firmware_update_usb_qr_link"), (uint32_t)strnlen_s(_("firmware_update_usb_qr_link"), BUFFER_SIZE_128));
-        } else {
-            lv_qrcode_update(qrCode, g_firmwareSdUpdateUrl, (uint32_t)strnlen_s(g_firmwareSdUpdateUrl, BUFFER_SIZE_128));
-        }
+        lv_qrcode_update(qrCode, qrLink, (uint32_t)strnlen_s(qrLink, BUFFER_SIZE_128));
 
-        label = GuiCreateLittleTitleLabel(parent, _("firmware_update_usb_qr_title"));
+        label = GuiCreateLittleTitleLabel(parent, qrTitle);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -156);
-        if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION) {
-            label = GuiCreateIllustrateLabel(parent, _("firmware_update_usb_qr_link"));
-        } else {
-            label = GuiCreateIllustrateLabel(parent, g_firmwareSdUpdateUrl);
-        }
+        label = GuiCreateIllustrateLabel(parent, qrLink);
         lv_obj_set_style_text_color(label, lv_color_hex(0x1BE0C6), LV_PART_MAIN);
         lv_obj_align(label, LV_ALIGN_BOTTOM_LEFT, 36, -114);
 

@@ -7,6 +7,7 @@
 #include "qrdecode_task.h"
 #include "low_power.h"
 #include "keystore.h"
+#include "secret_cache.h"
 #include "gui_power_option_widgets.h"
 #include "fingerprint_task.h"
 #include "user_msg.h"
@@ -114,8 +115,8 @@ static void LockScreen(void)
     }
 
     // Session boundary: the device is locking (inactivity timer or power button both reach here).
-    // Disarm any pending provision recovery before locking.
     SE_DisarmProvisionRecovery();
+    ClearSecretCache();
 
     static uint16_t single = SIG_LOCK_VIEW_VERIFY_PIN;
     uint8_t accountNum = 1;
@@ -147,7 +148,7 @@ static void LockScreen(void)
         RecoverFromLowPower();
         ClearLockScreenTime();
         ClearShutdownTime();
-        printf("wakeUpCount=%d\r\n", wakeUpCount);
+        printf("wakeUpCount=%d\r\n", (int)wakeUpCount);
     }
 }
 

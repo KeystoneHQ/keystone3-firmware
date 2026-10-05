@@ -1,5 +1,6 @@
 @echo off
 SETLOCAL ENABLEEXTENSIONS
+SET "CARGO_TERM_COLOR=always"
 
 SET BUILD_FOLDER=%CD%\build
 SET BUILD_SIMULATOR_FOLDER=%CD%\build_simulator
@@ -9,7 +10,7 @@ SET MAKE_PADDING_FILE_PATH=%TOOLS_FOLDER%\padding_bin_file
 SET ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat
 SET PACK_PATH=%CD%\pack.bat
 SET LANGUAGE_PATH=%CD%\src\ui\lv_i18n
-SET LANGUAGE_SCRIPT=py data_loader.py
+SET LANGUAGE_SCRIPT=python data_loader.py
 SET RUST_C_PATH=%CD%\rust\rust_c
 
 SET "build_options=log copy production screen debug format release rebuild btc_only cypherpunk simulator language clean"
@@ -40,18 +41,22 @@ IF NOT EXIST %BUILD_FOLDER%\padding_bin_file.py (
 )
 
 CALL :EXECUTE_BUILD
+SET "BUILD_EXIT_CODE=%ERRORLEVEL%"
 
-ENDLOCAL
-GOTO :EOF
+ENDLOCAL & EXIT /B %BUILD_EXIT_CODE%
 
 :EXECUTE_BUILD
 IF "%build_language%"=="true" (
     pushd %LANGUAGE_PATH%
     %LANGUAGE_SCRIPT%
-    popd  
+    IF ERRORLEVEL 1 (
+        popd
+        EXIT /B 1
+    )
+    popd
 )
 
-SET "cmake_parm=-DBUILD_PRODUCTION=false -DBTC_ONLY=false -DCYPHERPUNK=false -DENABLE_SCREEN_SHOT=false -DDEBUG_MEMORY=false"
+SET "cmake_parm=-DCMAKE_COLOR_DIAGNOSTICS=ON -DBUILD_PRODUCTION=false -DBTC_ONLY=false -DCYPHERPUNK=false -DENABLE_SCREEN_SHOT=false -DDEBUG_MEMORY=false"
 IF "%build_production%"=="true" SET "cmake_parm=%cmake_parm% -DBUILD_PRODUCTION=true"
 IF "%build_btc_only%"=="true" SET "cmake_parm=%cmake_parm% -DBTC_ONLY=true"
 IF "%build_cypherpunk%"=="true" SET "cmake_parm=%cmake_parm% -DCYPHERPUNK=true"
@@ -61,18 +66,23 @@ IF "%build_debug%"=="true" SET "cmake_parm=%cmake_parm% -DDEBUG_MEMORY=true"
 IF "%build_simulator%"=="true" (
     IF NOT EXIST %BUILD_SIMULATOR_FOLDER% mkdir %BUILD_SIMULATOR_FOLDER%
     pushd %BUILD_SIMULATOR_FOLDER%
-    cmake -G "Unix Makefiles" -DBUILD_TYPE=Simulator %cmake_parm% .. 
-    make -j16
+    cmake -G Ninja -DBUILD_TYPE=Simulator %cmake_parm% ..
+    IF ERRORLEVEL 1 EXIT /B 1
+    cmake --build .
+    IF ERRORLEVEL 1 EXIT /B 1
     popd
 ) ELSE (
     pushd %BUILD_FOLDER%
-    cmake -G "Unix Makefiles" %cmake_parm% ..
+    cmake -G Ninja -DCMAKE_TRY_COMPILE_TARGET_TYPE=STATIC_LIBRARY %cmake_parm% ..
+    IF ERRORLEVEL 1 EXIT /B 1
     IF "%build_log%"=="true" (
-        make -j16 > makefile.log 2>&1
+        cmake --build . > build.log 2>&1
     ) ELSE (
-        make -j16
+        cmake --build .
     )
+    IF ERRORLEVEL 1 EXIT /B 1
     python padding_bin_file.py mh1903.bin
+    IF ERRORLEVEL 1 EXIT /B 1
     popd
 )
 

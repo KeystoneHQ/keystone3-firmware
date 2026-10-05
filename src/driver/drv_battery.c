@@ -225,7 +225,7 @@ bool BatteryIntervalHandler(void)
     milliVolt = GetBatteryMilliVolt();
     percent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
 
-    printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", milliVolt, percent, GetBatterPercent(), usbPowerState);
+    printf("handler,milliVolt=%d,percent=%d,showPercent=%d,usbPowerState=%d\n", (int)milliVolt, percent, GetBatterPercent(), usbPowerState);
     if (usbPowerState == USB_POWER_STATE_DISCONNECT && milliVolt < dischargeCurve[0]) {
         printf("low volt,power off\n");
         powerOffCnt++;
@@ -324,7 +324,7 @@ static uint8_t LoadBatteryPercent(void)
     usbPowerState = GetUsbPowerState();
     milliVolt = GetBatteryMilliVolt();
     measurePercent = GetBatteryPercentByMilliVolt(milliVolt, usbPowerState == USB_POWER_STATE_DISCONNECT);
-    printf("load batt,usbPowerState=%d,milliVolt=%d,measurePercent=%d\n", usbPowerState, milliVolt, measurePercent);
+    printf("load batt,usbPowerState=%d,milliVolt=%d,measurePercent=%d\n", usbPowerState, (int)milliVolt, measurePercent);
 
     data = SRAM_MALLOC(SPI_FLASH_SIZE_BATTERY_INFO);
     Gd25FlashReadBuffer(SPI_FLASH_ADDR_BATTERY_INFO, data, SPI_FLASH_SIZE_BATTERY_INFO);
@@ -339,13 +339,13 @@ static uint8_t LoadBatteryPercent(void)
                 resetValue = true;
             } else {
                 if (data[i - 1] > 100) {
-                    printf("battery history invalid data[%d]=%d\r\n", i, data[i]);
+                    printf("battery history invalid data[%d]=%d\r\n", (int)i, data[i]);
                     resetValue = true;
                     needErase = true;
                 } else {
                     percent = data[i - 1];
                     g_batteryFlashAddress = SPI_FLASH_ADDR_BATTERY_INFO + i - 1;
-                    printf("the latest battery history percent=%d,addr=0x%08X\r\n", percent, g_batteryFlashAddress);
+                    printf("the latest battery history percent=%d,addr=0x%08X\r\n", percent, (unsigned int)g_batteryFlashAddress);
                     if (usbPowerState == USB_POWER_STATE_DISCONNECT && \
                             percent > measurePercent && \
                             (percent - measurePercent > BATTERY_DIFF_THRESHOLD || measurePercent <= 20)) {
@@ -357,7 +357,7 @@ static uint8_t LoadBatteryPercent(void)
             checkErased = true;
         } else if (checkErased == true && data[i] != 0xFF) {
             //check if erased
-            printf("data[%d]=%d, not erased\r\n", i, data[i]);
+            printf("data[%d]=%d, not erased\r\n", (int)i, data[i]);
             resetValue = true;
             needErase = true;
             break;
@@ -408,21 +408,22 @@ uint8_t GetBatteryPercentByMilliVolt(uint32_t milliVolt, bool discharge)
 
 void BatteryTest(int argc, char *argv[])
 {
-    uint32_t milliVolt, temp32;
+    uint32_t milliVolt;
+    unsigned int temp32;
     uint8_t percent;
 
     if (strcmp(argv[0], "info") == 0) {
         milliVolt = GetBatteryMilliVolt();
         percent = GetBatteryPercentByMilliVolt(milliVolt, GetUsbPowerState() == USB_POWER_STATE_DISCONNECT);
-        printf("milliVolt=%d, percent=%d, showPercent=%d\n", milliVolt, percent, GetBatterPercent());
-        printf("rtc voltage=%d\n", GetRtcBatteryMilliVolt());
+        printf("milliVolt=%d, percent=%d, showPercent=%d\n", (int)milliVolt, percent, GetBatterPercent());
+        printf("rtc voltage=%d\n", (int)GetRtcBatteryMilliVolt());
     } else if (strcmp(argv[0], "set_percent") == 0) {
         VALUE_CHECK(argc, 2);
-        sscanf(argv[1], "%d", &temp32);
+        sscanf(argv[1], "%u", &temp32);
         if (temp32 <= 100) {
             g_batterPercent = temp32;
             PubValueMsg(BACKGROUND_MSG_BATTERY_INTERVAL, 1);
-            printf("set battery percent:%d\r\n", temp32);
+            printf("set battery percent:%u\r\n", temp32);
         } else {
             printf("input battery percent err\r\n");
         }

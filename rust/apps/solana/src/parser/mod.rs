@@ -525,6 +525,17 @@ impl ParsedSolanaTx {
                 to_lookup_table_reference: String::new(),
             };
             match &d.kind {
+                ProgramDetail::ComputeBudget(value) if d.common.program == "TransactionConfig" => {
+                    // This is message metadata, not an additional instruction.
+                    item.instruction_index = 0;
+                    item.memo = format!(
+                        "Priority Fee: {} lamports\nCompute Unit Limit: {}\nLoaded Accounts Data Limit: {} bytes\nHeap Size: {} bytes",
+                        value.priority_fee_lamports,
+                        value.compute_unit_limit,
+                        value.loaded_accounts_data_size_limit,
+                        value.heap_frame_bytes,
+                    );
+                }
                 ProgramDetail::SystemTransfer(value) => {
                     item.value = value.value.clone();
                     item.from = value.from.clone();

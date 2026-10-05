@@ -5,7 +5,6 @@
 #include "string.h"
 #include "mhscpu.h"
 //#include "drv_spi.h"
-#include "drv_mpu.h"
 #include "drv_spi_io.h"
 #include "cmsis_os.h"
 #include "user_memory.h"
@@ -356,7 +355,7 @@ static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t p
         if (ret == DS28S60_SUCCESS) {
             break;
         }
-        printf("retry %d\r\n", tryCount);
+        printf("retry %d\r\n", (int)tryCount);
     }
     assert(ret == 0);
     return ret;
@@ -418,9 +417,7 @@ static int32_t DS28S60_Binding(void)
     do {
         ret = DS28S60_GetBlockProtection(&blockProtection, SECRET_A_BLOCK);
         CHECK_ERRCODE_BREAK("get block protection", ret);
-        MpuSetOtpProtection(false);
-        OTP_PowerOn();
-        memcpy(keys, (uint8_t *)OTP_ADDR_DS28S60, sizeof(keys));
+        ReadOtpData(OTP_ADDR_DS28S60, keys, sizeof(keys));
         if (CheckEntropy(keys, 96)) {
             //OTP key exist
             if (!blockProtection.Prot.b.WP) {
@@ -449,7 +446,6 @@ static int32_t DS28S60_Binding(void)
             }
         }
     } while (0);
-    MpuSetOtpProtection(true);
     CLEAR_ARRAY(keys);
     // assert if binding error
     assert(ret == 0);
@@ -501,42 +497,47 @@ int32_t DS28S60_HmacAuthentication(uint8_t page)
     challenge[0] = page;
     challenge[1] = 0x00;            //Secret A
     TrngGet(&challenge[2], 32);
-    if (g_ds28s60Info.valid == false) {
-        ret = DS28S60_GetInfo();
-        if (ret != DS28S60_SUCCESS) {
-            return ret;
+    do {
+        if (g_ds28s60Info.valid == false) {
+            ret = DS28S60_GetInfo();
+            if (ret != DS28S60_SUCCESS) {
+                break;
+            }
         }
-    }
-    ret = DS28S60_SendCmdAndGetResult(DS28S60_CMD_CRPA, challenge, 34, 32, hmacDevice);
-    if (ret != DS28S60_SUCCESS) {
-        return ret;
-    }
-    UserDelay(50);
-    ret = DS28S60_ReadPage(&msg[8], page);
-    if (ret != DS28S60_SUCCESS) {
-        return ret;
-    }
-    UserDelay(50);
-    DS28S60_GetHmacKey(secretKey, &g_ds28s60Info, BINDING_DATA_PAGE, DS28S60_CMD_CPT_SECRET);
-    memcpy(&msg[0], g_ds28s60Info.ROMID, 8);
-    memcpy(&msg[40], &challenge[2], 32);
-    msg[72] = page;
-    memcpy(&msg[73], g_ds28s60Info.MANID, 2);
-    msg[75] = DS28S60_CMD_CRPA;
-    //PrintArray("msg", msg, 76);
-    hmac_sha256(secretKey, 32, msg, 76, hmacCalc);
-    //PrintArray("hmacCalc", hmacCalc, 32);
-    //PrintArray("hmacCalc", hmacDevice, 32);
-    if (memcmp(hmacCalc, hmacDevice, 32) != 0) {
-        return ERR_DS28S60_AUTH;
-    }
+        ret = DS28S60_SendCmdAndGetResult(DS28S60_CMD_CRPA, challenge, 34, 32, hmacDevice);
+        if (ret != DS28S60_SUCCESS) {
+            break;
+        }
+        UserDelay(50);
+        ret = DS28S60_ReadPage(&msg[8], page);
+        if (ret != DS28S60_SUCCESS) {
+            break;
+        }
+        UserDelay(50);
+        DS28S60_GetHmacKey(secretKey, &g_ds28s60Info, BINDING_DATA_PAGE, DS28S60_CMD_CPT_SECRET);
+        memcpy(&msg[0], g_ds28s60Info.ROMID, 8);
+        memcpy(&msg[40], &challenge[2], 32);
+        msg[72] = page;
+        memcpy(&msg[73], g_ds28s60Info.MANID, 2);
+        msg[75] = DS28S60_CMD_CRPA;
+        //PrintArray("msg", msg, 76);
+        hmac_sha256(secretKey, 32, msg, 76, hmacCalc);
+        //PrintArray("hmacCalc", hmacCalc, 32);
+        //PrintArray("hmacCalc", hmacDevice, 32);
+        if (timingsafe_bcmp(hmacCalc, hmacDevice, 32) != 0) {
+            ret = ERR_DS28S60_AUTH;
+            break;
+        }
+        ret = DS28S60_SUCCESS;
+    } while (0);
+
     CLEAR_ARRAY(hmacDevice);
     CLEAR_ARRAY(hmacCalc);
     CLEAR_ARRAY(challenge);
     CLEAR_ARRAY(secretKey);
     CLEAR_ARRAY(msg);
 
-    return DS28S60_SUCCESS;
+    return ret;
 }
 
 int32_t DS28S60_HmacEncryptRead(uint8_t *data, uint8_t page)
@@ -573,6 +574,52 @@ int32_t DS28S60_HmacEncryptRead(uint8_t *data, uint8_t page)
     CLEAR_ARRAY(secretKey);
     CLEAR_ARRAY(hmac);
 
+    return ret;
+}
+
+int32_t DS28S60_HmacAuthenticatedRead(uint8_t *data, uint8_t page)
+{
+    uint8_t hmacDevice[32];
+    uint8_t hmacCalc[32];
+    uint8_t challenge[34];
+    uint8_t secretKey[32];
+    uint8_t msg[76];
+    int32_t ret;
+
+    do {
+        ret = DS28S60_HmacEncryptRead(data, page);
+        CHECK_ERRCODE_BREAK("DS28S60_HmacEncryptRead", ret);
+
+        if (g_ds28s60Info.valid == false) {
+            ret = DS28S60_GetInfo();
+            CHECK_ERRCODE_BREAK("DS28S60_GetInfo", ret);
+        }
+        challenge[0] = page;
+        challenge[1] = 0x00;
+        TrngGet(&challenge[2], 32);
+        ret = DS28S60_SendCmdAndGetResult(DS28S60_CMD_CRPA, challenge, 34, 32, hmacDevice);
+        CHECK_ERRCODE_BREAK("DS28S60_CMD_CRPA", ret);
+
+        DS28S60_GetHmacKey(secretKey, &g_ds28s60Info, BINDING_DATA_PAGE, DS28S60_CMD_CPT_SECRET);
+        memcpy(&msg[0], g_ds28s60Info.ROMID, 8);
+        memcpy(&msg[8], data, 32);
+        memcpy(&msg[40], &challenge[2], 32);
+        msg[72] = page;
+        memcpy(&msg[73], g_ds28s60Info.MANID, 2);
+        msg[75] = DS28S60_CMD_CRPA;
+        hmac_sha256(secretKey, 32, msg, 76, hmacCalc);
+        if (timingsafe_bcmp(hmacCalc, hmacDevice, 32) != 0) {
+            ret = ERR_DS28S60_AUTH;
+            break;
+        }
+        ret = DS28S60_SUCCESS;
+    } while (0);
+
+    CLEAR_ARRAY(hmacDevice);
+    CLEAR_ARRAY(hmacCalc);
+    CLEAR_ARRAY(challenge);
+    CLEAR_ARRAY(secretKey);
+    CLEAR_ARRAY(msg);
     return ret;
 }
 
@@ -645,11 +692,11 @@ static void DS28S60_PrintInfo(void)
         ret = DS28S60_GetBlockProtection(&blockProtection, i);
         UserDelay(50);
         if (ret != DS28S60_SUCCESS) {
-            printf("get block protection err,block=%d,ret=%d\r\n", i, ret);
+            printf("get block protection err,block=%d,ret=%d\r\n", (int)i, (int)ret);
             continue;
         }
         if (blockProtection.Secret.byte != 0x00 || blockProtection.Prot.byte != 0x00) {
-            printf("block %d protection info:\r\n", i);
+            printf("block %d protection info:\r\n", (int)i);
             printf("LOCK=%d,SEC_ID=0x%03X\r\n", blockProtection.Secret.b.LOCK, blockProtection.Secret.b.ID);
             printf("ECW=%d,ECH=%d,EPH=%d,APH=%d,WP=%d,RP=%d\r\n", blockProtection.Prot.b.ECW, \
                    blockProtection.Prot.b.ECH, blockProtection.Prot.b.EPH, blockProtection.Prot.b.APH, \
@@ -665,10 +712,7 @@ static void GetMasterSecret(uint8_t *masterSecret)
 #ifdef DS28S60_TEST_MODE
     memcpy(masterSecret, MASTER_SECRET, sizeof(MASTER_SECRET));
 #else
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(masterSecret, (uint8_t *)MASTER_SECRET_ADDR, 32);
-    MpuSetOtpProtection(true);
+    ReadOtpData(MASTER_SECRET_ADDR, masterSecret, 32);
 #endif
 }
 
@@ -679,10 +723,7 @@ static void GetBindingPageData(uint8_t *bindingPageData)
 #ifdef DS28S60_TEST_MODE
     memcpy(bindingPageData, BINDING_PAGE_DATA, sizeof(BINDING_PAGE_DATA));
 #else
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(bindingPageData, (uint8_t *)BINDING_PAGE_DATA_ADDR, 32);
-    MpuSetOtpProtection(true);
+    ReadOtpData(BINDING_PAGE_DATA_ADDR, bindingPageData, 32);
 #endif
 }
 
@@ -693,10 +734,7 @@ static void GetPartialSecret(uint8_t *partialSecret)
 #ifdef DS28S60_TEST_MODE
     memcpy(partialSecret, PARTIAL_SECRET, sizeof(PARTIAL_SECRET));
 #else
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy(partialSecret, (uint8_t *)PARTIAL_SECRET_ADDR, 32);
-    MpuSetOtpProtection(true);
+    ReadOtpData(PARTIAL_SECRET_ADDR, partialSecret, 32);
 #endif
 }
 
@@ -704,7 +742,8 @@ void DS28S60_Test(int argc, char *argv[])
 {
     uint8_t *data, pageData[32];
     DS28S60_BlockProtection_t blockProtection;
-    int32_t ret, num, page, len, block;
+    int32_t ret;
+    int num, page, len, block;
 
     if (strcmp(argv[0], "random") == 0) {
         VALUE_CHECK(argc, 2);
@@ -715,7 +754,7 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             PrintArray("data", data, num);
         } else {
-            printf("ds28s60 err=%d\r\n", ret);
+            printf("ds28s60 err=%d\r\n", (int)ret);
         }
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "read") == 0) {
@@ -726,7 +765,7 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             PrintArray("pageData", pageData, 32);
         } else {
-            printf("ds28s60 err=%d\r\n", ret);
+            printf("ds28s60 err=%d\r\n", (int)ret);
         }
     } else if (strcmp(argv[0], "write") == 0) {
         VALUE_CHECK(argc, 3);
@@ -741,7 +780,7 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             printf("write success\r\n");
         } else {
-            printf("ds28s60 err=%d\r\n", ret);
+            printf("ds28s60 err=%d\r\n", (int)ret);
         }
     } else if (strcmp(argv[0], "en_read") == 0) {
         VALUE_CHECK(argc, 2);
@@ -751,7 +790,7 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             PrintArray("pageData", pageData, 32);
         } else {
-            printf("ds28s60 err=%d\r\n", ret);
+            printf("ds28s60 err=%d\r\n", (int)ret);
         }
     } else if (strcmp(argv[0], "en_write") == 0) {
         VALUE_CHECK(argc, 3);
@@ -766,7 +805,7 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             printf("write success\r\n");
         } else {
-            printf("ds28s60 err=%d\r\n", ret);
+            printf("ds28s60 err=%d\r\n", (int)ret);
         }
     } else if (strcmp(argv[0], "info") == 0) {
         DS28S60_PrintInfo();
@@ -775,7 +814,7 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             printf("write secret succ\r\n");
         } else {
-            printf("write secret err=%d\r\n", ret);
+            printf("write secret err=%d\r\n", (int)ret);
         }
     } else if (strcmp(argv[0], "auth") == 0) {
         VALUE_CHECK(argc, 2);
@@ -784,7 +823,21 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             printf("hmac auth succ\r\n");
         } else {
-            printf("hmac auth err=%d\r\n", ret);
+            printf("hmac auth err=%d\r\n", (int)ret);
+        }
+    } else if (strcmp(argv[0], "auth_read") == 0) {
+        uint8_t authData[32], encData[32];
+        VALUE_CHECK(argc, 2);
+        sscanf(argv[1], "%d", &page);
+        printf("ds28s60 auth_read page %d\r\n", page);
+        ret = DS28S60_HmacAuthenticatedRead(authData, page);
+        if (ret == DS28S60_SUCCESS) {
+            PrintArray("authData", authData, 32);
+        } else {
+            printf("auth_read err=%d (non-zero = MAC mismatch / CRPA failed)\r\n", (int)ret);
+        }
+        if (DS28S60_HmacEncryptRead(encData, page) == DS28S60_SUCCESS) {
+            printf("auth_read vs en_read match=%d\r\n", memcmp(authData, encData, 32) == 0 ? 1 : 0);
         }
     } else if (strcmp(argv[0], "setup_block") == 0) {
         VALUE_CHECK(argc, 2);
@@ -797,11 +850,11 @@ void DS28S60_Test(int argc, char *argv[])
         if (ret == DS28S60_SUCCESS) {
             printf("set block protection succ\r\n");
         } else {
-            printf("set block protection err=%d\r\n", ret);
+            printf("set block protection err=%d\r\n", (int)ret);
         }
     } else if (strcmp(argv[0], "setup_device") == 0) {
         printf("ds28s60 setup\r\n");
         ret = DS28S60_Setup();
-        printf("DS28S60_Setup=%d\r\n", ret);
+        printf("DS28S60_Setup=%d\r\n", (int)ret);
     }
 }

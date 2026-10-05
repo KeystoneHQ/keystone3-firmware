@@ -109,7 +109,8 @@ static void GuiShowSDCardExport()
     GetMasterFingerPrint(mfp);
     Ptr_Response_MultiSigWallet result = import_multi_sig_wallet_by_file(g_multisigWalletItem->walletConfig, mfp, 4);
     if (result->error_code == 0) {
-        snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s_%s_%d.txt", g_multisigWalletItem->name, result->data->policy, GetCurrentStampTime());
+        snprintf_s(g_filename, MAX_WALLET_NAME_LEN, "%s_%s_%u.txt", g_multisigWalletItem->name, result->data->policy,
+                   (unsigned int)GetCurrentStampTime());
         free_MultiSigWallet(result->data);
     }
     label = GuiCreateIllustrateLabel(g_noticeWindow, g_filename);

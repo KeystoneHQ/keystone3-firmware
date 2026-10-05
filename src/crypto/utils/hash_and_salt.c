@@ -7,7 +7,6 @@
 #include "user_utils.h"
 #include "drv_trng.h"
 #include "log_print.h"
-#include "drv_mpu.h"
 #include "user_memory.h"
 
 #define SALT_DATA_LEN                                   32
@@ -41,15 +40,12 @@ static void HashWithSaltImpl(uint8_t *outData, const uint8_t *inData, uint32_t i
     memcpy_s(saltData, sizeof(saltData), g_saltData, sizeof(g_saltData));
 #else
     // Get salt data from OTP, if salt data does not exist, then generate a random salt data.
-    MpuSetOtpProtection(false);
-    OTP_PowerOn();
-    memcpy_s(saltData, sizeof(saltData), (uint8_t *)OTP_ADDR_SALT, SALT_DATA_LEN);
+    ReadOtpData(OTP_ADDR_SALT, saltData, SALT_DATA_LEN);
     if (CheckEntropy(saltData, SALT_DATA_LEN) == false) {
         printf("need generate salt\r\n");
         TrngGet(saltData, SALT_DATA_LEN);
         ASSERT(SUCCESS_CODE == WriteOtpData(OTP_ADDR_SALT, saltData, SALT_DATA_LEN));
     }
-    MpuSetOtpProtection(true);
 #endif
 
     if (useSha512) {

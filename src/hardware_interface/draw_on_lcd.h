@@ -15,5 +15,8 @@ int16_t DrawStringOnLcd(uint16_t x, uint16_t y, const char *string, uint16_t col
 void DrawProgressBarOnLcd(uint16_t x, uint16_t y, uint16_t length, uint16_t width, uint8_t progress, uint16_t color);
 void DrawImageOnLcd(uint16_t x, uint16_t y, const lv_img_dsc_t *imgDsc);
 void DrawBootLogoOnLcd(void);
+void ClearRectOnLcd(uint16_t x, uint16_t y, uint16_t width, uint16_t height);
+uint16_t GetStringWidthOnLcd(const char *string, const lv_font_t *font);
+void RedrawCenteredLineOnLcd(uint16_t y, const char *text, uint16_t color, const lv_font_t *font);
 
 #endif

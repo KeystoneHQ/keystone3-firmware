@@ -1,3 +1,4 @@
+#include "secret_cache.h"
 #include "gui_multi_path_coin_receive_widgets.h"
 #include "gui_status_bar.h"
 #include "gui_chain.h"
@@ -117,8 +118,8 @@ static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item);
 static void GetEthHdPath(char *hdPath, int index, uint32_t maxLen);
 static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen);
 static void GetEthRootPath(char *rootPath, int index, uint32_t maxLen);
-static char *GetEthXpub(int index);
-static char *GetSolXpub(int index);
+static char *GetEthXpub(uint32_t index);
+static char *GetSolXpub(uint32_t index);
 
 static uint32_t GetPathIndex(void);
 static void SetPathIndex(uint32_t index);
@@ -861,7 +862,7 @@ static void RefreshQrCode(void)
     } else {
         lv_label_set_text(g_multiPathCoinReceiveWidgets.addressLabel, addressDataItem.address);
     }
-    lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
+    lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.addressCountLabel, "%s-%u", _("account_head"), (unsigned int)(addressDataItem.index + 1));
 }
 
 static void RefreshSwitchAccount(void)
@@ -871,10 +872,6 @@ static void RefreshSwitchAccount(void)
     uint32_t index = g_showIndex;
     bool end = false;
     for (uint32_t i = 0; i < 5; i++) {
-        ModelGetAddress(index, &addressDataItem);
-        lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (addressDataItem.index + 1));
-        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
-        lv_label_set_text(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         if (end) {
             lv_obj_add_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
             lv_obj_add_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
@@ -883,6 +880,10 @@ static void RefreshSwitchAccount(void)
             lv_obj_add_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].uncheckedImg, LV_OBJ_FLAG_HIDDEN);
             continue;
         }
+        ModelGetAddress(index, &addressDataItem);
+        lv_label_set_text_fmt(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, "%s-%u", _("account_head"), (unsigned int)(addressDataItem.index + 1));
+        CutAndFormatString(string, sizeof(string), addressDataItem.address, 24);
+        lv_label_set_text(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, string);
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressCountLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].addressLabel, LV_OBJ_FLAG_HIDDEN);
         lv_obj_clear_flag(g_multiPathCoinReceiveWidgets.switchAddressWidgets[i].checkBox, LV_OBJ_FLAG_HIDDEN);
@@ -1222,6 +1223,9 @@ static void GetPathItemSubTitle(char* subTitle, int index, uint32_t maxLen)
 static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen)
 {
     uint32_t i = GetPathIndex();
+    if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
+        i = g_selectType;
+    }
     switch (i) {
     case 0:
         snprintf_s(hdPath, maxLen, "%s/%u'", g_solPaths[i].path, index);
@@ -1239,7 +1243,7 @@ static void GetSolHdPath(char *hdPath, int index, uint32_t maxLen)
 
 static void GetEthHdPath(char *hdPath, int index, uint32_t maxLen)
 {
-    uint8_t i = GetPathIndex();
+    uint32_t i = GetPathIndex();
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
         i = g_selectType;
     }
@@ -1260,7 +1264,7 @@ static void GetEthHdPath(char *hdPath, int index, uint32_t maxLen)
 
 static void GetEthRootPath(char *rootPath, int index, uint32_t maxLen)
 {
-    uint8_t i = GetPathIndex();
+    uint32_t i = GetPathIndex();
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
         i = g_selectType;
     }
@@ -1279,11 +1283,14 @@ static void GetEthRootPath(char *rootPath, int index, uint32_t maxLen)
     }
 }
 
-static char *GetSolXpub(int index)
+static char *GetSolXpub(uint32_t index)
 {
-    uint8_t i = GetPathIndex();
+    uint32_t i = GetPathIndex();
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
         i = g_selectType;
+    }
+    if (!(((i == 0 || i == 2) && index <= XPUB_TYPE_SOL_BIP44_49 - XPUB_TYPE_SOL_BIP44_0) || (i == 1 && index == 0))) {
+        return NULL;
     }
     switch (i) {
     case 0:
@@ -1295,16 +1302,17 @@ static char *GetSolXpub(int index)
     default:
         break;
     }
-    ASSERT(0);
-
-    return "";
+    return NULL;
 }
 
-static char *GetEthXpub(int index)
+static char *GetEthXpub(uint32_t index)
 {
-    uint8_t i = GetPathIndex();
+    uint32_t i = GetPathIndex();
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
         i = g_selectType;
+    }
+    if (!(((i == 0 || i == 2) && index <= GENERAL_ADDRESS_INDEX_MAX) || (i == 1 && index <= XPUB_TYPE_ETH_LEDGER_LIVE_9 - XPUB_TYPE_ETH_LEDGER_LIVE_0))) {
+        return NULL;
     }
     switch (i) {
     case 0:
@@ -1316,13 +1324,12 @@ static char *GetEthXpub(int index)
     default:
         break;
     }
-    ASSERT(0);
-
-    return "";
+    return NULL;
 }
 
 static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
 {
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
     switch (g_chainCard) {
     case HOME_WALLET_CARD_AVAX:
         ModelGetAvaxAddress(index, item);
@@ -1338,99 +1345,149 @@ static void ModelGetAddress(uint32_t index, AddressDataItem_t *item)
         ModelGetADAAddress(index, item, 0);
         break;
     default:
+        ClearSecretCache();
+        ASSERT(false);
         break;
     }
 }
 
 static void ModelGetADAAddress(uint32_t index, AddressDataItem_t *item, uint8_t type)
 {
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     SimpleResponse_c_char *result = NULL;
-    xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
-    snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", index);
-    switch (type) {
-    case 1:
-        result = cardano_get_enterprise_address(xPub, index, 1);
-        break;
-    case 2:
-        result = cardano_get_stake_address(xPub, index, 1);
-        break;
-    default:
-        result = cardano_get_base_address(xPub, index, 1);
-        break;
+    do {
+        if (index > XPUB_TYPE_ADA_23 - XPUB_TYPE_ADA_0 || type > 2) {
+            break;
+        }
+        xPub = GetCurrentAccountPublicKey(GetAdaXPubTypeByIndex(index));
+        snprintf_s(hdPath, BUFFER_SIZE_128, "m/1852'/1815'/%u'", (unsigned int)index);
+        if (xPub == NULL || xPub[0] == '\0') {
+            break;
+        }
+        switch (type) {
+        case 1:
+            result = cardano_get_enterprise_address(xPub, index, 1);
+            break;
+        case 2:
+            result = cardano_get_stake_address(xPub, index, 1);
+            break;
+        default:
+            result = cardano_get_base_address(xPub, index, 1);
+            break;
+        }
+    } while (0);
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(item->address)) < sizeof(item->address);
+    if (valid) {
+        valid = strcpy_s(item->address, sizeof(item->address), result->data) == 0;
+        valid = valid && strnlen_s(hdPath, sizeof(item->path)) < sizeof(item->path) &&
+                strcpy_s(item->path, sizeof(item->path), hdPath) == 0;
     }
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
     item->index = index;
-    strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-    strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
-    free_simple_response_c_char(result);
 }
 
 static void ModelGetSolAddress(uint32_t index, AddressDataItem_t *item)
 {
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
     char *xPub = NULL, hdPath[BUFFER_SIZE_128] = {0};
     GetSolHdPath(hdPath, index, BUFFER_SIZE_128);
     xPub = GetSolXpub(index);
-    ASSERT(xPub);
-    SimpleResponse_c_char  *result = solana_get_address(xPub);
-    if (result->error_code == 0) {
-        item->index = index;
-        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
-    } else {
+    SimpleResponse_c_char *result = NULL;
+    if (xPub != NULL && xPub[0] != '\0') {
+        result = solana_get_address(xPub);
     }
-    free_simple_response_c_char(result);
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(item->address)) < sizeof(item->address);
+    if (valid) {
+        valid = strcpy_s(item->address, sizeof(item->address), result->data) == 0;
+        valid = valid && strnlen_s(hdPath, sizeof(item->path)) < sizeof(item->path) &&
+                strcpy_s(item->path, sizeof(item->path), hdPath) == 0;
+    }
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
+    item->index = index;
 }
 
 static void ModelGetEthAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[BUFFER_SIZE_32], rootPath[BUFFER_SIZE_32];
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
+    char *xPub, hdPath[BUFFER_SIZE_32] = {0}, rootPath[BUFFER_SIZE_32] = {0};
     GetEthHdPath(hdPath, index, BUFFER_SIZE_32);
     GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
     xPub = GetEthXpub(index);
-    ASSERT(xPub);
-    SimpleResponse_c_char *result = eth_get_address(hdPath, xPub, rootPath);
-    if (result->error_code == 0) {
-        item->index = index;
-        strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-        strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+    SimpleResponse_c_char *result = NULL;
+    if (xPub != NULL && xPub[0] != '\0') {
+        result = eth_get_address(hdPath, xPub, rootPath);
     }
-    free_simple_response_c_char(result);
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(item->address)) < sizeof(item->address);
+    if (valid) {
+        valid = strcpy_s(item->address, sizeof(item->address), result->data) == 0;
+        valid = valid && strnlen_s(hdPath, sizeof(item->path)) < sizeof(item->path) &&
+                strcpy_s(item->path, sizeof(item->path), hdPath) == 0;
+    }
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
+    item->index = index;
 }
 
 static void ModelGetAvaxAddress(uint32_t index, AddressDataItem_t *item)
 {
-    char *xPub, hdPath[BUFFER_SIZE_32], rootPath[BUFFER_SIZE_32];
-    SimpleResponse_c_char *result;
+    memset_s(item, sizeof(*item), 0, sizeof(*item));
+    char hdPath[BUFFER_SIZE_32] = {0}, rootPath[BUFFER_SIZE_32] = {0};
+    SimpleResponse_c_char *result = NULL;
     uint32_t selectType = GetPathIndex();
     if (g_multiPathCoinReceiveTileNow == RECEIVE_TILE_CHANGE_PATH) {
         selectType = g_selectType;
     }
     if (selectType == 0) {
-        // c chain
-        GetEthRootPath(rootPath, index, BUFFER_SIZE_32);
-        GetEthHdPath(hdPath, index, BUFFER_SIZE_32);
-        xPub = GetEthXpub(index);
-        ASSERT(xPub);
-        result = eth_get_address(hdPath, xPub, rootPath);
-        if (result->error_code == 0) {
-            item->index = index;
-            strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-            strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
-        }
-        free_simple_response_c_char(result);
-    } else {
-        // x p chain address
-        xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P_0 + index);
-        ASSERT(xPub);
-        snprintf_s(hdPath, sizeof(hdPath), "m/44'/9000'/%u'/0/0", index);
-        snprintf_s(rootPath, sizeof(rootPath), "m/44'/9000'/%u'", index);
-        SimpleResponse_c_char *result = avalanche_get_x_p_address(hdPath, xPub, rootPath);
-        if (result->error_code == 0) {
-            item->index = index;
-            strcpy_s(item->address, ADDRESS_MAX_LEN, result->data);
-            strcpy_s(item->path, PATH_ITEM_MAX_LEN, hdPath);
+        ModelGetEthAddress(index, item);
+        return;
+    }
+    if (selectType == 1 && index <= XPUB_TYPE_AVAX_X_P_9 - XPUB_TYPE_AVAX_X_P_0) {
+        char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_X_P_0 + index);
+        if (xPub != NULL && xPub[0] != '\0') {
+            snprintf_s(hdPath, sizeof(hdPath), "m/44'/9000'/%u'/0/0", (unsigned int)index);
+            snprintf_s(rootPath, sizeof(rootPath), "m/44'/9000'/%u'", (unsigned int)index);
+            result = avalanche_get_x_p_address(hdPath, xPub, rootPath);
         }
     }
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, sizeof(item->address)) < sizeof(item->address);
+    if (valid) {
+        valid = strcpy_s(item->address, sizeof(item->address), result->data) == 0;
+        valid = valid && strnlen_s(hdPath, sizeof(item->path)) < sizeof(item->path) &&
+                strcpy_s(item->path, sizeof(item->path), hdPath) == 0;
+    }
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    if (!valid) {
+        memset_s(item, sizeof(*item), 0, sizeof(*item));
+        ClearSecretCache();
+    }
+    ASSERT(valid);
     item->index = index;
 }
 

@@ -15,6 +15,7 @@ hex = { workspace = true }
 bitcoin = { workspace = true }
 cryptoxide = { workspace = true }
 base64 = { workspace = true }
+bcs = { workspace = true, optional = true }
 itertools = { workspace = true }
 either = { workspace = true }
 core2 = { workspace = true }
@@ -32,10 +33,12 @@ sim_qr_reader = { workspace = true, optional = true }
 keystore = { workspace = true, default-features = false }
 ur-registry = { workspace = true }
 ur-parse-lib = { workspace = true }
+ur = { workspace = true }
 zcash_vendor = { workspace = true, optional = true }
 ed25519-bip32-core = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
+sandbox_parser = { workspace = true }
 rand_core = { workspace = true }
 sui-transaction-types-core = { workspace = true }
 zeroize = { workspace = true }
@@ -89,7 +92,7 @@ zcash_multi_coins = ["zcash", "app_zcash/multi_coins"]
 zcash_cypherpunk = ["zcash", "app_zcash/cypherpunk"]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
-iota = ["dep:app_iota"]
+iota = ["dep:app_iota", "dep:bcs"]
 test_cmd = []
 
 debug-memory = ["multi-coins"]

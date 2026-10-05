@@ -3,6 +3,8 @@
 #include "define.h"
 #include "drv_sys.h"
 
+#define UART_IRQ_RTOS_SAFE_PRIORITY 1U
+
 //#define UART1_PORT_IN_FLOAT
 static UartRcvByteCallbackFunc_t g_uart0RcvByteCallback;
 static UartRcvByteCallbackFunc_t g_uart1RcvByteCallback;
@@ -30,11 +32,9 @@ void Uart0Init(UartRcvByteCallbackFunc_t func)
 
     UART_ITConfig(UART0, UART_IT_RX_RECVD, ENABLE);
 
-    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
-
     NVIC_InitStructure.NVIC_IRQChannel = UART0_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = UART_IRQ_RTOS_SAFE_PRIORITY;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 }
@@ -81,11 +81,9 @@ void Uart1Init(UartRcvByteCallbackFunc_t func)
 
     UART_ITConfig(UART1, UART_IT_RX_RECVD, ENABLE);
 
-    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
-
     NVIC_InitStructure.NVIC_IRQChannel = UART1_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = UART_IRQ_RTOS_SAFE_PRIORITY;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 #endif
@@ -140,11 +138,9 @@ void Uart2Init(UartRcvByteCallbackFunc_t func)
 
     UART_ITConfig(UART2, UART_IT_RX_RECVD, ENABLE);
 
-    NVIC_SetPriorityGrouping(NVIC_PriorityGroup_0);
-
     NVIC_InitStructure.NVIC_IRQChannel = UART2_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = UART_IRQ_RTOS_SAFE_PRIORITY;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 }

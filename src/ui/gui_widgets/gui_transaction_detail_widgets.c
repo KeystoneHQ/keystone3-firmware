@@ -28,6 +28,7 @@
 #include "general/eapdu_services/service_resolve_ur.h"
 #ifdef WEB3_VERSION
 #include "gui_eth.h"
+#include "gui_ar.h"
 #endif
 #ifndef COMPILE_SIMULATOR
 #include "keystore.h"
@@ -177,6 +178,11 @@ void GuiTransactionDetailInit(uint8_t viewType)
 
 void GuiTransactionDetailDeInit()
 {
+#ifdef WEB3_VERSION
+    if (g_viewType == ArweaveTx || g_viewType == ArweaveMessage) {
+        GuiArSetMessageAddress(NULL);
+    }
+#endif
     // for learn more hintbox in eth contract data block;
     if (GuiQRHintBoxIsActive()) {
         GuiQRHintBoxRemove();
@@ -225,6 +231,17 @@ static void ThrowError(int32_t errorCode)
 void GuiTransactionDetailParseSuccess(void *param)
 {
     SetParseTransactionResult(param);
+#ifdef WEB3_VERSION
+    if (g_viewType == IotaTx) {
+        PtrT_TransactionParseResult_DisplayIotaIntentData result =
+            (PtrT_TransactionParseResult_DisplayIotaIntentData)param;
+        if (result != NULL && result->data != NULL &&
+            GetIotaIsMessage(NULL, result->data)) {
+            SetCoinWallet(g_pageWidget->navBarWidget, g_chainType,
+                          _("transaction_parse_confirm_message"));
+        }
+    }
+#endif
     GuiTemplateReload(g_pageWidget->contentZone, g_viewType);
     if (!g_needSign) {
         GuiCreateErrorCodeWindow(ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
@@ -309,14 +326,14 @@ void GuiSignDealFingerRecognize(void *param)
             lv_obj_clear_flag(g_fpErrorLabel, LV_OBJ_FLAG_HIDDEN);
         }
         lv_img_set_src(g_fpErrorImg, &imgRedFinger);
-        printf("g_fingerSingCount is %d\n", g_fingerSignCount);
+        printf("g_fingerSingCount is %d\n", (int)g_fingerSignCount);
         if (g_fingerSignCount < FINGERPRINT_SING_ERR_TIMES) {
             FpRecognize(RECOGNIZE_SIGN);
             g_fpRecognizeTimer = lv_timer_create(RecognizeFailHandler, 1000, NULL);
         } else {
             SignByPasswordCb(false);
         }
-        printf("g_fingerSignErrCount.... = %d\n", g_fingerSignErrCount);
+        printf("g_fingerSignErrCount.... = %d\n", (int)g_fingerSignErrCount);
         if (g_fingerSignErrCount >= FINGERPRINT_SING_DISABLE_ERR_TIMES) {
             for (int i = 0; i < 3; i++) {
                 UpdateFingerSignFlag(i, false);

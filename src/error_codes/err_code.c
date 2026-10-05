@@ -3,6 +3,10 @@
 static const ErrCodeDesc_t g_faults[] = {
     {SUCCESS_CODE, "Success"},
     {ERR_GENERAL_FAIL, "General Failed"},
+    {ERR_AR_NOT_SETUP, "AR is not initialized. Go to Home and select AR to complete setup."},
+    {ERR_AR_AUTH_REQUIRED, "AR password verification required"},
+    {ERR_AR_DATA_INVALID, "AR key data is invalid. Go to Home and select AR to complete setup."},
+    {ERR_AR_STORAGE, "AR storage read or write failed"},
 
     {ERR_DS28S60_OVERTIME, "DS28S60 Overtime"},
     {ERR_DS28S60_UNEXPECTLEN, "DS28S60 Unexpected Length"},
@@ -88,5 +92,10 @@ const char *GetErrorMessage(Error_Code errCode)
     if (errCode < SUCCESS_CODE || errCode >= ERR_END) {
         return "Unknown Error";
     }
-    return g_faults[errCode].errDesc;
+    for (size_t i = 0; i < sizeof(g_faults) / sizeof(g_faults[0]); i++) {
+        if (g_faults[i].errCode == errCode) {
+            return g_faults[i].errDesc;
+        }
+    }
+    return "Unknown Error";
 }

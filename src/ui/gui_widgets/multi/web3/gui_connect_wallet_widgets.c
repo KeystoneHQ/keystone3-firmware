@@ -126,11 +126,6 @@ static const lv_img_dsc_t *g_wanderCoinArray[1] = {
     &coinAr,
 };
 
-static const lv_img_dsc_t *g_beaconCoinArray[2] = {
-    &coinAr,
-    &coinAo,
-};
-
 static const lv_img_dsc_t *g_xbullCoinArray[1] = {
     &coinXlm,
 };
@@ -138,12 +133,6 @@ static const lv_img_dsc_t *g_xbullCoinArray[1] = {
 static const lv_img_dsc_t *g_fewchaCoinArray[FEWCHA_COINS_BUTT] = {
     &coinApt,
     &coinSui,
-};
-
-static const lv_img_dsc_t *g_coreCoinArray[] = {
-    &coinAva,
-    &coinEth,
-    &coinBtc,
 };
 
 static const lv_img_dsc_t *g_petraCoinArray[1] = {
@@ -215,7 +204,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_SOLFARE, &walletSolflare, "Solflare", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
     {WALLET_LIST_JUPITER, &walletJupiter, "Jupiter", g_solfareCoinArray, 1, true, WALLET_FILTER_SOL},
     {WALLET_LIST_NUFI, &walletNufi, "NuFi", g_nufiCoinArray, 5, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_SOL | WALLET_FILTER_ADA},
-    {WALLET_LIST_CORE, &walletCore, "Core Wallet", g_coreCoinArray, 3, true, WALLET_FILTER_BTC | WALLET_FILTER_ETH | WALLET_FILTER_OTHER},
     {WALLET_LIST_HELIUM, &walletHelium, "Helium Wallet", g_heliumCoinArray, 2, true, WALLET_FILTER_SOL},
     {WALLET_LIST_BTC_WALLET, &coinBtc, "Bitcoin Wallets", g_btcWalletCoinArray, NUMBER_OF_ARRAYS(g_btcWalletCoinArray), true, WALLET_FILTER_BTC},
     {WALLET_LIST_TONKEEPER, &walletTonkeeper, "Tonkeeper", g_tonKeeperCoinArray, 1, false, WALLET_FILTER_OTHER},
@@ -241,7 +229,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_KEPLR, &walletKeplr, "Keplr", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_MINT_SCAN, &walletMintScan, "Mintscan", g_keplrCoinArray, 8, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_WANDER, &walletWander, "Wander", g_wanderCoinArray, 1, true, WALLET_FILTER_OTHER},
-    {WALLET_LIST_BEACON, &walletBeacon, "Beacon", g_beaconCoinArray, 2, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_XBULL, &walletXBull, "xBull", g_xbullCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IMTOKEN, &walletImToken, "imToken", g_ethWalletCoinArray, 4, true, WALLET_FILTER_ETH},
     {WALLET_LIST_FEWCHA, &walletFewcha, "Fewcha", g_fewchaCoinArray, 2, true, WALLET_FILTER_OTHER},
@@ -308,10 +295,6 @@ static char g_derivationPathAddr[LedgerLegacy + 1][DERIVATION_PATH_EG_LEN][64];
 static char g_solDerivationPathAddr[SOLBip44Change + 1][DERIVATION_PATH_EG_LEN][64];
 static char g_adaDerivationPathAddr[LEDGER_ADA + 1][DERIVATION_PATH_EG_LEN][64];
 static lv_obj_t *g_derivationCheck[LedgerLegacy + 1];
-static ETHAccountType g_currentEthPathIndex[3] = {Bip44Standard, Bip44Standard, Bip44Standard};
-static SOLAccountType g_currentSOLPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
-static SOLAccountType g_currentHeliumPathIndex[3] = {SOLBip44, SOLBip44, SOLBip44};
-static AdaXPubType g_currentAdaPathIndex[3] = {STANDARD_ADA, STANDARD_ADA, STANDARD_ADA};
 
 static lv_obj_t *g_egAddress[DERIVATION_PATH_EG_LEN];
 static lv_obj_t *g_egAddressIndex[DERIVATION_PATH_EG_LEN];
@@ -352,7 +335,6 @@ static void GuiInitWalletListArray()
 
         switch (index) {
         case WALLET_LIST_WANDER:
-        case WALLET_LIST_BEACON:
             enable = !isTempAccount;
             break;
         default:
@@ -411,29 +393,13 @@ static bool IsAda(int walletIndex)
     }
 }
 
-static void GuiARAddressCheckConfirmHandler(lv_event_t *event)
+void GuiConnectShowArSetupNotice(int32_t status)
 {
-    GUI_DEL_OBJ(g_noticeWindow);
-    GuiCreateAttentionHintbox(SIG_SETUP_RSA_PRIVATE_KEY_CONNECT_CONFIRM);
-}
-
-static void GuiOpenARAddressNoticeWindow()
-{
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("ar_address_check"), _("ar_address_check_desc"), NULL, _("not_now"), WHITE_COLOR_OPA20, _("understand"), ORANGE_COLOR);
-    lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    lv_obj_set_width(btn, 192);
-    lv_obj_add_event_cb(btn, GuiARAddressCheckConfirmHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    btn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_set_width(btn, 192);
-    lv_obj_add_event_cb(btn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgClose);
-    lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_add_event_cb(img, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_align_to(img, lv_obj_get_child(g_noticeWindow, 1), LV_ALIGN_TOP_RIGHT, -36, 36);
+    if (g_connectWalletTileView.currentTile == CONNECT_WALLET_QRCODE) {
+        GuiConnectWalletPrevTile();
+    }
+    ClearSecretCache();
+    GuiCreateErrorCodeWindow(status, NULL, NULL);
 }
 
 static void GuiOpenUsbNoticeWindow(WALLET_LIST_INDEX_ENUM walletIndex)
@@ -479,11 +445,8 @@ static void OpenQRCodeHandler(lv_event_t *e)
         GuiOpenUsbNoticeWindow(g_connectWalletTileView.walletIndex);
         return;
     }
-    bool skipGenerateArweaveKey = IsArweaveSetupComplete();
-    if ((g_connectWalletTileView.walletIndex == WALLET_LIST_WANDER ||
-            g_connectWalletTileView.walletIndex == WALLET_LIST_BEACON) &&
-            !skipGenerateArweaveKey) {
-        GuiOpenARAddressNoticeWindow();
+    if (g_connectWalletTileView.walletIndex == WALLET_LIST_WANDER) {
+        GuiConnectShowRsaSetupasswordHintbox();
         return;
     }
 
@@ -499,6 +462,7 @@ void GuiConnectWalletPasswordErrorCount(void *param)
 
 void GuiConnectShowRsaSetupasswordHintbox(void)
 {
+    ClearSecretCache();
     g_keyboardWidget = GuiCreateKeyboardWidget(g_pageWidget->contentZone);
     SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
     static uint16_t sig = SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD;
@@ -950,7 +914,7 @@ static void AddChainAddress(void)
 
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
+               (int)GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 24);
 
@@ -1005,7 +969,7 @@ static void AddKeplrCoinsAndAddressUI(void)
     lv_obj_add_flag(g_bottomCont, LV_OBJ_FLAG_CLICKABLE);
     char name[BUFFER_SIZE_32] = {0};
     snprintf_s(name, sizeof(name), "%s-%d", _("account_head"),
-               GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
+               (int)GetConnectWalletAccountIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex)));
     lv_obj_t *label = GuiCreateIllustrateLabel(g_bottomCont, name);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 70);
 
@@ -1138,9 +1102,9 @@ void GuiPrepareArConnectWalletView(void)
     GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
 }
 
-void GuiSetupArConnectWallet(void)
+int32_t GuiSetupArConnectWallet(SimpleResponse_c_char **publicKeyOut)
 {
-    RsaGenerateKeyPair(false);
+    return RsaGenerateKeyPair(false, false, publicKeyOut);
 }
 
 void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
@@ -1173,10 +1137,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_IMTOKEN:
         func = GuiGetImTokenData;
         AddCoinsFromArray(g_ethWalletCoinArray, NUMBER_OF_ARRAYS(g_ethWalletCoinArray), true, 132);
-        break;
-    case WALLET_LIST_CORE:
-        func = GuiGetCoreWalletData;
-        AddCoinsFromArray(g_coreCoinArray, NUMBER_OF_ARRAYS(g_coreCoinArray), false, 0);
         break;
     case WALLET_LIST_BITGET:
         func = GuiGetBitgetWalletData;
@@ -1217,10 +1177,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_WANDER:
         func = GuiGetWanderData;
         AddCoinsFromArray(g_wanderCoinArray, NUMBER_OF_ARRAYS(g_wanderCoinArray), false, 0);
-        break;
-    case WALLET_LIST_BEACON:
-        func = GuiGetWanderData;
-        AddCoinsFromArray(g_beaconCoinArray, NUMBER_OF_ARRAYS(g_beaconCoinArray), false, 0);
         break;
     case WALLET_LIST_XBULL:
         func = GuiGetXBullData;
@@ -1283,16 +1239,12 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
         return;
     }
     if (func) {
-        bool skipGenerateArweaveKey = IsArweaveSetupComplete();
-        if (index == WALLET_LIST_WANDER && !skipGenerateArweaveKey) {
-            GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
-            return;
+        if (func == GuiGetWanderData) {
+            GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true,
+                                                    _("PreparingArAddress"), NULL);
+        } else {
+            GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
         }
-        if (index == WALLET_LIST_BEACON && !skipGenerateArweaveKey) {
-            GuiAnimatingQRCodeInitWithLoadingParams(g_connectWalletTileView.qrCode, func, true, _("InitializingRsaTitle"), _("FindingRsaPrimes"));
-            return;
-        }
-        GuiAnimatingQRCodeInit(g_connectWalletTileView.qrCode, func, true);
     }
 }
 
@@ -1354,21 +1306,6 @@ static int GetAccountType(void)
 
 static void SetAccountType(uint8_t index)
 {
-    switch (g_connectWalletTileView.walletIndex) {
-    case WALLET_LIST_SOLFARE:
-        g_currentSOLPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    case WALLET_LIST_HELIUM:
-        g_currentHeliumPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    case WALLET_LIST_VESPR:
-        g_currentAdaPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    default:
-        g_currentEthPathIndex[GetCurrentAccountIndex()] = index;
-        break;
-    }
-
     SetConnectWalletPathIndex(GetWalletNameByIndex(g_connectWalletTileView.walletIndex), index);
 }
 
@@ -2010,6 +1947,7 @@ void GuiConnectWalletRefresh(void)
 }
 void GuiConnectWalletDeInit(void)
 {
+    ClearSecretCache();
     GUI_DEL_OBJ(g_openMoreHintBox)
     GUI_DEL_OBJ(g_manageImg);
     GUI_DEL_OBJ(g_coinCont)

@@ -16,5 +16,6 @@ void LogRustMalloc(void *p, uint32_t size);
 void LogRustFree(void *p);
 void PrintRustMemoryStatus();
 void PrintErrorInfoOnLcd(void);
+void RestartCountdownOnLcd(void);
 
 #endif

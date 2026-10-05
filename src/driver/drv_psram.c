@@ -52,13 +52,13 @@ void PsramTest(void)
     uint32_t i;
     uint8_t *psramAddr = (uint8_t *)MHSCPU_PSRAM_BASE;
     for (i = 0; i < 256; i++) {
-        printf("psramAddr[%d]=%d\r\n", i, psramAddr[i]);
+        printf("psramAddr[%d]=%d\r\n", (int)i, psramAddr[i]);
     }
     for (i = 0; i < 256; i++) {
         psramAddr[i] = i;
     }
     for (i = 0; i < 256; i++) {
-        printf("psramAddr[%d]=%d\r\n", i, psramAddr[i]);
+        printf("psramAddr[%d]=%d\r\n", (int)i, psramAddr[i]);
     }
 }
 
@@ -67,7 +67,7 @@ void PsramSelfCheck(void)
     uint32_t i, seed;
 
     TrngGet(&seed, sizeof(seed));
-    printf("start psram test,random seed=%d\r\n", seed);
+    printf("start psram test,random seed=%d\r\n", (int)seed);
     srand(seed);
     uint8_t *psram8Addr = (uint8_t *)MHSCPU_PSRAM_BASE;
     for (i = 0; i < MHSCPU_PSRAM_SIZE; i++) {
@@ -78,7 +78,7 @@ void PsramSelfCheck(void)
     srand(seed);
     for (i = 0; i < MHSCPU_PSRAM_SIZE; i++) {
         if (psram8Addr[i] != rand() % 256) {
-            printf("psram err,psramAddr[%d]=%d\r\n", i, psram8Addr[i]);
+            printf("psram err,psramAddr[%d]=%d\r\n", (int)i, psram8Addr[i]);
             return;
         }
     }

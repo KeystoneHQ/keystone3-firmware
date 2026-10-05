@@ -57,7 +57,7 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
         //verify failed
         if (usEvent == SIG_VERIFY_PASSWORD_FAIL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            if (SIG_LOCK_VIEW_VERIFY_PIN == *(uint16_t *)passwordVerifyResult->signal) {
+            if (SIG_LOCK_VIEW_VERIFY_PIN == passwordVerifyResult->signal) {
                 sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
                 return SUCCESS_CODE;
             }
@@ -71,8 +71,7 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
     do {
         sigHandled = GuiViewHandleEvent(pView, usEvent, param, usLen);
         if (sigHandled) {
-            printf("usEvENT:%d sig has handled:", usEvent);
-            GuiFrameIdToName(pView->id);
+            printf("usEvENT:%d sig has handled: id=%d name=%s\n", usEvent, pView->id, GuiFrameIdToName(pView->id));
             return SUCCESS_CODE;
         }
         pView = pView->previous;
@@ -217,27 +216,14 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
     return SUCCESS_CODE;
 }
 
+static const char *const g_screenNames[] = {
+    SCREEN_LIST(ITEM_STR)
+};
+
 static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
 {
-    const char *str =
-        "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
-        "IMPORT_SHARE\0" "SINGLE_PHRASE\0" "IMPORT_SINGLE_PHRASE\0" "CONNECT_WALLET\0" "SCREEN_SETTING\0" "SCREEN_QRCODE\0"
-        "SCREEN_PASSPHRASE\0" "SCREEN_BITCOIN_RECEIVE\0" "SCREEN_ETHEREUM_RECEIVE\0" "SCREEN_STANDARD_RECEIVE\0" "SCREEN_EXPORT_PUBKEY\0"
-        "SCREEN_FORGET_PASSCODE\0" "SCREEN_LOCK_DEVICE\0" "SCREEN_FIRMWARE_UPDATE\0" "SCREEN_WEB_AUTH\0"
-        "SCREEN_PURPOSE\0" "SCREEN_SYSTEM_SETTING\0" "SCREEN_WEB_AUTH_RESULT\0" "SCREEN_ABOUT\0"
-        "SCREEN_ABOUT_KEYSTONE\0" "SCREEN_ABOUT_TERMS\0" "SCREEN_ABOUT_INFO\0" "SCREEN_WIPE_DEVICE\0"
-        "SCREEN_WALLET_TUTORIAL\0" "SCREEN_SELF_DESTRUCT\0" "SCREEN_INACTIVE\0" "SCREEN_DISPLAY\0"
-        "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
-        "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
-        "SCREEN_DEVICE_PUB_KEY\0" "SCREEN_DEVICE_UPDATE_SUCCESS\0" "SCREEN_BTC_WALLET_PROFILE\0" "SCREEN_MULTI_SIG_IMPORT_WALLET_INFO\0"
-        "SCREEN_MULTISIG_WALLET_EXPORT\0" "SCREEN_CREATE_MULTI\0" "SCREEN_MANAGE_MULTI_SIG\0" "SCREEN_ETH_BATCH_TX\0"
-        "SCREEN_ZCASH_BATCH_TX\0";
-    SCREEN_ID_ENUM i;
-
-    for (i = SCREEN_INIT; i != ID && *str; i++) {
-        while (*str++) ;
+    if (ID < SCREEN_INIT || ID >= SCREEN_TOTAL) {
+        return "UNKNOWN_SCREEN";
     }
-    printf("id = %d name = %s\n", ID, str);
-    const char *name = str;
-    return name;
+    return g_screenNames[ID];
 }

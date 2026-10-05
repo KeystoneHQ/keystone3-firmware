@@ -62,21 +62,21 @@ void GuiBootVersionNotMatchWidget(void)
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 338);
 
     char buffer[BUFFER_SIZE_64];
-    char tempBuffer[BUFFER_SIZE_64];
+    char tempBuffer[BUFFER_SIZE_128];
     GetSoftWareVersionNumber(buffer);
-    snprintf(tempBuffer, BUFFER_SIZE_64, "Firmware version: %s", buffer);
+    snprintf(tempBuffer, BUFFER_SIZE_128, "Firmware version: %s", buffer);
     label = GuiCreateNoticeLabel(g_bootNotMatchCont, tempBuffer);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 538);
 
     GetBootVersionNumber(buffer);
     memset(tempBuffer, 0, sizeof(tempBuffer));
-    snprintf(tempBuffer, BUFFER_SIZE_64, "Boot version: %s", buffer);
+    snprintf(tempBuffer, BUFFER_SIZE_128, "Boot version: %s", buffer);
     label = GuiCreateNoticeLabel(g_bootNotMatchCont, tempBuffer);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 588);
 
     GetSerialNumber(buffer);
     memset(tempBuffer, 0, sizeof(tempBuffer));
-    snprintf(tempBuffer, BUFFER_SIZE_64, "Serial number: %s", buffer);
+    snprintf(tempBuffer, BUFFER_SIZE_128, "Serial number: %s", buffer);
     label = GuiCreateNoticeLabel(g_bootNotMatchCont, tempBuffer);
     lv_obj_align(label, LV_ALIGN_TOP_MID, 0, 638);
 

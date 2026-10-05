@@ -35,7 +35,7 @@ int32_t GuiImportMultisigWalletInfoViewEventProcess(void *self, uint16_t usEvent
         // password comes back here with the GO_HOME_PASS purpose. Dismiss the lock screen's "Verifying"
         // loading and show the attempts on the lock screen instead of this view's (hidden) keyboard —
         // otherwise the lock screen stays stuck on "Verifying". Mirrors the PASS case above.
-        if (*(uint16_t *)((PasswordVerifyResult_t *)param)->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+        if (((PasswordVerifyResult_t *)param)->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
             GuiLockScreenPassCode(false);
             GuiLockScreenErrorCount(param);
             break;

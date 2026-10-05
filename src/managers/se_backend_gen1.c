@@ -30,17 +30,17 @@ static int32_t NormalizeAteccAuthError(int32_t ret)
 // slot, then KDF(roll)->KDF(host)->3x sha256 to produce the 608 piece.
 static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
 {
-    uint8_t authKey[32], hostRandom[32], inData[32], outData[32];
+    uint8_t pinAuthKey[32], hostRandom[32], inData[32], outData[32];
     int32_t ret;
     AccountSlot_t accountSlot;
 
     ASSERT(accountIndex <= 2);
     do {
-        HashWithSalt(authKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
+        HashWithSalt(pinAuthKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
         GetAccountSlot(&accountSlot, accountIndex);
-        ret = SE_EncryptWrite(accountSlot.auth, 0, authKey);
+        ret = SE_EncryptWrite(accountSlot.auth, 0, pinAuthKey);
         CHECK_ERRCODE_BREAK("write auth", ret);
-        ret = SE_DeriveKey(accountSlot.rollKdf, authKey);
+        ret = SE_DeriveKey(accountSlot.rollKdf, pinAuthKey);
         CHECK_ERRCODE_BREAK("derive key", ret);
         TrngGet(hostRandom, 32);
         ret = SE_EncryptWrite(accountSlot.hostKdf, 0, hostRandom);
@@ -48,10 +48,10 @@ static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, c
 
         HashWithSalt(outData, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password_atecc608b");
         memcpy(inData, outData, 32);
-        ret = SE_Kdf(accountSlot.rollKdf, authKey, inData, 32, outData);
+        ret = SE_Kdf(accountSlot.rollKdf, pinAuthKey, inData, 32, outData);
         CHECK_ERRCODE_BREAK("kdf", ret);
         memcpy(inData, outData, 32);
-        ret = SE_Kdf(accountSlot.hostKdf, authKey, inData, 32, outData);
+        ret = SE_Kdf(accountSlot.hostKdf, pinAuthKey, inData, 32, outData);
         CHECK_ERRCODE_BREAK("kdf", ret);
         for (uint32_t i = 0; i < SHA256_COUNT; i++) {
             memcpy(inData, outData, 32);
@@ -59,7 +59,7 @@ static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, c
         }
         memcpy(piece, outData, 32);
     } while (0);
-    CLEAR_ARRAY(authKey);
+    CLEAR_ARRAY(pinAuthKey);
     CLEAR_ARRAY(hostRandom);
     CLEAR_ARRAY(inData);
     CLEAR_ARRAY(outData);
@@ -70,22 +70,22 @@ static int32_t SetNewKeyPieceToAtecc608b(uint8_t accountIndex, uint8_t *piece, c
 // gen-1 608 derive: KDF(roll)->KDF(host)->3x sha256, matching the provisioning above.
 static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, const char *password)
 {
-    uint8_t authKey[32], inData[32], outData[32];
+    uint8_t pinAuthKey[32], inData[32], outData[32];
     int32_t ret;
     AccountSlot_t accountSlot;
 
     ASSERT(accountIndex <= 2);
     do {
-        HashWithSalt(authKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
+        HashWithSalt(pinAuthKey, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "auth_key");
         HashWithSalt(outData, (uint8_t *)password, strnlen_s(password, PASSWORD_MAX_LEN), "password_atecc608b");
         memcpy(inData, outData, 32);
 
         GetAccountSlot(&accountSlot, accountIndex);
-        ret = SE_Kdf(accountSlot.rollKdf, authKey, inData, 32, outData);
+        ret = SE_Kdf(accountSlot.rollKdf, pinAuthKey, inData, 32, outData);
         ret = NormalizeAteccAuthError(ret);
         CHECK_ERRCODE_BREAK("kdf", ret);
         memcpy(inData, outData, 32);
-        ret = SE_Kdf(accountSlot.hostKdf, authKey, inData, 32, outData);
+        ret = SE_Kdf(accountSlot.hostKdf, pinAuthKey, inData, 32, outData);
         ret = NormalizeAteccAuthError(ret);
         CHECK_ERRCODE_BREAK("kdf", ret);
         for (uint32_t i = 0; i < SHA256_COUNT; i++) {
@@ -94,7 +94,7 @@ static int32_t GetKeyPieceFromAtecc608b(uint8_t accountIndex, uint8_t *piece, co
         }
         memcpy(piece, outData, 32);
     } while (0);
-    CLEAR_ARRAY(authKey);
+    CLEAR_ARRAY(pinAuthKey);
     CLEAR_ARRAY(inData);
     CLEAR_ARRAY(outData);
 

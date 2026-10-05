@@ -63,7 +63,7 @@ static void FpLowerPowerHandle(void *argument)
     RecoverFromLowPower();
     ClearLockScreenTime();
     ClearShutdownTime();
-    printf("wakeUpCount=%d\r\n", wakeUpCount);
+    printf("wakeUpCount=%d\r\n", (int)wakeUpCount);
 }
 
 void LowerPowerTimerStart(void)
@@ -84,7 +84,7 @@ uint32_t EnterLowPower(void)
     g_lowPowerState = LOW_POWER_STATE_DEEP_SLEEP;
     printf("enter deep sleep\r\n");
     sleepSecond = RTC_WAKE_UP_INTERVAL_CHARGING;
-    printf("sleepSecond=%d\n", sleepSecond);
+    printf("sleepSecond=%d\n", (int)sleepSecond);
     TouchClose();
     UserDelay(10);
 #ifdef WEB3_VERSION

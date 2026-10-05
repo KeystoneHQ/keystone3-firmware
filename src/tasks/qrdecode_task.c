@@ -18,9 +18,10 @@
 #include "touchpad_task.h"
 #include "gui_analyze.h"
 #include "gui_web_auth_result_widgets.h"
-#include "assert.h"
 #include "qrdecode_task.h"
 #include "gui_resolve_ur.h"
+#include "mpu_sandbox_task.h"
+#include "mpu_sandbox_ur_validator.h"
 #ifdef WEB3_VERSION
 #include "gui_key_derivation_request_widgets.h"
 #endif
@@ -41,7 +42,8 @@ const static QrDecodeViewTouchArea_t g_qrDecodeObjects[2] = {
 
 static void QrDecodeTask(void *argument);
 static void QrDecodeMinuteTimerFunc(void *argument);
-uint8_t *GetDataParserCache(void);
+static bool IsUrQrCode(const char *qrString, size_t length);
+static bool ValidateQrUrInSandbox(const char *qrString, size_t length);
 
 osThreadId_t g_qrDecodeTaskHandle;
 static volatile QrDecodeStateType g_qrDecodeState;
@@ -76,7 +78,7 @@ static void QrDecodeTask(void *argument)
                 if (g_qrDecodeState == QR_DECODE_STATE_OFF) {
                     SetLvglHandlerAndSnapShot(false);
                     ret = QrDecodeInit(GetLvglGramAddr());
-                    printf("decode init ret=%d\r\n", ret);
+                    printf("decode init ret=%d\r\n", (int)ret);
                     if (ret == DecodeInitSuccess) {
                         printf("start qrdecode\r\n");
                         g_qrDecodeState = QR_DECODE_STATE_ON;
@@ -122,7 +124,7 @@ static void QrDecodeTask(void *argument)
 
 void ProcessQr(uint32_t count)
 {
-    char *qrString = (char *)GetDataParserCache();
+    char qrString[QR_DECODE_STRING_LEN] = {0};
     static uint8_t testProgress = 0;
     static bool firstQrFlag = true;
     static PtrDecoder decoder = NULL;
@@ -132,24 +134,27 @@ void ProcessQr(uint32_t count)
     uint32_t retFromRust = 0;
     int32_t ret = QrDecodeProcess(qrString, QR_DECODE_STRING_LEN, testProgress);
     if (ret > 0) {
-        if (firstQrFlag == true) {
-            assert(strnlen_s(qrString, QR_DECODE_STRING_LEN) < QR_DECODE_STRING_LEN);
-            QRProtocol t = infer_qrcode_type(qrString);
-            switch (t) {
-            case QRCodeTypeText:
+        size_t qrLength = strnlen_s(qrString, QR_DECODE_STRING_LEN);
+        if (qrLength >= QR_DECODE_STRING_LEN) {
+            retFromRust = URDecodeError;
+        } else if (firstQrFlag == true) {
+            if (IsUrQrCode(qrString, qrLength)) {
+                if (ValidateQrUrInSandbox(qrString, qrLength)) {
+                    urResult = parse_ur(qrString);
+                } else {
+                    retFromRust = URDecodeError;
+                }
+            } else {
                 urResult = parse_qrcode_text(qrString);
-                break;
-            default:
-                urResult = parse_ur(qrString);
-                break;
             }
-            if (urResult->error_code == 0) {
+            if ((retFromRust == 0U) && (urResult->error_code == 0)) {
                 if (urResult->is_multi_part == 0) {
                     // single qr code
                     firstQrFlag = true;
                     urViewType.viewType = urResult->t;
                     urViewType.urType = urResult->ur_type;
                     handleURResult(urResult, NULL, urViewType, false);
+                    urResult = NULL;
                     testProgress = 0;
                 } else {
                     // first qr code
@@ -157,41 +162,49 @@ void ProcessQr(uint32_t count)
                     decoder = urResult->decoder;
                     testProgress = urResult->progress;
                 }
-            } else {
+            } else if (retFromRust == 0U) {
                 retFromRust = urResult->error_code;
             }
 
         } else {
             // follow qrcode
-            struct URParseMultiResult *MultiurResult = receive(qrString, decoder);
-            if (MultiurResult->error_code == 0) {
-                testProgress = MultiurResult->progress;
-                if (MultiurResult->is_complete) {
-                    firstQrFlag = true;
-                    urViewType.viewType = MultiurResult->t;
-                    urViewType.urType = MultiurResult->ur_type;
+            if (!ValidateQrUrInSandbox(qrString, qrLength)) {
+                retFromRust = URDecodeError;
+            } else {
+                struct URParseMultiResult *MultiurResult = receive(qrString, decoder);
+                if (MultiurResult->error_code == 0) {
+                    testProgress = MultiurResult->progress;
+                    if (MultiurResult->is_complete) {
+                        firstQrFlag = true;
+                        urViewType.viewType = MultiurResult->t;
+                        urViewType.urType = MultiurResult->ur_type;
+                        if (urResult != NULL) {
+                            free_ur_parse_result(urResult);
+                            urResult = NULL;
+                        }
+                        handleURResult(NULL, MultiurResult, urViewType, true);
+                        testProgress = 0;
+                    }
+                } else {
+                    retFromRust = MultiurResult->error_code;
+                    printf("error code: %d\r\n", (int)MultiurResult->error_code);
+                    printf("error message: %s\r\n", MultiurResult->error_message);
                     if (urResult != NULL) {
                         free_ur_parse_result(urResult);
                         urResult = NULL;
                     }
-                    handleURResult(NULL, MultiurResult, urViewType, true);
-                    testProgress = 0;
                 }
-            } else {
-                retFromRust = MultiurResult->error_code;
-                printf("error code: %d\r\n", MultiurResult->error_code);
-                printf("error message: %s\r\n", MultiurResult->error_message);
-                if (urResult != NULL) {
-                    free_ur_parse_result(urResult);
-                    urResult = NULL;
+                if (!(MultiurResult->is_complete)) {
+                    free_ur_parse_multi_result(MultiurResult);
                 }
-            }
-            if (!(MultiurResult->is_complete)) {
-                free_ur_parse_multi_result(MultiurResult);
             }
         }
 
         if (retFromRust != 0) {
+            if (urResult != NULL) {
+                free_ur_parse_result(urResult);
+                urResult = NULL;
+            }
             firstQrFlag = true;
             decoder = NULL;
             testProgress = 0;
@@ -202,9 +215,35 @@ void ProcessQr(uint32_t count)
             GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_FAIL, &urViewType, sizeof(urViewType));
         }
     } else if (ret < 0) {
-        printf("decode err=%d\r\n", ret);
+        printf("decode err=%d\r\n", (int)ret);
     }
     count++;
+}
+
+static bool IsUrQrCode(const char *qrString, size_t length)
+{
+    return (length >= 3U) &&
+           ((qrString[0] == 'u') || (qrString[0] == 'U')) &&
+           ((qrString[1] == 'r') || (qrString[1] == 'R')) &&
+           (qrString[2] == ':');
+}
+
+static bool ValidateQrUrInSandbox(const char *qrString, size_t length)
+{
+    uint32_t status = MPU_SANDBOX_UR_NOT_CHECKED;
+
+    if (!MpuSandboxValidateUr((const uint8_t *)qrString, length, &status)) {
+        printf("QR UR sandbox failed closed\r\n");
+        __DSB();
+        NVIC_SystemReset();
+        for (;;) {
+        }
+    }
+    if (status != MPU_SANDBOX_UR_OK) {
+        printf("QR UR sandbox rejected status=%lu\r\n", (unsigned long)status);
+        return false;
+    }
+    return true;
 }
 
 void StartQrDecode(void)

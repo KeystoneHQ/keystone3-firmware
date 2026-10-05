@@ -41,7 +41,7 @@ int32_t GuiEthBatchTxViewEventProcess(void *self, uint16_t usEvent, void *param,
     case SIG_VERIFY_PASSWORD_FAIL:
         if (param != NULL) {
             PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            uint16_t sig = *(uint16_t *) passwordVerifyResult->signal;
+            uint16_t sig = passwordVerifyResult->signal;
             if (sig == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
                 GuiLockScreenPassCode(false);
                 GuiLockScreenErrorCount(param);

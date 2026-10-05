@@ -1,6 +1,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "assert.h"
+#include "mhscpu.h"
 #include "cmsis_os.h"
 #include "eapdu_protocol_parser.h"
 #include "keystore.h"
@@ -9,6 +10,9 @@
 #include "user_memory.h"
 #include "gui_views.h"
 #include "user_delay.h"
+#include "eapdu_framing.h"
+#include "mpu_sandbox_task.h"
+#include "mpu_sandbox_ur_validator.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
@@ -20,27 +24,57 @@ static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static uint32_t g_eapduRcvCount = 0;
 
 #define EAPDU_RESPONSE_STATUS_LENGTH 2
-#define MAX_PACKETS 200
 #define MAX_PACKETS_LENGTH MAX_EAPDU_PACKET_SIZE
 #define MAX_EAPDU_RESPONSE_DATA_SIZE (MAX_PACKETS_LENGTH - OFFSET_CDATA - EAPDU_RESPONSE_STATUS_LENGTH)
-#define EAPDU_REASSEMBLY_TIMEOUT_MS 5000
+#define EAPDU_SANDBOX_RESULT_TIMEOUT_MS 1000U
 
-static uint8_t g_protocolRcvBuffer[MAX_PACKETS][MAX_PACKETS_LENGTH] __attribute__((section(".data_parser_section")));
-static uint8_t g_packetLengths[MAX_PACKETS];
-static uint8_t g_receivedPackets[MAX_PACKETS];
-static uint8_t g_totalPackets = 0;
-static uint32_t g_lastPacketTick = 0;
 static uint32_t GetRcvCount(void);
 static void ResetRcvCount(void);
+static const char *MpuSandboxUrValidationMessage(uint32_t status);
 
-typedef enum {
-    FRAME_INVALID_LENGTH,
-    UNKNOWN_COMMAND,
-    FRAME_INDEX_ERROR,
-    FRAME_TOTAL_ERROR,
-    DUPLICATE_FRAME,
-    FRAME_CHECKSUM_OK,
-} ParserStatusEnum;
+static const char *MpuSandboxUrValidationMessage(uint32_t status)
+{
+    switch ((MpuSandboxUrValidationStatus_t)status) {
+    case MPU_SANDBOX_UR_INVALID_INPUT:
+        return "UR validation failed";
+    case MPU_SANDBOX_UR_INVALID_SCHEME:
+        return "ur decode failed, reason: invalid scheme";
+    case MPU_SANDBOX_UR_INVALID_TYPE:
+        return "ur decode failed, reason: invalid type";
+    case MPU_SANDBOX_UR_INVALID_MULTIPART:
+        return "ur decode failed, reason: invalid multipart indices";
+    case MPU_SANDBOX_UR_INVALID_BYTEWORDS_LENGTH:
+        return "ur decode failed, reason: invalid length";
+    case MPU_SANDBOX_UR_INVALID_BYTEWORDS_WORD:
+        return "ur decode failed, reason: invalid word";
+    case MPU_SANDBOX_UR_INVALID_CHECKSUM:
+        return "ur decode failed, reason: invalid checksum";
+    case MPU_SANDBOX_UR_CBOR_UNEXPECTED_EOF:
+        return "cbor decode failed, reason: end of input bytes";
+    case MPU_SANDBOX_UR_CBOR_NESTING_LIMIT:
+        return "cbor decode failed, reason: nesting limit 32 exceeded";
+    case MPU_SANDBOX_UR_CBOR_ITEM_LIMIT:
+        return "cbor decode failed, reason: item limit 1024 exceeded";
+    case MPU_SANDBOX_UR_CBOR_TRAILING_DATA:
+        return "cbor decode failed, reason: trailing data";
+    case MPU_SANDBOX_UR_CBOR_INVALID:
+    default:
+        return "cbor decode failed, reason: invalid structure";
+    }
+}
+
+static bool WaitForSandboxResult(uint32_t requestId, MpuSandboxEapduResult_t *result,
+                                 const uint8_t **payload)
+{
+    for (uint32_t wait = 0U; wait < EAPDU_SANDBOX_RESULT_TIMEOUT_MS; wait++) {
+        if (MpuSandboxGetEapduResult(requestId, result, payload)) {
+            return true;
+        }
+        osDelay(1U);
+    }
+    printf("EAPDU sandbox result timeout, request=%lu\r\n", (unsigned long)requestId);
+    return false;
+}
 
 void SendEApduResponse(EAPDUResponsePayload_t *payload)
 {
@@ -115,14 +149,8 @@ void SendEApduResponseError(uint8_t cla, CommandType ins, uint16_t requestID, St
 
 static void free_parser()
 {
-    g_totalPackets = 0;
     g_eapduRcvCount = 0;
-    g_lastPacketTick = 0;
-    memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
-    memset_s(g_packetLengths, sizeof(g_packetLengths), 0, sizeof(g_packetLengths));
-    for (int i = 0; i < MAX_PACKETS; i++) {
-        memset_s(g_protocolRcvBuffer[i], sizeof(g_protocolRcvBuffer[i]), 0, sizeof(g_protocolRcvBuffer[i]));
-    }
+    (void)MpuSandboxResetEapduFraming();
 }
 
 static void EApduRequestHandler(EAPDURequestPayload_t *request)
@@ -158,133 +186,110 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
     }
 }
 
-static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)
-{
-    if (eapduFrame->p1 > MAX_PACKETS) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
-        free_parser();
-        return FRAME_TOTAL_ERROR;
-    } else if (eapduFrame->p2 >= eapduFrame->p1) {
-        printf("Invalid packet index\n");
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_INDEX, "Invalid packet index");
-        free_parser();
-        return FRAME_INDEX_ERROR;
-    } else if (g_receivedPackets[eapduFrame->p2]) {
-        // duplicate packet
-        printf("Duplicate frame\n");
-        return DUPLICATE_FRAME;
-    }
-
-    return FRAME_CHECKSUM_OK;
-}
-
-static EAPDUFrame_t *FrameParser(const uint8_t *frame, uint32_t len)
-{
-    if (!frame || len < OFFSET_CDATA) {
-        printf("Invalid frame data\n");
-        return NULL;
-    }
-    EAPDUFrame_t *eapduFrame = (EAPDUFrame_t *)SRAM_MALLOC(sizeof(EAPDUFrame_t));
-    if (eapduFrame == NULL) {
-        return NULL;
-    }
-    eapduFrame->cla = frame[OFFSET_CLA];
-    eapduFrame->ins = extract_16bit_value(frame, OFFSET_INS);
-    eapduFrame->p1 = extract_16bit_value(frame, OFFSET_P1);
-    eapduFrame->p2 = extract_16bit_value(frame, OFFSET_P2);
-    eapduFrame->lc = extract_16bit_value(frame, OFFSET_LC);
-    eapduFrame->data = (uint8_t *)(frame + OFFSET_CDATA);
-    eapduFrame->dataLen = len - OFFSET_CDATA;
-    return eapduFrame;
-}
-
 void EApduProtocolParse(const uint8_t *frame, uint32_t len)
 {
-    uint32_t tick = osKernelGetTickCount();
-    if (g_totalPackets != 0 && g_lastPacketTick != 0 && (tick - g_lastPacketTick > EAPDU_REASSEMBLY_TIMEOUT_MS)) {
-        printf("EAPDU reassembly timeout\n");
-        free_parser();
-    }
+    MpuSandboxEapduResult_t framingResult;
+    EAPDURequestPayload_t request;
+    const uint8_t *payload = NULL;
+    uint32_t sandboxRequestId;
 
     g_eapduRcvCount++;
-    if (len < OFFSET_CDATA) {
-        printf("Invalid EAPDU data: too short\n");
-        free_parser();
+    if (!MpuSandboxSubmit(MPU_SANDBOX_OP_EAPDU_FRAME, frame, len, &sandboxRequestId)) {
+        printf("EAPDU sandbox busy or invalid input\n");
+        g_eapduRcvCount = 0;
         return;
     }
-    EAPDUFrame_t *eapduFrame = FrameParser(frame, len);
-    if (!eapduFrame || CheckFrameValidity(eapduFrame) != FRAME_CHECKSUM_OK) {
-        SRAM_FREE(eapduFrame);
-        return;
-    }
-    if (g_totalPackets == 0) {
-        g_totalPackets = eapduFrame->p1;
-        assert(g_totalPackets <= MAX_PACKETS);
-        memset_s(g_receivedPackets, sizeof(g_receivedPackets), 0, sizeof(g_receivedPackets));
-    } else if (g_totalPackets != eapduFrame->p1) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_TOTAL_PACKETS, "Mismatched total packets");
-        free_parser();
-        SRAM_FREE(eapduFrame);
-        return;
-    }
-    g_lastPacketTick = tick;
-    if (eapduFrame->dataLen > MAX_EAPDU_DATA_SIZE || eapduFrame->p2 >= MAX_PACKETS) {
-        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, eapduFrame->ins, eapduFrame->lc, PRS_INVALID_INDEX, "Invalid packet length/index");
-        free_parser();
-        SRAM_FREE(eapduFrame);
-        return;
-    }
-    assert(eapduFrame->dataLen <= MAX_EAPDU_DATA_SIZE && eapduFrame->p2 < MAX_PACKETS);
-    memcpy_s(g_protocolRcvBuffer[eapduFrame->p2], sizeof(g_protocolRcvBuffer[eapduFrame->p2]), eapduFrame->data, eapduFrame->dataLen);
-    g_packetLengths[eapduFrame->p2] = eapduFrame->dataLen;
-    g_receivedPackets[eapduFrame->p2] = 1;
-    for (uint8_t i = 0; i < g_totalPackets; i++) {
-        if (!g_receivedPackets[i]) {
-            printf("Waiting for more packets, missing: %d\n", i);
-            SRAM_FREE(eapduFrame);
-            return;
+    if (!WaitForSandboxResult(sandboxRequestId, &framingResult, &payload)) {
+        printf("EAPDU sandbox failed closed, request=%lu\r\n",
+               (unsigned long)sandboxRequestId);
+        __DSB();
+        NVIC_SystemReset();
+        for (;;) {
         }
     }
-    uint32_t fullDataLen = 0;
-    uint32_t offset = 0;
-    uint8_t *fullData = NULL;
-    for (uint16_t i = 0; i < g_totalPackets; i++) {
-        fullDataLen += g_packetLengths[i];
+    if (framingResult.timed_out != 0U) {
+        printf("EAPDU reassembly timeout\n");
     }
-    if (fullDataLen > (MAX_PACKETS * MAX_EAPDU_DATA_SIZE)) {
-        free_parser();
-        SRAM_FREE(eapduFrame);
+
+    switch ((EapduFramingStatus_t)framingResult.framing_status) {
+    case EAPDU_FRAMING_ERROR_SHORT_FRAME:
+        printf("Invalid EAPDU data: too short\n");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
+        return;
+
+    case EAPDU_FRAMING_ERROR_TOTAL_PACKETS:
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, framingResult.command_type, framingResult.request_id,
+                               PRS_INVALID_TOTAL_PACKETS, "Invalid total number of packets");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
+        return;
+
+    case EAPDU_FRAMING_ERROR_PACKET_INDEX:
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, framingResult.command_type, framingResult.request_id,
+                               PRS_INVALID_INDEX, "Invalid packet index");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
+        return;
+
+    case EAPDU_FRAMING_ERROR_PACKET_SIZE:
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, framingResult.command_type, framingResult.request_id,
+                               PRS_INVALID_INDEX, "Invalid packet length/index");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
+        return;
+
+    case EAPDU_FRAMING_ERROR_TOTAL_MISMATCH:
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, framingResult.command_type, framingResult.request_id,
+                               PRS_INVALID_TOTAL_PACKETS, "Mismatched total packets");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
+        return;
+
+    case EAPDU_FRAMING_ERROR_METADATA_MISMATCH:
+        SendEApduResponseError(EAPDU_PROTOCOL_HEADER, framingResult.command_type, framingResult.request_id,
+                               PRS_INVALID_INDEX, "Mismatched frame metadata");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
+        return;
+
+    case EAPDU_FRAMING_DUPLICATE:
+        printf("Duplicate frame\n");
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, false);
+        return;
+
+    case EAPDU_FRAMING_WAITING:
+        printf("Waiting for more packets, missing: %u\n", framingResult.first_missing_packet);
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, false);
+        return;
+
+    case EAPDU_FRAMING_COMPLETE:
+        break;
+
+    default:
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
         return;
     }
 
-    fullData = (uint8_t *)SRAM_MALLOC(fullDataLen + 1);
-    if (fullData == NULL) {
-        free_parser();
-        SRAM_FREE(eapduFrame);
+    request.data = (uint8_t *)payload;
+    request.dataLen = framingResult.payload_length;
+    request.requestID = framingResult.request_id;
+    request.commandType = framingResult.command_type;
+    request.cla = framingResult.cla;
+    printf("request->dataLen=%u\nrequestID=%u\ncommandType=%u\ncla=%u\n", (unsigned int)request.dataLen, request.requestID, request.commandType, request.cla);
+    if ((request.commandType == CMD_RESOLVE_UR) &&
+            (framingResult.ur_validation_status != MPU_SANDBOX_UR_OK)) {
+        ProcessURValidationError(&request,
+                                 MpuSandboxUrValidationMessage(
+                                     framingResult.ur_validation_status));
+        (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+        g_eapduRcvCount = 0;
         return;
     }
-    for (uint32_t i = 0; i < g_totalPackets; i++) {
-        memcpy_s(fullData + offset, fullDataLen - offset, g_protocolRcvBuffer[i], g_packetLengths[i]);
-        offset += g_packetLengths[i];
-    }
-    fullData[fullDataLen] = '\0';
-    EAPDURequestPayload_t *request = (EAPDURequestPayload_t *)SRAM_MALLOC(sizeof(EAPDURequestPayload_t));
-    if (request == NULL) {
-        SRAM_FREE(fullData);
-        free_parser();
-        SRAM_FREE(eapduFrame);
-        return;
-    }
-    request->data = fullData;
-    request->dataLen = fullDataLen;
-    request->requestID = eapduFrame->lc;
-    request->commandType = eapduFrame->ins;
-    request->cla = eapduFrame->cla;
-    EApduRequestHandler(request);
-    SRAM_FREE(eapduFrame);
-    SRAM_FREE(fullData);
-    SRAM_FREE(request);
-    free_parser();
+    EApduRequestHandler(&request);
+    (void)MpuSandboxReleaseEapduResult(sandboxRequestId, true);
+    g_eapduRcvCount = 0;
 }
 
 static void RegisterSendFunc(ProtocolSendCallbackFunc_t sendFunc)

@@ -386,8 +386,8 @@ void GuiLockScreenErrorCount(void *param)
         char tempBuf[BUFFER_SIZE_128];
         int leftCount = 0;
 
-        if (*(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
-                || *(uint16_t *)passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
+        if (passwordVerifyResult->signal == SIG_LOCK_VIEW_VERIFY_PIN
+                || passwordVerifyResult->signal == SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS) {
             leftCount = MAX_LOGIN_PASSWORD_ERROR_COUNT - passwordVerifyResult->errorCount;
             ASSERT(leftCount >= 0);
             if (leftCount > 1) {
@@ -452,10 +452,10 @@ void GuiJumpToLockDevicePage(void)
         staticLeftErrorCount = MAX_LOGIN_PASSWORD_ERROR_COUNT    - errorCount;
         uint32_t currentTime = GetCurrentStampTime();
         uint32_t diffTime = currentTime - lastLockDeviceTime;
-        printf("diffTime is  %ds\n", diffTime);
-        printf("lastLockDeviceTime is  %ds\n", lastLockDeviceTime);
+        printf("diffTime is  %ds\n", (int)diffTime);
+        printf("lastLockDeviceTime is  %ds\n", (int)lastLockDeviceTime);
         if (diffTime < GuiGetLockTimeByLeftErrorCount(staticLeftErrorCount)) {
-            printf("continue lock time %ds\n", diffTime);
+            printf("continue lock time %ds\n", (int)diffTime);
             GuiFrameOpenViewWithParam(&g_lockDeviceView, &staticLeftErrorCount, sizeof(staticLeftErrorCount));
         }
     }

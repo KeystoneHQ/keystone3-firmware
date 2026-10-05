@@ -54,17 +54,26 @@ UREncodeResult *GuiGetSolSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
+    uint8_t seed[64] = {0};
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
+    int ret = SUCCESS_CODE;
     do {
-        uint8_t seed[64];
+        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
         int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
         encodeResult = solana_sign_tx(data, seed, len);
-        ClearSecretCache();
+        if (encodeResult == NULL) {
+            break;
+        }
         CHECK_CHAIN_BREAK(encodeResult);
     } while (0);
+    memset_s(seed, sizeof(seed), 0, sizeof(seed));
+    ClearSecretCache();
     SetLockScreen(enable);
+    ASSERT(ret == SUCCESS_CODE);
     return encodeResult;
 }
 
@@ -192,13 +201,13 @@ void GetSolMessageFrom(void *indata, void *param, uint32_t maxLen)
 void GetSolMessageUtf8(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    snprintf_s((char *)indata, maxLen, "%.*s", maxLen - 1, message->utf8_message);
+    snprintf_s((char *)indata, maxLen, "%.*s", (int)(maxLen - 1), message->utf8_message);
 }
 
 void GetSolMessageRaw(void *indata, void *param, uint32_t maxLen)
 {
     DisplaySolanaMessage *message = (DisplaySolanaMessage *)param;
-    snprintf_s((char *)indata, maxLen, "%.*s", maxLen - 1, message->raw_message);
+    snprintf_s((char *)indata, maxLen, "%.*s", (int)(maxLen - 1), message->raw_message);
 }
 
 void GuiShowSolMessagePaged(lv_obj_t *parent, void *param, bool raw)
@@ -907,6 +916,12 @@ static lv_obj_t *GuiShowSolTxGeneralOverview(
 
     for (int i = 0; i < general->size; i++) {
         char *program = general->data[i].program;
+        if (strcmp(program, "TransactionConfig") == 0) {
+            lastView = CreateTransactionItemViewWithWidth(
+                parent, "Transaction Config (V1)", general->data[i].memo,
+                lastView, SOL_COMPONENT_WIDTH);
+            continue;
+        }
         char order[BUFFER_SIZE_16] = {0};
         snprintf_s(order, BUFFER_SIZE_16, "#%u", (unsigned int)general->data[i].instruction_index);
         const char *method = strlen(general->data[i].method) > 0
@@ -1538,31 +1553,16 @@ static void GuiShowSolTxRawDetailCard(
     lv_obj_t *lastView)
 {
     lv_obj_t *cont = lv_obj_create(parent);
-    lv_obj_set_size(cont, SOL_COMPONENT_WIDTH, LV_SIZE_CONTENT);
-    lv_obj_set_style_border_width(cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_clip_corner(cont, 0, 0);
-    lv_obj_set_style_radius(cont, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_all(cont, 0, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(cont, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(cont, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_top(cont, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_bottom(cont, 16, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_left(cont, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_pad_right(cont, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
+    lv_obj_remove_style_all(cont);
+    // Reuse the release pager: long pages remain scrollable within the viewport.
+    lv_obj_set_size(cont, SOL_COMPONENT_WIDTH, 420);
     lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 0);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
 
-    lv_obj_t *label = lv_label_create(cont);
     const char *rawDetail = txDetail == NULL ? "" : txDetail;
-    lv_label_set_text(label, rawDetail);
-    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
-    lv_obj_set_width(label, SOL_COMPONENT_CONTENT_WIDTH);
-    SetTitleLabelStyle(label);
-    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 0, 0);
-    lv_obj_update_layout(label);
-    lv_obj_set_height(cont, lv_obj_get_height(label) + 32);
+    GuiShowPagedMessageText(cont, rawDetail, true, NULL, NULL);
     if (lastView == NULL) {
         lv_obj_align(cont, LV_ALIGN_TOP_LEFT, 0, 0);
     } else {

@@ -23,6 +23,7 @@ mod compact;
 pub mod errors;
 mod instruction;
 pub mod message;
+mod message_v1;
 pub mod parser;
 pub mod read;
 #[cfg_attr(coverage_nightly, coverage(off))]
@@ -50,6 +51,11 @@ pub fn classify_payload(data: &[u8]) -> SolanaPayloadType {
     };
     if is_complete_transaction {
         return SolanaPayloadType::Transaction;
+    }
+
+    // A malformed V1 message must not fall back to arbitrary message signing.
+    if data.first() == Some(&0x81) {
+        return SolanaPayloadType::MalformedTransaction;
     }
 
     let has_transaction_prefix = {

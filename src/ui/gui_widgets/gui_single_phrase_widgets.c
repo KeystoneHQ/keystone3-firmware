@@ -56,10 +56,28 @@ static lv_obj_t *g_noticeHintBox = NULL;
 static PageWidget_t *g_pageWidget;
 static uint8_t g_entropyMethod = 0;
 static lv_obj_t *g_noticeWindow;
+static BackupConfirmationHintBox_t g_backupConfirmation;
 static bool g_isDiceRolls = false;
+static bool g_backupConfirmationAccepted = false;
 
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
+
+static void BackupConfirmationHandler(lv_event_t *e)
+{
+    g_backupConfirmationAccepted = true;
+    CloseParentAndNextHandler(e);
+}
+
+static void ShowBackupConfirmation(void)
+{
+    GuiCreateBackupConfirmationHintBox(&g_backupConfirmation);
+    g_noticeWindow = g_backupConfirmation.container;
+    lv_obj_add_event_cb(g_backupConfirmation.closeButton, CloseHintBoxHandler,
+                        LV_EVENT_CLICKED, &g_noticeWindow);
+    lv_obj_add_event_cb(g_backupConfirmation.continueButton, BackupConfirmationHandler,
+                        LV_EVENT_CLICKED, &g_noticeWindow);
+}
 
 static bool DiceRollsNotEnoughForWordCnt(uint8_t wordCnt)
 {
@@ -94,6 +112,7 @@ static void WriteSE()
 static void GuiRandomPhraseWidget(lv_obj_t *parent)
 {
     uint16_t height = 296;
+    char descText[BUFFER_SIZE_512] = {0};
     lv_obj_set_scrollbar_mode(parent, LV_SCROLLBAR_MODE_OFF);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_CHECKABLE);
@@ -101,8 +120,13 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_t *label = GuiCreateScrollTitleLabel(parent, _("single_phrase_title"));
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 156 - GUI_MAIN_AREA_OFFSET);
 
-    label = GuiCreateIllustrateLabel(parent, _("single_phrase_desc"));
-    lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN);
+    snprintf_s(descText, sizeof(descText), "%s\n#F5870A %s#",
+               _("single_phrase_desc"), _("seed_phrase_privacy_notice"));
+    label = GuiCreateIllustrateLabel(parent, descText);
+    lv_obj_set_width(label, 408);
+    lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+    lv_label_set_recolor(label, true);
+    lv_obj_set_style_text_color(label, WHITE_COLOR_OPA64, LV_PART_MAIN);
     GuiAlignToPrevObj(label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
     lv_obj_refr_size(label);
     height -= lv_obj_get_self_height(label);
@@ -110,8 +134,7 @@ static void GuiRandomPhraseWidget(lv_obj_t *parent)
     lv_obj_set_size(g_randomPhraseKb->cont, 408, height);
     lv_obj_set_size(g_randomPhraseKb->cont, 408, 305);
 
-    lv_obj_align(g_randomPhraseKb->cont, LV_ALIGN_TOP_MID,
-                 0, 310 - GUI_MAIN_AREA_OFFSET);
+    lv_obj_align_to(g_randomPhraseKb->cont, label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 36);
     lv_obj_t *cont = GuiCreateContainer(lv_obj_get_width(lv_scr_act()), 114);
     lv_obj_set_align(cont, LV_ALIGN_BOTTOM_MID);
     g_changeCont = cont;
@@ -369,6 +392,11 @@ int8_t GuiSinglePhraseNextTile(const char *passphrase)
     case SINGLE_PHRASE_CONNECT:
         return SUCCESS_CODE;
     case SINGLE_PHRASE_RANDOM_PHRASE:
+        if (!g_backupConfirmationAccepted) {
+            ShowBackupConfirmation();
+            return SUCCESS_CODE;
+        }
+        g_backupConfirmationAccepted = false;
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
         SetRightBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_WORD_RESET, _("single_phrase_reset"));
         SetRightBtnCb(g_pageWidget->navBarWidget, ResetBtnHandler, NULL);
@@ -441,6 +469,7 @@ void GuiSinglePhraseDeInit(void)
         g_pressedBtnFlag[i] = 0;
     }
     g_currId = 0;
+    g_backupConfirmationAccepted = false;
     g_phraseCnt = SINGLE_PHRASE_MAX_WORDS;
     lv_obj_del(g_changeCont);
     lv_obj_del(g_randomPhraseKb->cont);

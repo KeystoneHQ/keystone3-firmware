@@ -1,9 +1,29 @@
 #include "drv_otp.h"
 #include "mhscpu.h"
 #include "assert.h"
+#include "FreeRTOS.h"
 #include "user_utils.h"
 
+#define OTP_READ_WINDOW_START       0x40009000UL
+#define OTP_READ_WINDOW_END         0x4000A000UL
+
+void ReadOtpData(uint32_t addr, uint8_t *data, uint32_t len) PRIVILEGED_FUNCTION;
+
 const uint32_t g_tamperFlag = 0x1234ABCD;
+
+/// @param[in] addr OTP address.
+void ReadOtpData(uint32_t addr, uint8_t *data, uint32_t len)
+{
+    uint32_t end = addr + len;
+
+    ASSERT(data != NULL);
+    ASSERT(len > 0U);
+    ASSERT(end >= addr);
+    ASSERT(addr >= OTP_READ_WINDOW_START && end <= OTP_READ_WINDOW_END);
+
+    OTP_PowerOn();
+    memcpy(data, (const void *)(uintptr_t)addr, len);
+}
 
 /// @brief Write data to OTP zone.
 /// @param[in] addr OTP address.
@@ -36,8 +56,7 @@ int32_t WriteTamperFlag(void)
 bool ReadTamperFlag(void)
 {
     uint32_t flag;
-    OTP_PowerOn();
-    memcpy(&flag, (uint8_t *)OTP_ADDR_TAMPER, sizeof(flag));
+    ReadOtpData(OTP_ADDR_TAMPER, (uint8_t *)&flag, sizeof(flag));
     if (CheckEntropy((uint8_t *)&flag, sizeof(flag)) == false) {
         return false;
     } else if (flag == g_tamperFlag) {

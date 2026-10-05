@@ -217,7 +217,7 @@ void Aw32001Init(void)
     I2CIO_Init(&g_i2cIoCfg, AW32001_SCL_PORT, AW32001_SCL_PIN, AW32001_SDA_PORT, AW32001_SDA_PIN);
     Aw32001RegValueInit();
     milliVolt = GetBatteryMilliVolt();
-    printf("milliVolt=%d\n", milliVolt);
+    printf("milliVolt=%d\n", (int)milliVolt);
     Aw32001ChargingEnable();
 }
 
@@ -294,7 +294,7 @@ void Aw32001Test(int argc, char *argv[])
         Aw32001ReadReg(0, data, 0x0C);
         PrintArray("reg data", data, 0x0C);
         Aw32001ReadReg(0x22, &data22, 1);
-        printf("data22=0x%02X\r\n", (uint32_t)data22);
+        printf("data22=0x%02X\r\n", (unsigned int)data22);
     } else if (strcmp(argv[0], "poweroff") == 0) {
         printf("poweroff\r\n");
         Aw32001PowerOff();

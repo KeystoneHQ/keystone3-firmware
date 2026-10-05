@@ -23,7 +23,10 @@ bool g_reboot = false;
 bool g_otpProtect = false;
 
 // Comment out this macro if you need to retrieve data from the file
-#define GET_QR_DATA_FROM_SCREEN
+void ReadOtpData(uint32_t addr, uint8_t *data, uint32_t len)
+{
+
+}
 
 void OTP_PowerOn(void)
 {

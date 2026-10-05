@@ -54,9 +54,13 @@ int bip39_get_word(const struct words *w, size_t idx,
     if (!output || !word)
         return -2;
 
-    *output = SRAM_MALLOC(strlen(word) + 1);
-    strcpy(*output, word);
-    return *output ? SUCCESS_CODE : -1;
+    size_t wordLen = strlen(word) + 1;
+    *output = SRAM_MALLOC(wordLen);
+    if (*output == NULL) {
+        return -1;
+    }
+    strcpy_s(*output, wordLen, word);
+    return SUCCESS_CODE;
 }
 
 /* Convert an input entropy length to a mask for checksum bits. As it

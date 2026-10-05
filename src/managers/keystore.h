@@ -14,6 +14,7 @@
 
 #define AES_KEY_LEN                             32
 #define AUTH_KEY_LEN                            32
+#define ACCOUNT_SUBKEY_DOMAIN_LEN               14
 
 #define AES_IV_LEN                              32              //Use first 16 bytes for AES key, last 16 bytes reserved for future features.
 #define ENTROPY_MAX_LEN                         32
@@ -54,6 +55,15 @@ int32_t GetAccountSlip39Ems(uint8_t accountIndex, uint8_t *slip39Ems, const char
 int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char *password);
 int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password);
 int32_t VerifyAccountPassword(uint8_t accountIndex, const char *password);
+int32_t FindAccountByPasswordAndDeriveSubkey(
+    uint8_t *matchedAccountIndex, const char *password,
+    const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
+    uint8_t derivedKey[AUTH_KEY_LEN]);
+
+int32_t VerifyAccountPasswordAndDeriveSubkey(
+    uint8_t accountIndex, const char *password,
+    const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
+    uint8_t derivedKey[AUTH_KEY_LEN]);
 int32_t GenerateTRNGRandomness(uint8_t *randomness, uint8_t len);
 bool CheckPassphraseSame(uint8_t accountIndex, const char *passphrase);
 char* GetPassphrase(uint8_t accountIndex);

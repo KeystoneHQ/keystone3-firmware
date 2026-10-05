@@ -238,6 +238,12 @@ void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCal
     const char *descText = _("error_box_invalid_seed_phrase_desc");
     const void *imgSrc = &imgFailed;
     switch (errCode) {
+    case ERR_AR_NOT_SETUP:
+    case ERR_AR_DATA_INVALID:
+        titleText = _("ar_address_setup_required");
+        descText = _("ar_address_setup_desc");
+        imgSrc = &imgWarn;
+        break;
     case ERR_KEYSTORE_MNEMONIC_REPEAT:
         titleText = _("error_box_duplicated_seed_phrase");
         descText = _("error_box_duplicated_seed_phrase_desc");

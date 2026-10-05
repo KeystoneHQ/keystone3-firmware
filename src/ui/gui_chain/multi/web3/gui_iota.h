@@ -16,6 +16,7 @@ UREncodeResult *GuiGetIotaSignHashQrCodeData(void);
 void GuiIotaTxOverview(lv_obj_t *parent, void *totalData);
 void GuiIotaTxRawData(lv_obj_t *parent, void *totalData);
 bool GetIotaIsMessage(void *indata, void *param);
+bool IsIotaMsg(ViewType viewType);
 bool GetIotaIsTransaction(void *indata, void *param);
-bool GetIotaIsTransfer(void *indata, void *param);
+bool GetIotaShowOverview(void *indata, void *param);
 #endif

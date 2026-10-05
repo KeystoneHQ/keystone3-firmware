@@ -65,7 +65,7 @@ static ResolveUrInfo_t CalcResolveUrPageInfo()
         info.buttonText = _("OK");
         break;
     default:
-        if (g_param->error_message != NULL && g_param->error_message[0] != '\0') {
+        if (g_param->error_message[0] != '\0') {
             info.title = _("usb_transport_sign_failed_title");
             info.subTitle = g_param->error_message;
         } else {

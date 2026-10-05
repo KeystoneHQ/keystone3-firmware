@@ -18,18 +18,22 @@ void ShowAssert(const char* file, uint32_t len)
 #else
 
 #include "draw_on_lcd.h"
+#include "cmsis_os.h"
 
 LV_FONT_DECLARE(openSans_20);
 
 void ShowAssert(const char *file, uint32_t len)
 {
     char assertStr[BUFFER_SIZE_256];
-    snprintf_s(assertStr, BUFFER_SIZE_256, "assert,file=%s\nline=%d\n\n", file, len);
-    PrintOnLcd(&openSans_20, 0xFFFF, assertStr);
-    PrintErrorInfoOnLcd();
-    snprintf_s(assertStr, BUFFER_SIZE_256, "assert,file=%s,line=%d", file, len);
+
+    osKernelLock();
+
+    snprintf_s(assertStr, BUFFER_SIZE_256, "assert,file=%s,line=%d", file, (int)len);
     Gd25FlashWriteBufferNoMutex(SPI_FLASH_ADDR_ERR_INFO, (uint8_t *)assertStr, strnlen_s(assertStr, sizeof(assertStr) - 1) + 1);
-    while (1);
+
+    PrintOnLcd(&openSans_20, 0xFFFF, "The error was caused by a failed data request.\nYour assets remain safe.\n");
+    PrintErrorInfoOnLcd();
+    RestartCountdownOnLcd();
 }
 
 #endif

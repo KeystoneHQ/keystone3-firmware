@@ -4,9 +4,13 @@
 #include "gui_views.h"
 #include "gui_transaction_signature_widgets.h"
 #include "gui_lock_widgets.h"
+#include "gui_pending_hintbox.h"
+
+static bool g_arErrorShown;
 
 static int32_t GuiTransactionSignatureViewInit(uint8_t viewType)
 {
+    g_arErrorShown = false;
     GuiTransactionSignatureInit(viewType);
     return SUCCESS_CODE;
 }
@@ -40,7 +44,17 @@ int32_t GuiTransactionSignatureViewEventProcess(void *self, uint16_t usEvent, vo
         GuiTransactionSignatureHandleURUpdate((char*)param, usLen);
         break;
     case SIG_BACKGROUND_UR_GENERATE_FAIL:
-        GuiTransactionSignatureHandleURGenerateFail(param);
+        if (!g_arErrorShown) {
+            GuiTransactionSignatureHandleURGenerateFail(param);
+        }
+        g_arErrorShown = false;
+        break;
+    case SIG_SETUP_RSA_PRIVATE_KEY_WRITE_FAIL:
+        GuiPendingHintBoxRemove();
+        if (param != NULL && usLen == sizeof(int32_t)) {
+            g_arErrorShown = true;
+            GuiCreateErrorCodeWindow(*(int32_t *)param, NULL, (ErrorWindowCallback)GuiCloseCurrentWorkingView);
+        }
         break;
     default:
         return ERR_GUI_UNHANDLED;

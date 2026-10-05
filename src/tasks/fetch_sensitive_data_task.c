@@ -1,4 +1,5 @@
 #include "fetch_sensitive_data_task.h"
+#include "stdint.h"
 #include "drv_aw32001.h"
 #include "drv_battery.h"
 #include "drv_tamper.h"
@@ -113,7 +114,7 @@ static void FetchSensitiveDataTask(void *argument)
         switch (rcvMsg.id) {
         case SENSITIVE_MSG_EXECUTE: {
             if (rcvMsg.buffer == NULL || rcvMsg.length != sizeof(BackgroundAsync_t)) {
-                printf("rcv SENSITIVE_MSG_EXECUTE err,rcvMsg.buffer=0x%08X,rcvMsg.length=%d\r\n", rcvMsg.buffer, rcvMsg.length);
+                printf("rcv SENSITIVE_MSG_EXECUTE err,rcvMsg.buffer=0x%08X,rcvMsg.length=%d\r\n", (unsigned int)(uintptr_t)rcvMsg.buffer, (int)rcvMsg.length);
                 break;
             }
             async = (BackgroundAsync_t *)rcvMsg.buffer;
@@ -130,7 +131,7 @@ static void FetchSensitiveDataTask(void *argument)
         break;
         case SENSITIVE_MSG_EXECUTE_RUNNABLE: {
             if (rcvMsg.buffer == NULL || rcvMsg.length != sizeof(BackgroundRunnable_t)) {
-                printf("rcv SENSITIVE_MSG_EXECUTE_RUNNABLE err,rcvMsg.buffer=0x%08X,rcvMsg.length=%d\r\n", rcvMsg.buffer, rcvMsg.length);
+                printf("rcv SENSITIVE_MSG_EXECUTE_RUNNABLE err,rcvMsg.buffer=0x%08X,rcvMsg.length=%d\r\n", (unsigned int)(uintptr_t)rcvMsg.buffer, (int)rcvMsg.length);
                 break;
             }
             BackgroundRunnable_t *async_r = (BackgroundRunnable_t *)rcvMsg.buffer;

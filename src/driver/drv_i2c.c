@@ -55,7 +55,7 @@ void I2cSendCmdAndData(uint8_t addr, uint16_t cmd, const uint8_t *data, uint32_t
     cmdSeq[1] = cmd;
     I2C_SendBytes(I2C0, cmdSeq, 2, I2C_DataEndCondition_None);
     I2C_SendBytes(I2C0, (uint8_t *)data, len, I2C_DataEndCondition_None);
-    printf("IC_TX_ABRT_SOURCE=0x%08X\r\n", I2C0->IC_TX_ABRT_SOURCE);
+    printf("IC_TX_ABRT_SOURCE=0x%08X\r\n", (unsigned int)I2C0->IC_TX_ABRT_SOURCE);
 }
 
 /// @brief Send u16 cmd and then get i2c data sequence.

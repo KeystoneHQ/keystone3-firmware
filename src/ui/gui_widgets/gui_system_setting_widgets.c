@@ -22,7 +22,6 @@
 static lv_obj_t *g_container;
 static lv_obj_t *g_vibrationSw;
 static lv_obj_t *g_randomPinPadSw;
-static lv_obj_t *g_bootSecureSw;
 static lv_obj_t *g_recoveryModeSw;
 
 static KeyboardWidget_t *g_keyboardWidget = NULL;
@@ -42,7 +41,6 @@ static void RandomPinPadSwitchHandler(lv_event_t * e);
 void GuiCreateLanguageWidget(lv_obj_t *parent, uint16_t offset);
 void OpenForgetPasswordHandler(lv_event_t *e);
 static void OpenLanguageSelectHandler(lv_event_t *e);
-static void BootSecureSwitchHandler(lv_event_t * e);
 static void RecoveryModeSwitchHandler(lv_event_t * e);
 #ifdef WEB3_VERSION
 static void PermitSingSwitchHandler(lv_event_t * e);
@@ -142,26 +140,6 @@ void GuiSystemSettingEntranceWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
     offset += 100;
 #endif
-
-    // boot secure
-    g_bootSecureSw = lv_switch_create(parent);
-    lv_obj_clear_flag(g_bootSecureSw, LV_OBJ_FLAG_CLICKABLE);
-    lv_obj_set_style_bg_color(g_bootSecureSw, ORANGE_COLOR, LV_STATE_CHECKED | LV_PART_INDICATOR);
-    lv_obj_set_style_bg_color(g_bootSecureSw, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(g_bootSecureSw, LV_OPA_30, LV_PART_MAIN);
-
-    if (GetBootSecureCheckFlag()) {
-        lv_obj_add_state(g_bootSecureSw, LV_STATE_CHECKED);
-    } else {
-        lv_obj_clear_state(g_bootSecureSw, LV_STATE_CHECKED);
-    }
-    tableSwitch[0].obj = GuiCreateTextLabel(parent, _("boot_secure_switch_text_title"));
-    tableSwitch[1].obj = g_bootSecureSw;
-
-    button = GuiCreateButton(parent, 456, 84, tableSwitch, NUMBER_OF_ARRAYS(tableSwitch),
-                             BootSecureSwitchHandler, NULL);
-    lv_obj_align(button, LV_ALIGN_DEFAULT, 12, offset);
-    offset += 100;
 
     // recovery mode
     g_recoveryModeSw = lv_switch_create(parent);
@@ -374,40 +352,19 @@ static void GuiShowChangeKeyBoard(lv_event_t * e)
     SetKeyboardWidgetSig(g_keyboardWidget, sig);
 }
 
-void GuiDealBootSecureParamKeyBoard(uint16_t sig, bool pass)
+void GuiDealRecoveryModeKeyBoard(bool pass)
 {
     if (pass) {
         GUI_DEL_OBJ(g_noticeWindow)
         GuiDeleteKeyboardWidget(g_keyboardWidget);
-        if (sig == SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH) {
-            if (lv_obj_has_state(g_bootSecureSw, LV_STATE_CHECKED)) {
-                lv_obj_clear_state(g_bootSecureSw, LV_STATE_CHECKED);
-                SetBootSecureCheckFlag(false);
-            } else {
-                lv_obj_add_state(g_bootSecureSw, LV_STATE_CHECKED);
-                SetBootSecureCheckFlag(true);
-            }
-        } else if (sig == SIG_SETTING_CHANGE_RECOVERY_MODE_SWITCH) {
-            if (lv_obj_has_state(g_recoveryModeSw, LV_STATE_CHECKED)) {
-                lv_obj_clear_state(g_recoveryModeSw, LV_STATE_CHECKED);
-                SetRecoveryModeSwitch(false);
-            } else {
-                lv_obj_add_state(g_recoveryModeSw, LV_STATE_CHECKED);
-                SetRecoveryModeSwitch(true);
-            }
+        if (lv_obj_has_state(g_recoveryModeSw, LV_STATE_CHECKED)) {
+            lv_obj_clear_state(g_recoveryModeSw, LV_STATE_CHECKED);
+            SetRecoveryModeSwitch(false);
+        } else {
+            lv_obj_add_state(g_recoveryModeSw, LV_STATE_CHECKED);
+            SetRecoveryModeSwitch(true);
         }
     }
-}
-
-static void BootSecureSwitchHandler(lv_event_t * e)
-{
-    g_noticeWindow = GuiCreateGeneralHintBox(&imgWarn, _("boot_secure_switch_title"), _("boot_secure_switch_desc"), NULL,
-                     _("Cancel"), WHITE_COLOR_OPA20, _("Change"), DEEP_ORANGE_COLOR);
-    lv_obj_t *leftBtn = GuiGetHintBoxLeftBtn(g_noticeWindow);
-    lv_obj_add_event_cb(leftBtn, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
-    lv_obj_t *rightBtn = GuiGetHintBoxRightBtn(g_noticeWindow);
-    static uint16_t sig = SIG_SETTING_CHANGE_BOOT_SECURE_SWITCH;
-    lv_obj_add_event_cb(rightBtn, GuiShowChangeKeyBoard, LV_EVENT_CLICKED, &sig);
 }
 
 static void RecoveryModeSwitchHandler(lv_event_t * e)

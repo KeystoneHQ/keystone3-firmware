@@ -80,7 +80,7 @@ void GetBootVersionNumber(char *version)
 {
     uint32_t major = 0, minor = 0, build = 0;
     GetBootSoftwareVersion(&major, &minor, &build);
-    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", major, minor, build);
+    snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%d.%d.%d", (int)major, (int)minor, (int)build);
 }
 
 #ifndef COMPILE_SIMULATOR
@@ -93,7 +93,7 @@ bool NeedUpdateBoot(void)
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
         return true;
     }
-    if (major == 0 && minor == 3 && build == 0) {
+    if (major == 0 && minor == 4 && build == 0) {
         return false;
     }
     return true;
@@ -116,8 +116,9 @@ bool GetBootSoftwareVersion(uint32_t *major, uint32_t *minor, uint32_t *build)
 static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uint32_t *build, const uint8_t *data, uint32_t dataLen)
 {
     uint32_t versionInfoOffset = UINT32_MAX, i, headLen;
+    unsigned int parsedMajor, parsedMinor, parsedBuild;
     char *versionStr, read[64];
-    int32_t ret;
+    int ret;
     bool succ = false;
 
     headLen = strlen(BOOT_VERSION_HEAD);
@@ -140,10 +141,13 @@ static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uin
             break;
         }
         versionStr = read + headLen;
-        ret = sscanf(versionStr, "%d.%d.%d", major, minor, build);
+        ret = sscanf(versionStr, "%u.%u.%u", &parsedMajor, &parsedMinor, &parsedBuild);
         if (ret != 3) {
             break;
         }
+        *major = parsedMajor;
+        *minor = parsedMinor;
+        *build = parsedBuild;
         succ = true;
     } while (0);
     if (succ == false) {

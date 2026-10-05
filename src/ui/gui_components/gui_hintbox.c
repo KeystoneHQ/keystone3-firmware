@@ -245,6 +245,88 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
     return cont;
 }
 
+static void SetBackupConfirmationButtonState(lv_obj_t *button, bool enabled)
+{
+    if (enabled) {
+        lv_obj_clear_state(button, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_100, LV_PART_MAIN);
+    } else {
+        lv_obj_add_state(button, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20,
+                                  LV_PART_MAIN | LV_STATE_DISABLED);
+        lv_obj_set_style_bg_opa(button, LV_OPA_100,
+                                LV_PART_MAIN | LV_STATE_DISABLED);
+        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_60,
+                                  LV_PART_MAIN | LV_STATE_DISABLED);
+    }
+}
+
+static void BackupConfirmationCheckHandler(lv_event_t *e)
+{
+    BackupConfirmationHintBox_t *hintBox = lv_event_get_user_data(e);
+    if (hintBox == NULL || hintBox->checkBox == NULL) {
+        return;
+    }
+
+    if (lv_obj_has_state(hintBox->checkBox, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(hintBox->checkBox, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(hintBox->checkBox, LV_STATE_CHECKED);
+    }
+    SetBackupConfirmationButtonState(hintBox->continueButton,
+                                     lv_obj_has_state(hintBox->checkBox, LV_STATE_CHECKED));
+}
+
+void * GuiCreateBackupConfirmationHintBox(BackupConfirmationHintBox_t *hintBox)
+{
+    lv_point_t titleSize, descSize;
+    lv_txt_get_size(&titleSize, _("seed_backup_confirm_title"), g_defLittleTitleFont, 0, 0, 408, LV_TEXT_FLAG_NONE);
+    lv_txt_get_size(&descSize, _("seed_backup_confirm_desc"), g_defIllustrateFont, 0, 0, 408, LV_TEXT_FLAG_NONE);
+    const uint16_t height = 358 + titleSize.y + descSize.y;
+    const uint16_t sheetTop = 800 - height;
+    lv_obj_t *cont = GuiCreateHintBox(height);
+    lv_obj_t *img = GuiCreateImg(cont, &imgWarn);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 36, sheetTop + 44);
+
+    hintBox->container = cont;
+    hintBox->closeButton = GuiCreateImgButton(cont, &imgClose, 50, NULL, NULL);
+    lv_obj_align(hintBox->closeButton, LV_ALIGN_DEFAULT, 394, sheetTop + 28);
+
+    lv_obj_t *title = GuiCreateLittleTitleLabel(cont, _("seed_backup_confirm_title"));
+    lv_obj_align(title, LV_ALIGN_DEFAULT, 36, sheetTop + 142);
+
+    lv_obj_t *desc = GuiCreateNoticeLabel(cont, _("seed_backup_confirm_desc"));
+    lv_obj_set_width(desc, 408);
+    lv_label_set_long_mode(desc, LV_LABEL_LONG_WRAP);
+    GuiAlignToPrevObj(desc, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
+    lv_obj_refr_size(desc);
+
+    lv_obj_t *checkRow = GuiCreateContainerWithParent(cont, 408, 72);
+    lv_obj_set_style_bg_opa(checkRow, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_add_flag(checkRow, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_align_to(checkRow, desc, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 18);
+
+    hintBox->checkBox = GuiCreateSingleCheckBox(checkRow, "");
+    lv_obj_set_size(hintBox->checkBox, 36, 36);
+    lv_obj_align(hintBox->checkBox, LV_ALIGN_LEFT_MID, 0, 0);
+    lv_obj_clear_flag(hintBox->checkBox, LV_OBJ_FLAG_CLICKABLE);
+
+    lv_obj_t *checkLabel = GuiCreateTextLabel(checkRow, _("seed_backup_confirm_check"));
+    lv_obj_set_width(checkLabel, 348);
+    lv_label_set_long_mode(checkLabel, LV_LABEL_LONG_WRAP);
+    lv_obj_align(checkLabel, LV_ALIGN_LEFT_MID, 40, 0);
+    lv_obj_add_event_cb(checkRow, BackupConfirmationCheckHandler, LV_EVENT_CLICKED, hintBox);
+
+    hintBox->continueButton = GuiCreateTextBtn(cont, _("Continue"));
+    lv_obj_set_size(hintBox->continueButton, 408, 66);
+    lv_obj_align_to(hintBox->continueButton, checkRow, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
+    SetBackupConfirmationButtonState(hintBox->continueButton, false);
+
+    return cont;
+}
+
 typedef struct TooltipQRCodeParam {
     char *title;
     char *link;

@@ -267,10 +267,10 @@ static uint32_t CalculateLockDeiceTime(void)
     uint32_t lastLockDeviceTime = GetLastLockDeviceTime();
     uint32_t stillNeedLockTime = originLockTime - (GetCurrentStampTime() - lastLockDeviceTime);
     if (stillNeedLockTime < originLockTime && stillNeedLockTime > 0) {
-        printf("still need to lock %ds\n", stillNeedLockTime);
+        printf("still need to lock %ds\n", (int)stillNeedLockTime);
         return stillNeedLockTime;
     }
-    printf("originLockTime need to lock %ds\n", originLockTime);
+    printf("originLockTime need to lock %ds\n", (int)originLockTime);
     return originLockTime;
 }
 

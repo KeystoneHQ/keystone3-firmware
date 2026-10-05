@@ -24,9 +24,10 @@ static struct words *wordlist_alloc(const char *words, size_t len)
     struct words *w = SRAM_MALLOC(sizeof(struct words));
     if (w) {
         memset(w, 0, sizeof(*w));
-        w->str = SRAM_MALLOC(strlen(words) + 1);
-        strcpy((char *)w->str, words);
+        size_t wordsLen = strlen(words) + 1;
+        w->str = SRAM_MALLOC(wordsLen);
         if (w->str) {
+            strcpy_s((char *)w->str, wordsLen, words);
             w->str_len = strlen(w->str);
             w->len = len;
             w->bits = get_bits(len);

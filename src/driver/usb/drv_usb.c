@@ -3,6 +3,7 @@
 #include "usbd_composite.h"
 #include "usbd_usr.h"
 #include "user_msg.h"
+#include "user_memory.h"
 
 __ALIGN_BEGIN USB_OTG_CORE_HANDLE g_usbDev __ALIGN_END;
 
@@ -30,8 +31,8 @@ void UsbInit(void)
 
         memset_s(&g_usbDev, sizeof(g_usbDev), 0x00, sizeof(g_usbDev));
 
+        NVIC_SetPriority(USB_IRQn, USB_IRQ_RTOS_SAFE_PRIO);
         USBD_Init(&g_usbDev, USB_OTG_FS_CORE_ID, &USR_desc, DeviceCallback, &USRD_cb);
-        NVIC_SetPriority(USB_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), USB_IRQ_RTOS_SAFE_PRIO, 0));
         g_usbInit = true;
     }
 }

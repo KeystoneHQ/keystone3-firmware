@@ -9,7 +9,6 @@
 #include "drv_motor.h"
 #include "drv_trng.h"
 #include "user_memory.h"
-#include "log_print.h"
 #include "ctaes.h"
 #include "keystore.h"
 #include "account_manager.h"
@@ -353,7 +352,6 @@ static void FpSetAesKeySend(uint16_t cmd, uint8_t fingerInfo)
 {
     memset_s(g_communicateAesKey, sizeof(g_communicateAesKey), 0, sizeof(g_communicateAesKey));
     TrngGet(g_communicateAesKey, sizeof(g_communicateAesKey));
-    PrintArray("g_communicateAesKey", g_communicateAesKey, 32);
     SendPackFingerMsg(FINGERPRINT_CMD_SET_AES_KEY, g_communicateAesKey, 0, sizeof(g_communicateAesKey), NO_ENCRYPTION);
     FpSendTimerStart(FINGERPRINT_CMD_SET_AES_KEY);
 }
@@ -364,7 +362,6 @@ void FpSetAesKeyRecv(char *indata, uint8_t len)
     if (len == 1) {
         uint8_t result = indata[0];
         if (result == FP_SUCCESS_CODE) {
-            PrintArray("g_communicateAesKey", g_communicateAesKey, 32);
             SetFpCommAesKey(g_communicateAesKey);
             printf("set aes key success\n");
             SearchFpChipId();
@@ -545,7 +542,6 @@ static void FpCancelRecv(char *indata, uint8_t len)
             printf("%X", indata[i]);
         }
         printf("\n");
-        printf("");
     } else {
         GetFpErrorMessage(result);
     }
@@ -837,8 +833,6 @@ static void SearchFpAesKeyState(void)
 {
     int32_t ret = FINGERPRINT_SUCCESS;
     ret = GetFpCommAesKey(g_communicateAesKey);
-    // PrintArray("g_communicateAesKey", g_communicateAesKey, 16);
-    // PrintArray("iv", &g_communicateAesKey[16], 16);
     if (ret != SUCCESS_CODE) {
         return;
     }
@@ -1004,7 +998,7 @@ void FingerprintRcvMsgHandle(char *recvBuff, uint8_t len)
     memcpy_s(&totalCrc, sizeof(totalCrc), &recvBuff[totalDataLen - 4], sizeof(totalCrc));
     uint32_t checkCrc = crc32_update_fast((const uint8_t *)&recvBuff[0], totalDataLen - 4);
     if (totalCrc != checkCrc) {
-        printf("UnPickFingerMsg error:total packet crc error, rcvCrc is 0x%X, check dataCrc is 0x%X\r\n", totalCrc, checkCrc);
+        printf("UnPickFingerMsg error:total packet crc error, rcvCrc is 0x%X, check dataCrc is 0x%X\r\n", (unsigned int)totalCrc, (unsigned int)checkCrc);
         return;
     }
 
@@ -1124,9 +1118,6 @@ void SendPackFingerMsg(uint16_t cmd, uint8_t *data, uint16_t frameId, uint32_t l
     }
 
     uint32_t protocolCRC = crc32_update_fast((const uint8_t *)&sendData.data.cmd0, sendData.packetLen - 16 - 4 - 4);
-    if (g_devLogSwitch) {
-        PrintArray("before encrypt", &sendData.data.cmd0, sendData.packetLen - 16 - 4 - 4);
-    }
     sendData.data.signature = protocolCRC;
     if (isEncrypt != NO_ENCRYPTION) {
         EncryptFingerprintData((uint8_t *)&sendData.data.signature, (const uint8_t *)&sendData.data.signature, sendData.packetLen - 16 - 4);
@@ -1234,19 +1225,23 @@ void FingerTest(int argc, char *argv[])
 {
     uint8_t index = 0;
     uint8_t value = 0;
+    int scanValue = 0;
 
     if (strcmp(argv[0], "reg") == 0) {
-        sscanf(argv[1], "%d", &index);
+        sscanf(argv[1], "%d", &scanValue);
+        index = (uint8_t)scanValue;
         RegisterFp(index);
     } else if (strcmp(argv[0], "delete") == 0) {
-        sscanf(argv[1], "%d", &index);
+        sscanf(argv[1], "%d", &scanValue);
+        index = (uint8_t)scanValue;
         DeleteFp(index);
     } else if (strcmp(argv[0], "delete_all") == 0) {
         DeleteFp(0xFF);
     } else if (strcmp(argv[0], "fp_num") == 0) {
         SearchFpNum();
     } else if (strcmp(argv[0], "recognize") == 0) {
-        sscanf(argv[1], "%d", &index);
+        sscanf(argv[1], "%d", &scanValue);
+        index = (uint8_t)scanValue;
         FpRecognize((Recognize_Type)index);
     } else if (strcmp(argv[0], "low_power") == 0) {
         SetFpLowPowerMode();
@@ -1270,7 +1265,8 @@ void FingerTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "dev_log_switch") == 0) {
         g_devLogSwitch = !g_devLogSwitch;
     } else if (strcmp(argv[0], "flash") == 0) {
-        sscanf(argv[1], "%d", &value);
+        sscanf(argv[1], "%d", &scanValue);
+        value = (uint8_t)scanValue;
         SetFpFlashMode(!!value);
     } else if (strcmp(argv[0], "random") == 0) {
         GetFpRandomNumber();

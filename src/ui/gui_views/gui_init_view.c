@@ -10,9 +10,7 @@
 #include "gui_firmware_process_widgets.h"
 #include "gui_usb_connection_widgets.h"
 #include "gui_low_battery_widgets.h"
-#include "gui_nft_screen_widgets.h"
 #include "gui_firmware_update_deny_widgets.h"
-#include "gui_trans_nft_process_widgets.h"
 #include "gui_firmware_update_widgets.h"
 #include "gui_lock_widgets.h"
 #include "presetting.h"
@@ -106,15 +104,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             CloseMsgBox(&g_guiMsgBoxLowBattery);
         }
         break;
-    case SIG_INIT_TRANSFER_NFT_SCREEN:
-        rcvValue = *(uint32_t *)param;
-        printf("rcvValue=%d\r\n", rcvValue);
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxNftScreen);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxNftScreen);
-        }
-        break;
     case SIG_INIT_USB_CONNECTION:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || GuiIsSetup())) {
@@ -192,19 +181,6 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
 #ifdef BTC_ONLY
     case SIG_STATUS_BAR_TEST_NET:
         GuiStatusBarSetTestNet();
-        break;
-#endif
-#ifdef WEB3_VERSION
-    case SIG_INIT_NFT_BIN:
-        rcvValue = *(uint32_t *)param;
-        if (rcvValue != 0) {
-            OpenMsgBox(&g_guiMsgBoxTransNftProcess);
-        } else {
-            CloseMsgBox(&g_guiMsgBoxTransNftProcess);
-        }
-        break;
-    case SIG_INIT_NFT_BIN_TRANS_FAIL:
-        GuiNftTransferFailed();
         break;
 #endif
     default:

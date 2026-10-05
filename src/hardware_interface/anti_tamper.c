@@ -95,7 +95,7 @@ bool Tampered(void)
     PrintArray("pageData", pageData, 32);
     for (uint32_t i = 0; i < 32; i++) {
         if (pageData[i] != TAMPER_MARK) {
-            printf("pageData[%d]=%d\n", i, pageData[i]);
+            printf("pageData[%d]=%d\n", (int)i, pageData[i]);
             tampered = false;
             checked = true;
             return tampered;
@@ -128,7 +128,7 @@ static void TamperEraseInfo(void)
     DS28S60_Init();
     CLEAR_ARRAY(pageData);
     for (uint32_t i = 0; i < PAGE_WALLET1_RSA_PRIMES_HASH + 3; i++) {
-        printf("erase index=%d\n", i);
+        printf("erase index=%d\n", (int)i);
         DS28S60_HmacEncryptWrite(pageData, i);
     }
     printf("erase index=88\n");

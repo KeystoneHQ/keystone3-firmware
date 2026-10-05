@@ -11,7 +11,7 @@ use num_bigint_dig::traits::ModInverse;
 use num_bigint_dig::BigUint;
 use rsa::pss::SigningKey;
 use rsa::signature::{RandomizedDigestSigner, RandomizedSigner, SignatureEncoding};
-use rsa::{rand_core, PublicKeyParts, RsaPrivateKey};
+use rsa::{rand_core, Pss, PublicKey, PublicKeyParts, RsaPrivateKey};
 use sha2;
 use sha2::{Digest, Sha256};
 
@@ -107,24 +107,96 @@ pub fn build_rsa_private_key_from_primes(p: &[u8], q: &[u8]) -> Result<RsaPrivat
         )));
     }
 
-    let n = BigUint::from_bytes_be(p) * BigUint::from_bytes_be(q);
-    let p = BigUint::from_bytes_be(p);
-    let q = BigUint::from_bytes_be(q);
+    if p[p_len - 1] & 1 == 0 || q[q_len - 1] & 1 == 0 {
+        return Err(KeystoreError::GenerateSigningKeyError(
+            "invalid RSA primes".to_string(),
+        ));
+    }
+    let mut p = BigUint::from_bytes_be(p);
+    let mut q = BigUint::from_bytes_be(q);
+    let mut n = &p * &q;
+    if p.bits() != 2048 || q.bits() != 2048 || p == q || n.bits() != MODULUS_LENGTH {
+        p.zeroize();
+        q.zeroize();
+        n.zeroize();
+        return Err(KeystoreError::GenerateSigningKeyError(
+            "invalid RSA primes".to_string(),
+        ));
+    }
     // e = 65537
     let e = BigUint::from_bytes_be(&[0x01, 0x00, 0x01]);
-    let d = e
-        .clone()
-        .mod_inverse((p.clone() - 1u8) * (q.clone() - 1u8))
-        .ok_or_else(|| {
-            KeystoreError::GenerateSigningKeyError(
-                "failed to calculate rsa private key".to_string(),
-            )
-        })?;
-    let private_key = RsaPrivateKey::from_components(n, e, d.to_biguint().unwrap(), vec![p, q])
-        .map_err(|_| {
-            KeystoreError::GenerateSigningKeyError("failed to compose rsa signing key".to_string())
-        })?;
+    let mut p_minus_one = p.clone() - 1u8;
+    let mut q_minus_one = q.clone() - 1u8;
+    let mut totient = &p_minus_one * &q_minus_one;
+    p_minus_one.zeroize();
+    q_minus_one.zeroize();
+    let d_signed = e.clone().mod_inverse(totient.clone());
+    totient.zeroize();
+    let mut d_signed = d_signed.ok_or_else(|| {
+        KeystoreError::GenerateSigningKeyError("failed to calculate rsa private key".to_string())
+    })?;
+    let d = d_signed.to_biguint();
+    d_signed.zeroize();
+    let mut d = d.ok_or_else(|| {
+        KeystoreError::GenerateSigningKeyError("failed to calculate rsa private key".to_string())
+    })?;
+    let private_key = RsaPrivateKey::from_components(n, e, d.clone(), vec![p, q]);
+    d.zeroize();
+    let private_key = private_key.map_err(|_| {
+        KeystoreError::GenerateSigningKeyError("failed to compose rsa signing key".to_string())
+    })?;
+    private_key.validate().map_err(|_| {
+        KeystoreError::GenerateSigningKeyError("invalid RSA private key".to_string())
+    })?;
     Ok(private_key)
+}
+
+#[cfg(target_os = "none")]
+struct ArSelfTestMcuRng;
+
+#[cfg(target_os = "none")]
+impl rand_core::RngCore for ArSelfTestMcuRng {
+    fn next_u32(&mut self) -> u32 {
+        rand_core::impls::next_u32_via_fill(self)
+    }
+
+    fn next_u64(&mut self) -> u64 {
+        rand_core::impls::next_u64_via_fill(self)
+    }
+
+    fn fill_bytes(&mut self, dest: &mut [u8]) {
+        extern "C" {
+            fn TrngGet(buf: *mut core::ffi::c_void, len: u32);
+        }
+
+        for chunk in dest.chunks_mut(32) {
+            unsafe { TrngGet(chunk.as_mut_ptr().cast(), chunk.len() as u32) };
+        }
+    }
+
+    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> core::result::Result<(), rand_core::Error> {
+        self.fill_bytes(dest);
+        Ok(())
+    }
+}
+
+#[cfg(target_os = "none")]
+impl rand_core::CryptoRng for ArSelfTestMcuRng {}
+
+pub fn check_rsa_key_pair(key: &RsaPrivateKey) -> Result<()> {
+    #[cfg(target_os = "none")]
+    let mut rng = ArSelfTestMcuRng;
+    #[cfg(not(target_os = "none"))]
+    let mut rng = OsRng;
+
+    let digest = Sha256::digest(b"Keystone AR RSA key-pair self-test v1");
+    let signature = key
+        .sign_with_rng(&mut rng, Pss::new_blinded::<Sha256>(), &digest)
+        .map_err(|_| KeystoreError::RSASignError)?;
+    let public_key = key.to_public_key();
+    public_key
+        .verify(Pss::new::<Sha256>(), &digest, &signature)
+        .map_err(|_| KeystoreError::RSAVerifyError)
 }
 
 pub fn get_rsa_pubkey_by_seed(seed: &[u8]) -> Result<Vec<u8>> {
@@ -241,6 +313,15 @@ mod tests {
         .unwrap();
 
         let sk = build_rsa_private_key_from_primes(p.as_slice(), q.as_slice()).unwrap();
+        assert!(check_rsa_key_pair(&sk).is_ok());
+        let invalid_key = RsaPrivateKey::from_components(
+            sk.n().clone(),
+            sk.e().clone(),
+            sk.d() + 1u8,
+            sk.primes().to_vec(),
+        )
+        .unwrap();
+        assert!(check_rsa_key_pair(&invalid_key).is_err());
         let pk = sk.to_public_key();
         let vk = VerifyingKey::<Sha256>::new(pk);
 
@@ -326,5 +407,19 @@ mod tests {
         assert!(result
             .to_string()
             .contains("Invalid prime Q length: 255, expected 256 bytes"));
+    }
+
+    #[test]
+    fn test_reject_invalid_rsa_components() {
+        let zero = [0u8; 256];
+        let mut even = [0xffu8; 256];
+        even[255] = 0xfe;
+        let composite = [0xffu8; 256];
+        assert!(build_rsa_private_key_from_primes(&zero, &zero).is_err());
+        assert!(build_rsa_private_key_from_primes(&even, &composite).is_err());
+        assert!(build_rsa_private_key_from_primes(&composite, &composite).is_err());
+        let mut short = [0u8; 256];
+        short[255] = 3;
+        assert!(build_rsa_private_key_from_primes(&short, &composite).is_err());
     }
 }

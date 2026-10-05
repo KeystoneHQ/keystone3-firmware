@@ -24,6 +24,7 @@ members = [
 
     # C interface entry
     "rust_c",
+    "sandbox_parser",
 
     # other
     "keystore",
@@ -57,6 +58,7 @@ keystore = { path = "keystore", default-features = false }
 tools = { path = "tools" }
 sim_qr_reader = { path = "sim_qr_reader" }
 rust_tools = { path = "tools" }
+sandbox_parser = { path = "sandbox_parser" }
 zcash_vendor = { path = "zcash_vendor", default-features = false}
 
 # third party dependencies
@@ -78,6 +80,7 @@ rsa = { version = "0.8.2", default-features = false }
 sha1 = { version = "0.10.5", default-features = false }
 ur-registry = "=1.0.8"
 ur-parse-lib = "1.0.8"
+ur = { package = "keystone-ur", version = "0.1.1", default-features = false }
 sui-transaction-types-core = { git = "https://github.com/KeystoneHQ/sui.git", tag = "mainnet-nostd-v1.69.2.1", default-features = false, features = ["alloc"] }
 ed25519-bip32-core = { version = "0.1.1", default-features = false }
 cryptoxide = "0.4"

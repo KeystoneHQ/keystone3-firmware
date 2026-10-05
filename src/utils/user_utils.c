@@ -107,6 +107,22 @@ bool IsHexStringWithLen(const char *value, size_t expectedLen)
     return true;
 }
 
+void ClearSensitiveBuffer(void *value, size_t valueLen)
+{
+    if (value == NULL || valueLen == 0) {
+        return;
+    }
+    memset_s(value, valueLen, 0, valueLen);
+}
+
+void ClearSensitiveCString(char *value)
+{
+    if (value == NULL) {
+        return;
+    }
+    ClearSensitiveBuffer(value, strlen(value));
+}
+
 void RemoveFormatChar(char *str)
 {
 #ifndef COMPILE_SIMULATOR

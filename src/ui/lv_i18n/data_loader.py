@@ -8,6 +8,7 @@ import subprocess
 import glob
 import os
 import re
+import time
 import get_font_contain
 
 compile_command = 'lv_i18n compile -t "*.yml" -o .'
@@ -19,8 +20,15 @@ def replace_text_in_file(file_path = 'lv_i18n.c'):
     modified_content = re.sub(r'\bstatic lv_i18n_phrase_t\b', 'const static lv_i18n_phrase_t', content)
 
     if content != modified_content:
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(modified_content)
+        for attempt in range(5):
+            try:
+                with open(file_path, 'w', encoding='utf-8') as file:
+                    file.write(modified_content)
+                break
+            except OSError:
+                if attempt == 4:
+                    raise
+                time.sleep(0.5)
         print("File has been modified.")
 
 with open("./data.csv", newline="", encoding='utf-8') as csvfile:

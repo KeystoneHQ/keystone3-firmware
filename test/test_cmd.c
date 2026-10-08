@@ -1287,6 +1287,29 @@ static void MigrationPrintValidatedArReceive(uint8_t accountIndex, const char *p
         free_simple_response_c_char(publicKey);
     }
 }
+
+static uint8_t g_migrationAddressCachedAccountIndex = 0xFF;
+static char g_migrationAddressCachedPassword[32] = {0};
+
+static int32_t MigrationPrepareAddressDisplayProbe(uint8_t *accountIndex, char *password)
+{
+    if (g_migrationAddressCachedAccountIndex != 0xFF &&
+        GetCurrentAccountIndex() == g_migrationAddressCachedAccountIndex &&
+        strcmp(g_migrationAddressCachedPassword, password) == 0 &&
+        GetCurrentAccountPublicKey(XPUB_TYPE_BTC) != NULL) {
+        *accountIndex = g_migrationAddressCachedAccountIndex;
+        SecretCacheSetPassword(password);
+        return SUCCESS_CODE;
+    }
+
+    int32_t ret = VerifyPasswordAndLogin(accountIndex, password);
+    if (ret == SUCCESS_CODE) {
+        g_migrationAddressCachedAccountIndex = *accountIndex;
+        strcpy_s(g_migrationAddressCachedPassword, sizeof(g_migrationAddressCachedPassword), password);
+        SecretCacheSetPassword(password);
+    }
+    return ret;
+}
 #endif
 
 static void MigrationTestFunc(int argc, char *argv[])
@@ -1338,6 +1361,23 @@ static void MigrationTestFunc(int argc, char *argv[])
         printf("MigrationArReceive=-1,status=unsupported\r\n");
         printf("MigrationArReceiveDone=1\r\n");
 #endif
+    } else if (strcmp(argv[0], "ar_receive_rebuild_probe") == 0) {
+#ifdef WEB3_VERSION
+        VALUE_CHECK(argc, 2);
+        uint8_t accountIndex = 0;
+        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        if (ret != SUCCESS_CODE) {
+            printf("MigrationArRebuild=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceive=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
+            printf("MigrationArReceiveDone=1\r\n");
+            return;
+        }
+        printf("MigrationArRebuild=0,accountIndex=%d,status=login_path\r\n", accountIndex);
+        MigrationPrintValidatedArReceive(accountIndex, argv[1], false);
+#else
+        printf("MigrationArReceive=-1,status=unsupported\r\n");
+        printf("MigrationArReceiveDone=1\r\n");
+#endif
     } else if (strcmp(argv[0], "ar_receive_probe_safe") == 0) {
 #ifdef WEB3_VERSION
         VALUE_CHECK(argc, 2);
@@ -1363,7 +1403,7 @@ static void MigrationTestFunc(int argc, char *argv[])
             return;
         }
         uint8_t accountIndex = 0;
-        int32_t ret = VerifyPasswordAndLogin(&accountIndex, argv[1]);
+        int32_t ret = MigrationPrepareAddressDisplayProbe(&accountIndex, argv[1]);
         if (ret != SUCCESS_CODE) {
             printf("MigrationAddressDisplay=%d,accountIndex=%d,status=login_error\r\n", ret, accountIndex);
             printf("MigrationAddressDisplayDone=1\r\n");

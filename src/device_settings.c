@@ -106,6 +106,12 @@ static const uint8_t g_recoveryModeFlag[16] = {
     'm', 'o', 'd', 'e',
     'f', 'l', 'a', 'g',
 };
+static const uint8_t g_migrationInstallFlag[16] = {
+    'm', 'i', 'g', 'r',
+    'a', 't', 'i', 'o',
+    'n', 'i', 'n', 's',
+    't', 'a', 'l', 'l',
+};
 void DeviceSettingsInit(void)
 {
     int32_t ret;
@@ -390,6 +396,14 @@ void SetRecoveryModeSwitch(bool isSet)
         memset(g_bootParam.recoveryModeSwitch, 0, sizeof(g_bootParam.recoveryModeSwitch));
     }
     SaveBootParam();
+}
+
+int SetMigrationInstallMode(void)
+{
+    memcpy(g_bootParam.reserve, g_integrityFlag, sizeof(g_bootParam.reserve));
+    memcpy(g_bootParam.recoveryModeSwitch, g_migrationInstallFlag,
+           sizeof(g_bootParam.recoveryModeSwitch));
+    return SaveBootParam();
 }
 
 bool IsUpdateSuccess(void)

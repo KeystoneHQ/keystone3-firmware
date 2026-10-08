@@ -56,6 +56,7 @@ bool GetEnableBlindSigning(void);
 void SetEnableBlindSigning(bool enable);
 void SetRecoveryModeSwitch(bool isSet);
 bool GetRecoveryModeSwitch(void);
+int SetMigrationInstallMode(void);
 void ResetBootParam(void);
 int SaveBootParam(void);
 #endif

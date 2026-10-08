@@ -1419,6 +1419,12 @@ static void MigrationTestFunc(int argc, char *argv[])
     } else if (strcmp(argv[0], "reboot") == 0) {
         printf("MigrationReboot=0\r\n");
         SystemReboot();
+    } else if (strcmp(argv[0], "reboot_to_msc") == 0) {
+        int ret = SetMigrationInstallMode();
+        printf("MigrationRebootToMsc=%d\r\n", ret);
+        if (ret == SUCCESS_CODE) {
+            SystemReboot();
+        }
     } else {
         printf("unsupported migration test: %s\r\n", argv[0]);
     }

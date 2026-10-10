@@ -184,9 +184,6 @@ static void ViewImageOnLcd(void)
 {
     uint8_t *imgAddr;
 
-    uint8_t *u8Addr;
-    uint16_t R, G, B;
-
     if (g_qrDecodeImageBuffer == NULL) {
         g_qrDecodeImageBuffer = SRAM_MALLOC(320 * VIEW_IMAGE_LINE * 2);
     }
@@ -200,26 +197,29 @@ static void ViewImageOnLcd(void)
     }
     staticImgAddr = imgAddr;
 
-    uint32_t i, camPixelIndex = 0, line;
-    uint32_t x = 0, y = 0;
+    uint32_t line;
+    uint32_t y = 0;
 #define START_SCAN_LINE 225
 #define START_SCAN_COL  82
     for (line = START_SCAN_LINE; line < START_SCAN_LINE + 320; line += VIEW_IMAGE_LINE) {
-        x = 0;
         while (LcdBusy()) {
             osDelay(1);
         }
-        for (i = 0; i < 320 * VIEW_IMAGE_LINE; i++) {
-            camPixelIndex = ((320 - y) * 3 / 2 + 80) + (x * 3 / 2) * 640;
-            u8Addr = (uint8_t *)&g_qrDecodeImageBuffer[i];
-            G = imgAddr[camPixelIndex] >> 2;
-            R = G >> 1;
-            B = R;
-            *(uint16_t*)u8Addr = ((R << 3 | B << 8 | G << 13 | G >> 3));
-            x++;
-            if (x >= 320) {
-                x = 0;
-                y++;
+        /* Convert one band (VIEW_IMAGE_LINE rows) of the rotated/scaled camera
+         * grayscale image to RGB565. Output is byte-identical to the previous
+         * implementation: the per-pixel integer `/2` divisions (multi-cycle on
+         * Cortex-M4) are replaced with `>>1` (valid for the non-negative
+         * operands here), and the row-dependent vertical base is hoisted out of
+         * the inner per-pixel loop instead of being recomputed 320 times/row. */
+        for (uint32_t row = 0; row < VIEW_IMAGE_LINE; row++, y++) {
+            const uint32_t vBase = ((320 - y) * 3 >> 1) + 80;
+            uint16_t *dst = &g_qrDecodeImageBuffer[row * 320];
+            for (uint32_t x = 0; x < 320; x++) {
+                const uint32_t camPixelIndex = vBase + ((x * 3 >> 1) * 640);
+                const uint16_t G = imgAddr[camPixelIndex] >> 2;
+                const uint16_t R = G >> 1;
+                const uint16_t B = R;
+                dst[x] = (R << 3 | B << 8 | G << 13 | G >> 3);
             }
         }
         LcdDraw(START_SCAN_COL, line, START_SCAN_COL + 320 - 1, line + VIEW_IMAGE_LINE - 1, (uint16_t *)g_qrDecodeImageBuffer);

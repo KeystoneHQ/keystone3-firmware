@@ -91,6 +91,7 @@ fn is_supported_hardware_call_path(path: &str) -> bool {
         "m/44'/234'",
         "m/44'/931'",
         "m/44'/4218'",
+        "m/44'/9000'",
     ];
 
     SUPPORTED_PATH_PREFIXES

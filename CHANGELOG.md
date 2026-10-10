@@ -1,3 +1,13 @@
+## 3.1.2 (2026-10-9)
+
+**Web3:**
+
+### What's New
+
+Added support for wallet migration via USB connection to Core Extension.
+If you need to migrate your  AVAX wallet and assets, please contact the Core Wallet team to obtain the beta extension.
+
+
 ## 3.1.0 (2026-09-10)
 
 **Web3:**

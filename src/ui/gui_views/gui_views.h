@@ -183,6 +183,7 @@ typedef enum {
 } GUI_VIEW_SIG_ENUM;
 
 extern GUI_VIEW g_initView;
+extern GUI_VIEW g_transitionView;
 extern GUI_VIEW g_lockView;
 extern GUI_VIEW g_homeView;
 extern GUI_VIEW g_setupView;

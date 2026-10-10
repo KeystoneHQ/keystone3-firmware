@@ -1,4 +1,5 @@
 #include "background_task.h"
+#include "transition_firmware.h"
 #include "background_app.h"
 #include "drv_aw32001.h"
 #include "drv_battery.h"
@@ -91,11 +92,15 @@ static void BackgroundTask(void *argument)
                 CloseUsb();
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 0);
                 GuiApiEmitSignalWithValue(SIG_INIT_PULLOUT_USB, 0);
-            } else if (GetUSBSwitch()) {
+            } else if (FIRMWARE_TRANSITION_ONLY || GetUSBSwitch()) {
+#if FIRMWARE_TRANSITION_ONLY
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+#else
 #if (USB_POP_WINDOW_ENABLE == 0)
                 OpenUsb();
 #else
                 GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+#endif
 #endif
             }
             GuiApiEmitSignal(SIG_INIT_BATTERY, &battState, sizeof(battState));

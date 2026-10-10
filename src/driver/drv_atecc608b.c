@@ -11,6 +11,7 @@
 #include "drv_otp.h"
 #include "assert.h"
 #include "drv_mpu.h"
+#include "transition_firmware.h"
 
 //#define ATECC608B_TEST_MODE
 
@@ -66,7 +67,9 @@ static const uint8_t g_ateccTestEncryptKey[] = {
 void Atecc608bInit(void)
 {
     atcab_init(&cfg_ateccx08a_i2c_default);
+#if !FIRMWARE_TRANSITION_ONLY
     Atecc608bBinding();
+#endif
 }
 
 /// @brief Get random data from ATECC608B.

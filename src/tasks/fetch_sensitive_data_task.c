@@ -16,6 +16,7 @@
 #include "usb_task.h"
 #include "anti_tamper.h"
 #include "device_setting.h"
+#include "transition_firmware.h"
 
 static void FetchSensitiveDataTask(void *argument);
 
@@ -24,7 +25,11 @@ osThreadId_t g_sensitiveDataTaskHandle;
 void CreateFetchSensitiveDataTask(void)
 {
     const osThreadAttr_t SensitiveDataTask_attributes = {
+#if FIRMWARE_TRANSITION_ONLY
+        .name = "TransitionUpgradeTask",
+#else
         .name = "SensitiveDataTask",
+#endif
 #ifdef CYPHERPUNK_VERSION
         .stack_size = 1024 * 44,
 #else
@@ -42,6 +47,9 @@ void CreateFetchSensitiveDataTask(void)
 /// @return err code.
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen)
 {
+    if (!IsTransitionAsyncAllowed(func)) {
+        return ERR_GENERAL_FAIL;
+    }
     BackgroundAsync_t async = {0};
     async.func = func;
     if (inDataLen > 0) {
@@ -56,6 +64,9 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
 
 int32_t AsyncExecuteWithPtr(BackgroundAsyncFunc_t func, const void *inData)
 {
+    if (!IsTransitionAsyncAllowed(func)) {
+        return ERR_GENERAL_FAIL;
+    }
     BackgroundAsync_t async = {0};
     async.func = func;
     async.inData = (void *)inData;
@@ -73,6 +84,9 @@ int32_t AsyncExecuteWithPtr(BackgroundAsyncFunc_t func, const void *inData)
 /// @return err code.
 int32_t AsyncDelayExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen, uint32_t delay)
 {
+    if (!IsTransitionAsyncAllowed(func)) {
+        return ERR_GENERAL_FAIL;
+    }
     BackgroundAsync_t async = {0};
     async.func = func;
     async.delay = delay;
@@ -88,6 +102,9 @@ int32_t AsyncDelayExecute(BackgroundAsyncFunc_t func, const void *inData, uint32
 
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    return ERR_GENERAL_FAIL;
+#else
     BackgroundRunnable_t async = {0};
     async.func = func;
     if (inDataLen > 0) {
@@ -98,6 +115,7 @@ int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void 
     async.runnable = runnable;
     PubBufferMsg(SENSITIVE_MSG_EXECUTE_RUNNABLE, &async, sizeof(BackgroundRunnable_t));
     return SUCCESS_CODE;
+#endif
 }
 
 static void FetchSensitiveDataTask(void *argument)
@@ -117,11 +135,13 @@ static void FetchSensitiveDataTask(void *argument)
                 break;
             }
             async = (BackgroundAsync_t *)rcvMsg.buffer;
-            if (async->delay > 0) {
-                osDelay(async->delay);
-            }
-            if (async->func) {
-                async->func(async->inData, async->inDataLen);
+            if (IsTransitionAsyncAllowed(async->func)) {
+                if (async->delay > 0) {
+                    osDelay(async->delay);
+                }
+                if (async->func) {
+                    async->func(async->inData, async->inDataLen);
+                }
             }
             if (async->shouldFree && async->inData) {
                 SRAM_FREE(async->inData);
@@ -136,9 +156,11 @@ static void FetchSensitiveDataTask(void *argument)
             BackgroundRunnable_t *async_r = (BackgroundRunnable_t *)rcvMsg.buffer;
             // compiler will optimize the argument inData and inDataLen if they are not used in some cases;
             bool shouldClean = async_r->inDataLen > 0 && async_r->inData != NULL;
+#if !FIRMWARE_TRANSITION_ONLY
             if (async_r->func) {
                 async_r->func(async_r->inData, async_r->inDataLen, async_r->runnable);
             }
+#endif
             if (shouldClean) {
                 SRAM_FREE(async_r->inData);
             }

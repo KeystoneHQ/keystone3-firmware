@@ -9,6 +9,7 @@
 #include "user_memory.h"
 #include "gui_views.h"
 #include "user_delay.h"
+#include "transition_firmware.h"
 #include "eapdu_services/service_resolve_ur.h"
 #include "eapdu_services/service_check_lock.h"
 #include "eapdu_services/service_echo_test.h"
@@ -131,6 +132,12 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         printf("Invalid request: NULL pointer\n");
         return;
     }
+#if FIRMWARE_TRANSITION_ONLY
+    /* The updater uses the internal protocol; all wallet SDK commands are disabled. */
+    SendEApduResponseError(request->cla, request->commandType, request->requestID,
+                          PRS_PARSING_DISALLOWED, "Intermediate firmware: upgrade using SD card or USB");
+    return;
+#endif
     switch (request->commandType) {
     case CMD_ECHO_TEST:
         EchoService(request);

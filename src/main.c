@@ -49,6 +49,7 @@
 #include "power_on_self_check.h"
 #include "account_manager.h"
 #include "version.h"
+#include "transition_firmware.h"
 #include "hardware_version.h"
 #include "librust_c.h"
 #include "drv_mpu.h"
@@ -61,7 +62,9 @@ int main(void)
     MpuInit();
     SensorInit();
     Uart0Init(CmdIsrRcvByte);
+#if !FIRMWARE_TRANSITION_ONLY
     FingerprintInit();
+#endif
     cm_backtrace_init("mh1903", GetHardwareVersionString(), GetSoftwareVersionString());
     TrngInit();
     TamperInit(TamperStartup);
@@ -78,8 +81,10 @@ int main(void)
     UserMsgInit();
     DS28S60_Init();
     Atecc608bInit();
+#if !FIRMWARE_TRANSITION_ONLY
     SeManagerInit();               // resolve SE generation once (after the 608B is up, before any SE-account use)
     AccountsDataCheck();
+#endif
     MountUsbFatfs();
     RtcInit();
     MotorInit();
@@ -88,21 +93,30 @@ int main(void)
     ButtonInit();
     ExtInterruptInit();
     MountSdFatfs();
+#if !FIRMWARE_TRANSITION_ONLY
     UserSqlite3Init();
+#endif
     ScreenManagerInit();
+#if !FIRMWARE_TRANSITION_ONLY
     AccountManagerInit();
+#endif
     PowerOnSelfCheck();
 
     PrintSystemInfo();
     osKernelInitialize();
+#if !FIRMWARE_TRANSITION_ONLY
     CreateFingerprintTask();
-#ifndef BUILD_PRODUCTION
+#endif
+#if !defined(BUILD_PRODUCTION) && !FIRMWARE_TRANSITION_ONLY
     CreateCmdTask();
 #endif
+    /* AsyncExecute also runs boot updates and SD firmware copies on this task. */
     CreateFetchSensitiveDataTask();
     CreateDataParserTask();
     CreateUiDisplayTask();
+#if !FIRMWARE_TRANSITION_ONLY
     CreateQrDecodeTask();
+#endif
     CreateTouchPadTask();
     CreateBackgroundTask();
     CreateLogTask();

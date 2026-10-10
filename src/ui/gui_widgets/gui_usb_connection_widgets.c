@@ -7,6 +7,8 @@
 #include "gui_api.h"
 #include "device_setting.h"
 #include "drv_aw32001.h"
+#include "transition_firmware.h"
+#include "version.h"
 
 static void GuiUsbConnectionInit(void);
 static void GuiUsbConnectionDeInit(void);
@@ -20,6 +22,16 @@ const GuiMsgBox_t g_guiMsgBoxUsbConnection = {
     GuiUsbConnectionDeInit,
     GUI_USB_CONNECTION_PRIORITY,
 };
+
+void GuiUsbConnectionRequest(bool connected)
+{
+    if (connected && GetUsbDetectState() && !GetUsbState() && !NeedUpdateBoot() &&
+            (GuiCheckIfTopView(&g_transitionView) || GuiCheckIfTopView(&g_firmwareUpdateView))) {
+        OpenMsgBox(&g_guiMsgBoxUsbConnection);
+    } else {
+        CloseMsgBox(&g_guiMsgBoxUsbConnection);
+    }
+}
 
 void GuiUsbConnectionInit(void)
 {
@@ -50,7 +62,8 @@ static void NotNowHandler(lv_event_t *e)
 static void ConnectUsbHandler(lv_event_t *e)
 {
 #ifndef COMPILE_SIMULATOR
-    if (GetUSBSwitch() && GetUsbDetectState()) {
+    if ((FIRMWARE_TRANSITION_ONLY || GetUSBSwitch()) && GetUsbDetectState() &&
+            (!FIRMWARE_TRANSITION_ONLY || !NeedUpdateBoot())) {
         OpenUsb();
     }
 #endif

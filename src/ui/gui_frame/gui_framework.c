@@ -3,6 +3,8 @@
 #include "gui_api.h"
 #include "screen_manager.h"
 #include "gui_model.h"
+#include "transition_firmware.h"
+#include "version.h"
 #ifndef COMPILE_SIMULATOR
 #include "user_msg.h"
 #endif
@@ -24,6 +26,29 @@ static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID);
 /* STATIC VARIABLES */
 static GUI_VIEW *g_workingView = NULL;
 static uint32_t g_viewCnt = 0;      // Record how many views are opened
+
+static bool IsViewAllowed(const GUI_VIEW *view)
+{
+    if (view == NULL) {
+        return false;
+    }
+#if FIRMWARE_TRANSITION_ONLY
+    switch (view->id) {
+    case SCREEN_INIT:
+    case SCREEN_TRANSITION:
+    case SCREEN_BOOT_UPDATE:
+    case SCREEN_SELF_DESTRUCT:
+    case SCREEN_INACTIVE:
+        return true;
+    case SCREEN_FIRMWARE_UPDATE:
+        return !NeedUpdateBoot();
+    default:
+        return false;
+    }
+#else
+    return true;
+#endif
+}
 
 bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -96,6 +121,9 @@ bool GuiCheckIfViewOpened(GUI_VIEW *viewToOpen)
 
 int32_t GuiFrameOpenView(GUI_VIEW *view)
 {
+    if (!IsViewAllowed(view)) {
+        return ERR_GUI_ERROR;
+    }
     // todo some error proofing
     if (GuiCheckIfViewOpened(view)) {
         printf("err:gui has already opened!\r\n");
@@ -124,6 +152,9 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
 
 int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
 {
+    if (!IsViewAllowed(view) || GuiCheckIfViewOpened(view)) {
+        return ERR_GUI_ERROR;
+    }
     // todo some error proofing
     g_debugView[g_viewCnt].view.id = view->id;
     g_debugView[g_viewCnt].view.pEvtHandler = view->pEvtHandler;
@@ -145,6 +176,14 @@ int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
 
 int32_t GuiCloseCurrentWorkingView(void)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    if (g_workingView == NULL || g_workingView == &g_initView || g_workingView == &g_transitionView) {
+        return ERR_GUI_ERROR;
+    }
+    if (g_workingView == &g_bootUpdateView && NeedUpdateBoot()) {
+        return ERR_GUI_ERROR;
+    }
+#endif
     g_viewCnt--;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_OBJ_DEINIT, NULL, 0);
     printf("close view %s freeHeap %d\n", GuiFrameIdToName(g_workingView->id), xPortGetFreeHeapSize());
@@ -159,6 +198,14 @@ int32_t GuiCloseCurrentWorkingView(void)
 
 int32_t GuiFrameCLoseView(GUI_VIEW *view)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    if (view == &g_initView || view == &g_transitionView) {
+        return ERR_GUI_ERROR;
+    }
+    if (view == &g_bootUpdateView && NeedUpdateBoot()) {
+        return ERR_GUI_ERROR;
+    }
+#endif
     if (g_workingView == view) {
         return GuiCloseCurrentWorkingView();
     } else {
@@ -205,12 +252,22 @@ bool GuiCheckIfTopView(GUI_VIEW *view)
 
 int32_t GuiCloseToTargetView(GUI_VIEW *view)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    if (view == &g_initView) {
+        view = &g_transitionView;
+    }
+    if (!IsViewAllowed(view) || !GuiCheckIfViewOpened(view)) {
+        return ERR_GUI_ERROR;
+    }
+#endif
     GuiViewHintBoxClear();
     if (g_workingView == &g_homeView) {
         GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
     } else {
         while (g_workingView != view) {
-            GuiCloseCurrentWorkingView();
+            if (GuiCloseCurrentWorkingView() != SUCCESS_CODE) {
+                return ERR_GUI_ERROR;
+            }
         }
         GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
     }
@@ -219,25 +276,8 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
 
 static const char *GuiFrameIdToName(SCREEN_ID_ENUM ID)
 {
-    const char *str =
-        "SCREEN_INIT\0" "SCREEN_LOCK\0" "SCREEN_HOME\0" "SCREEN_SETUP\0" "CREATE_WALLET\0" "CREATE_SHARE\0"
-        "IMPORT_SHARE\0" "SINGLE_PHRASE\0" "IMPORT_SINGLE_PHRASE\0" "CONNECT_WALLET\0" "SCREEN_SETTING\0" "SCREEN_QRCODE\0"
-        "SCREEN_PASSPHRASE\0" "SCREEN_BITCOIN_RECEIVE\0" "SCREEN_ETHEREUM_RECEIVE\0" "SCREEN_STANDARD_RECEIVE\0" "SCREEN_EXPORT_PUBKEY\0"
-        "SCREEN_FORGET_PASSCODE\0" "SCREEN_LOCK_DEVICE\0" "SCREEN_FIRMWARE_UPDATE\0" "SCREEN_WEB_AUTH\0"
-        "SCREEN_PURPOSE\0" "SCREEN_SYSTEM_SETTING\0" "SCREEN_WEB_AUTH_RESULT\0" "SCREEN_ABOUT\0"
-        "SCREEN_ABOUT_KEYSTONE\0" "SCREEN_ABOUT_TERMS\0" "SCREEN_ABOUT_INFO\0" "SCREEN_WIPE_DEVICE\0"
-        "SCREEN_WALLET_TUTORIAL\0" "SCREEN_SELF_DESTRUCT\0" "SCREEN_INACTIVE\0" "SCREEN_DISPLAY\0"
-        "SCREEN_TUTORIAL\0" "SCREEN_CONNECTION\0" "SCREEN_MULTI_ACCOUNTS_RECEIVE\0" "SCREEN_KEY_DERIVATION_REQUEST\0"
-        "SCREEN_SCAN\0" "SCREEN_TRANSACTION_DETAIL\0" "SCREEN_TRANSACTION_SIGNATURE\0" "SCREEN_USB_TRANSPORT\0"
-        "SCREEN_DEVICE_PUB_KEY\0" "SCREEN_DEVICE_UPDATE_SUCCESS\0" "SCREEN_BTC_WALLET_PROFILE\0" "SCREEN_MULTI_SIG_IMPORT_WALLET_INFO\0"
-        "SCREEN_MULTISIG_WALLET_EXPORT\0" "SCREEN_CREATE_MULTI\0" "SCREEN_MANAGE_MULTI_SIG\0" "SCREEN_ETH_BATCH_TX\0"
-        "SCREEN_ZCASH_BATCH_TX\0";
-    SCREEN_ID_ENUM i;
-
-    for (i = SCREEN_INIT; i != ID && *str; i++) {
-        while (*str++) ;
-    }
-    printf("id = %d name = %s\n", ID, str);
-    const char *name = str;
+    static const char *names[] = { SCREEN_LIST(ITEM_STR) };
+    const char *name = ID >= SCREEN_INIT && ID < SCREEN_TOTAL ? names[ID] : "SCREEN_INVALID";
+    printf("id = %d name = %s\n", ID, name);
     return name;
 }

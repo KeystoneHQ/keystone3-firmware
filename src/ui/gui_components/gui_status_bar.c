@@ -13,6 +13,7 @@
 #include "usb_task.h"
 #include "user_memory.h"
 #include "version.h"
+#include "transition_firmware.h"
 #include "gui_firmware_update_widgets.h"
 
 #ifndef COMPILE_SIMULATOR
@@ -292,7 +293,7 @@ void GuiStatusBarInit(void)
     g_guiStatusBar.usbImg = img;
     lv_obj_add_flag(img, LV_OBJ_FLAG_HIDDEN);
 
-    if (SOFTWARE_VERSION_BUILD % 2) {
+    if (!FIRMWARE_TRANSITION_ONLY && SOFTWARE_VERSION_BUILD % 2) {
         img = GuiCreateImg(cont, &imgBeta);
         g_guiStatusBar.betaImg = img;
     }
@@ -350,11 +351,17 @@ void GuiStatusBarSetSdCard(bool connected, bool onlyImg)
     if (connected) {
         lv_obj_clear_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
         if (!onlyImg) {
+#if FIRMWARE_TRANSITION_ONLY
+            if (GuiCheckIfTopView(&g_firmwareUpdateView) && FatfsFileExist(SD_CARD_OTA_BIN_PATH)) {
+                GuiCreateSdCardUpdateHintbox(false);
+            }
+#else
             uint8_t accountCnt = 0;
             GetExistAccountNum(&accountCnt);
             if (!GuiLockScreenIsTop() && accountCnt > 0 && FatfsFileExist(SD_CARD_OTA_BIN_PATH) && !GuiCheckIfTopView(&g_forgetPassView)) {
                 GuiCreateSdCardUpdateHintbox(false);
             }
+#endif
         }
     } else {
         lv_obj_add_flag(g_guiStatusBar.sdCardImg, LV_OBJ_FLAG_HIDDEN);
@@ -515,7 +522,7 @@ static void RefreshStatusBar(void)
     lv_obj_align_to(g_guiStatusBar.testNetImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     next = g_guiStatusBar.testNetImg;
 #endif
-    if (SOFTWARE_VERSION_BUILD % 2) {
+    if (!FIRMWARE_TRANSITION_ONLY && SOFTWARE_VERSION_BUILD % 2) {
         lv_obj_align_to(g_guiStatusBar.betaImg, next, LV_ALIGN_OUT_LEFT_MID, -10, 0);
     }
 }

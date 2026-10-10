@@ -17,6 +17,7 @@
 #include "drv_otp.h"
 #include "err_code.h"
 #include "assert.h"
+#include "transition_firmware.h"
 
 //#define DS28S60_TEST_MODE
 //#define DS28S60_FORCE_BINDING
@@ -150,7 +151,9 @@ void DS28S60_Init(void)
     DS28S60_PDWN_SET;
     UserDelay(100);
 
+#if !FIRMWARE_TRANSITION_ONLY
     DS28S60_Binding();
+#endif
 }
 
 void DS28S60_Open(void)

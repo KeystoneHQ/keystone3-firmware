@@ -6,6 +6,7 @@
 #include "service_file_trans.h"
 #include "user_memory.h"
 #include "assert.h"
+#include "transition_firmware.h"
 
 static ProtocolSendCallbackFunc_t g_sendFunc = NULL;
 static uint8_t g_protocolRcvBuffer[PROTOCOL_MAX_LENGTH];
@@ -148,6 +149,12 @@ static uint8_t *ExecuteService(FrameHead_t *head, const uint8_t *tlvData, uint32
         printf("err, invalid input parameters\n");
         return NULL;
     }
+#if FIRMWARE_TRANSITION_ONLY
+    if (head->serviceId != SERVICE_ID_DEVICE_INFO && head->serviceId != SERVICE_ID_FILE_TRANS) {
+        *outLen = 0;
+        return NULL;
+    }
+#endif
 
     uint32_t i;
     for (i = 0; i < sizeof(g_ProtocolServiceList) / sizeof(g_ProtocolServiceList[0]); i++) {

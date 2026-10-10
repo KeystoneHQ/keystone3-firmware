@@ -16,6 +16,7 @@
 #include "account_manager.h"
 #include "se_manager.h"
 #include "fingerprint_process.h"
+#include "transition_firmware.h"
 
 #define LOCK_SCREEN_TICK                                    1000
 #define LOCK_SCREEN_TIME_OUT                                60 * 1000
@@ -103,6 +104,10 @@ static void ReleaseHandler(void)
 
 static void LockScreen(void)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    /* Neither inactivity nor the power button may open a wallet lock screen. */
+    return;
+#endif
     if (!g_pageLockScreenEnable) {
         printf("current page lock screen is disabled\n");
         return;

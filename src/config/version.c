@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "gui.h"
 #include "version.h"
+#include "transition_firmware.h"
 
 #define BOOT_VERSION_ADDR                   0x01002000
 #define BOOT_VERSION_HEAD                   "Boot v"
@@ -23,7 +24,7 @@ static bool GetBootSoftwareVersionFormData(uint32_t *major, uint32_t *minor, uin
 
 void GetSoftWareVersion(char *version)
 {
-    if (SOFTWARE_VERSION_BUILD % 2 == 0) {
+    if (FIRMWARE_TRANSITION_ONLY || SOFTWARE_VERSION_BUILD % 2 == 0) {
         snprintf(version, SOFTWARE_VERSION_MAX_LEN, "%s v%d.%d.%d%s", _("about_info_firmware_version_head"), SOFTWARE_VERSION_MAJOR - SOFTWARE_VERSION_MAJOR_OFFSET, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD, SOFTWARE_VERSION_SUFFIX);
     } else {
         snprintf(version, SOFTWARE_VERSION_MAX_LEN, "v%d.%d.%d(beta%d)",

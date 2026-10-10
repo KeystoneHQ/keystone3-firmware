@@ -24,6 +24,7 @@
 #include "ctaes.h"
 #include "drv_mpu.h"
 #include "log_print.h"
+#include "transition_firmware.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #endif
@@ -148,7 +149,9 @@ void DeviceSettingsInit(void)
         g_deviceSettings.nftEnable = false;
         g_deviceSettings.nftValid = false;
         g_deviceSettings.enableBlindSigning = false;
+#if !FIRMWARE_TRANSITION_ONLY
         SaveDeviceSettingsSync();
+#endif
     }
 
     if (jsonString != NULL) {

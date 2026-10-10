@@ -14,6 +14,7 @@ typedef enum {
 void GuiFirmwareUpdateInit(void *param);
 void GuiFirmwareUpdateDeInit(void);
 void GuiFirmwareUpdateRefresh(void);
+void GuiFirmwareUpdateShowMethod(bool viaUsb);
 void GuiFirmwareUpdatePrevTile(void);
 void GuiFirmwareSdCardCopy(void);
 void GuiCreateSdCardUpdateHintbox(bool checkSumDone);

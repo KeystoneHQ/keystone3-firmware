@@ -10,6 +10,7 @@
 #include "sha256.h"
 #include "gui_setup_widgets.h"
 #include "account_manager.h"
+#include "transition_firmware.h"
 
 #define MAX_FILE_CONTENT_LEN 1000000
 #define MAX_FILE_SIZE_LIST (1024 * 256)
@@ -426,9 +427,11 @@ int MMC_disk_read(
     UINT count      /* Number of sectors to read */
 )
 {
+#if !FIRMWARE_TRANSITION_ONLY
     if ((GetCurrentAccountIndex() == 0xFF) && !GuiIsSetup()) {
         return RES_NOTRDY;
     }
+#endif
     uint32_t i;
     DRESULT status = RES_PARERR;
     SD_Error SD_state = SD_OK;

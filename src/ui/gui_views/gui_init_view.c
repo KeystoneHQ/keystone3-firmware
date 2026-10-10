@@ -26,6 +26,9 @@
 #include "usb_task.h"
 #include "ui_display_task.h"
 #include "version.h"
+#include "transition_firmware.h"
+#include "screen_manager.h"
+#include "gui_api.h"
 
 static int32_t GuiInitViewInit(void *param)
 {
@@ -52,7 +55,21 @@ static int32_t GuiInitViewInit(void *param)
     //     GuiBootVersionNotMatchWidget();
     //     return SUCCESS_CODE;
     // }
+#if FIRMWARE_TRANSITION_ONLY
+    SetPageLockScreen(false);
+    GuiFrameOpenView(&g_transitionView);
+    if (NeedUpdateBoot()) {
+        GuiFrameOpenView(&g_bootUpdateView);
+        return SUCCESS_CODE;
+    }
+#ifndef COMPILE_SIMULATOR
+    if (GetUsbDetectState()) {
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    }
+#endif
+#else
     GuiModeGetAccount();
+#endif
     return SUCCESS_CODE;
 }
 
@@ -71,6 +88,9 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         printf("init view should not be closed");
         break;
     case SIG_INIT_GET_ACCOUNT_NUMBER:
+#if FIRMWARE_TRANSITION_ONLY
+        break;
+#endif
         walletNum = *(uint8_t *)param;
         if (walletNum == 0) {
             GuiFrameOpenView(&g_setupView);
@@ -116,6 +136,10 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         }
         break;
     case SIG_INIT_USB_CONNECTION:
+#if FIRMWARE_TRANSITION_ONLY
+        GuiUsbConnectionRequest(param != NULL && usLen >= sizeof(uint32_t) && *(uint32_t *)param != 0);
+        break;
+#endif
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0 && !GuiLockScreenIsTop() && GetUsbDetectState() && ((GetCurrentAccountIndex() != 0xFF) || GuiIsSetup())) {
             if (GetUsbState() == false) {

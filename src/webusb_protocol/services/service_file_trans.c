@@ -22,6 +22,8 @@
 #include "data_parser_task.h"
 #include "screen_manager.h"
 #include "power_manager.h"
+#include "transition_firmware.h"
+#include "version.h"
 
 #define TYPE_FILE_INFO_FILE_NAME    1
 #define TYPE_FILE_INFO_FILE_SIZE    2
@@ -143,7 +145,7 @@ static int ValidateAndSetFileName(Tlv_t *tlvArray, FileTransInfo_t *fileTransInf
         return -1;
     }
 
-    if ((strcmp("keystone3.bin", tlvArray->pValue) != 0) && (strcmp("nft.bin", tlvArray->pValue) != 0)) {
+    if (strcmp("keystone3.bin", tlvArray->pValue) != 0) {
         return -1;
     }
     int written = snprintf(fileTransInfo->fileName, MAX_FILE_NAME_LENGTH + 3, "1:%s", tlvArray->pValue);
@@ -207,6 +209,10 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
     SetDeviceParserIv(g_fileTransInfo.iv);
 
     do {
+        if (FIRMWARE_TRANSITION_ONLY && NeedUpdateBoot()) {
+            sendTlvArray[0].value = 2;
+            break;
+        }
         if (strnlen_s(g_fileTransInfo.fileName, MAX_FILE_NAME_LENGTH) == 0 || g_fileTransInfo.fileSize == 0 || g_fileTransInfo.fileSize >= MAX_FILE_SIZE) {
             sendTlvArray[0].value = 4;
             break;
@@ -217,6 +223,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             break;
         }
         printf("verify signature ok\n");
+#if !FIRMWARE_TRANSITION_ONLY
         uint8_t walletAmount;
         GetExistAccountNum(&walletAmount);
         if (GetCurrentAccountIndex() == ACCOUNT_INDEX_LOGOUT && walletAmount != 0) {
@@ -224,6 +231,7 @@ static uint8_t *ServiceFileTransInfo(FrameHead_t *head, const uint8_t *tlvData, 
             sendTlvArray[0].value = 2;
             break;
         }
+#endif
         if (GetCurrentDisplayPercent() < LOW_BATTERY_PERCENT) {
             GuiApiEmitSignalWithValue(SIG_INIT_LOW_BATTERY, 1);
             sendTlvArray[0].value = 1;
@@ -415,8 +423,10 @@ static uint8_t *ServiceFileTransComplete(FrameHead_t *head, const uint8_t *tlvDa
 
     GuiApiEmitSignalWithValue(SIG_INIT_FIRMWARE_PROCESS, 0);
     *outLen = sizeof(FrameHead_t) + 4;
+#if !FIRMWARE_TRANSITION_ONLY
     SetSetupStep(4);
     SaveDeviceSettings();
+#endif
     SystemReboot();
     return BuildFrame(&sendHead, NULL, 0);
 }

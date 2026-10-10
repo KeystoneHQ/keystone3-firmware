@@ -25,6 +25,9 @@ typedef struct {
 
 void CreateFetchSensitiveDataTask(void);
 
+/* Implemented by the GUI model, which owns the permitted upgrade callbacks. */
+bool IsTransitionAsyncAllowed(BackgroundAsyncFunc_t func);
+
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen);
 int32_t AsyncExecuteWithPtr(BackgroundAsyncFunc_t func, const void *inData);
 int32_t AsyncDelayExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen, uint32_t delay);

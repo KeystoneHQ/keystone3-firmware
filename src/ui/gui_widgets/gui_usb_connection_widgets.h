@@ -7,5 +7,6 @@
 #include "gui_pop_message_box.h"
 
 extern const GuiMsgBox_t g_guiMsgBoxUsbConnection;
+void GuiUsbConnectionRequest(bool connected);
 
 #endif

@@ -18,6 +18,7 @@
 #include "user_memory.h"
 #include "keystore.h"
 #include "user_fatfs.h"
+#include "transition_firmware.h"
 
 typedef enum {
     FIRMWARE_UPDATE_SELECT = 0,
@@ -252,6 +253,14 @@ void GuiFirmwareUpdateWidgetRefresh(void)
 
 void GuiFirmwareUpdatePrevTile(void)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    if (g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT ||
+            g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_USB_INSTRUCTION ||
+            g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SD_INSTRUCTION) {
+        GuiCloseCurrentWorkingView();
+        return;
+    }
+#endif
     switch (g_firmwareUpdateWidgets.currentTile) {
     case FIRMWARE_UPDATE_SELECT:
         GuiCloseCurrentWorkingView();
@@ -357,6 +366,15 @@ static void GuiViaUsbHandler(lv_event_t *e)
     GuiFirmwareUpdateRefresh();
 }
 
+void GuiFirmwareUpdateShowMethod(bool viaUsb)
+{
+    if (viaUsb) {
+        GuiViaUsbHandler(NULL);
+    } else {
+        GuiViaSdCardHandler(NULL);
+    }
+}
+
 static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
 {
     lv_obj_t *label, *img;
@@ -409,6 +427,10 @@ static void GuiCreateUsbInstructionTile(lv_obj_t *parent)
 
 static void ConfirmSdCardUpdate(void)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    GuiFirmwareSdCardCopy();
+    GuiModelCopySdCardOta();
+#else
     static uint16_t walletSetIndex = SIG_INIT_SD_CARD_OTA_COPY;
     uint8_t accountCnt = 0;
     GetExistAccountNum(&accountCnt);
@@ -421,6 +443,7 @@ static void ConfirmSdCardUpdate(void)
         SetKeyboardWidgetSelf(g_keyboardWidget, &g_keyboardWidget);
         SetKeyboardWidgetSig(g_keyboardWidget, &walletSetIndex);
     }
+#endif
 }
 
 static void FirmwareSdcardUpdateHandler(lv_event_t *e)

@@ -31,6 +31,7 @@
 #include "assert.h"
 #include "version.h"
 #include "user_delay.h"
+#include "transition_firmware.h"
 #ifndef COMPILE_SIMULATOR
 #include "sha256.h"
 #include "rust.h"
@@ -113,6 +114,15 @@ static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataL
 static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t inDataLen);
 static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen);
 
+bool IsTransitionAsyncAllowed(BackgroundAsyncFunc_t func)
+{
+#if FIRMWARE_TRANSITION_ONLY
+    return func == ModelUpdateBoot || func == ModelCopySdCardOta || func == ModelCalculateBinSha256;
+#else
+    return true;
+#endif
+}
+
 static PasswordVerifyResult_t g_passwordVerifyResult;
 static bool g_stopCalChecksum = false;
 // Forget-pass: the account index the entered mnemonic matches (the wallet being reset), captured at the
@@ -166,9 +176,9 @@ static void AsyncDrainTimerCb(lv_timer_t *timer)
         AsyncQueueNode_t *node = current;
         current = current->next;
         const void *data = node->dataLen > 0 ? node->data : NULL;
-        if (node->kind == ASYNC_KIND_FUNC) {
+        if (node->kind == ASYNC_KIND_FUNC && IsTransitionAsyncAllowed(node->u.func)) {
             node->u.func(data, node->dataLen);
-        } else {
+        } else if (!FIRMWARE_TRANSITION_ONLY && node->kind == ASYNC_KIND_FUNC_WITH_RUNNABLE) {
             node->u.funcWithRunnable(data, node->dataLen, node->runnable);
         }
         free(node);
@@ -197,6 +207,9 @@ static void EnqueueAsync(AsyncQueueNode_t *node)
 
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen)
 {
+    if (!IsTransitionAsyncAllowed(func)) {
+        return ERR_GENERAL_FAIL;
+    }
     AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
     if (node == NULL) {
         return ERR_GENERAL_FAIL;
@@ -214,6 +227,9 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
 
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    return ERR_GENERAL_FAIL;
+#else
     AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
     if (node == NULL) {
         return ERR_GENERAL_FAIL;
@@ -227,6 +243,7 @@ int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void 
     }
     EnqueueAsync(node);
     return SUCCESS_CODE;
+#endif
 }
 #endif
 
@@ -1519,15 +1536,19 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
 {
 #ifndef COMPILE_SIMULATOR
+#if !FIRMWARE_TRANSITION_ONLY
     static uint8_t walletAmount;
+#endif
     SetPageLockScreen(false);
     int32_t ret = FatfsFileCopy(SD_CARD_OTA_FILE_PATH, INTERNAL_STORAGE_OTA_FILE_PATH);
     if (ret == SUCCESS_CODE) {
+#if !FIRMWARE_TRANSITION_ONLY
         GetExistAccountNum(&walletAmount);
         if (walletAmount == 0) {
             SetSetupStep(4);
             SaveDeviceSettings();
         }
+#endif
         NVIC_SystemReset();
     } else {
         SetPageLockScreen(true);

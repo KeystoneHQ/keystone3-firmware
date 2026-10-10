@@ -6,13 +6,19 @@
 #include "presetting.h"
 #include "gui_model.h"
 #include "version.h"
+#include "transition_firmware.h"
+#include "gui_api.h"
 
 static lv_obj_t *g_bootUpdateCont = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 static lv_obj_t *g_startBtn = NULL;
+static bool g_bootUpdating = false;
 
 void GuiCreateBootUpdateHandler(lv_event_t * e)
 {
+    if (g_bootUpdating) {
+        return;
+    }
     if (GetCurrentDisplayPercent() <= 40 ||
             GetUsbDetectState() == false) {
         g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("error_box_low_power"), _("boot_update_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
@@ -20,6 +26,8 @@ void GuiCreateBootUpdateHandler(lv_event_t * e)
         return;
     }
 
+    GUI_DEL_OBJ(g_noticeWindow)
+    g_bootUpdating = true;
     lv_obj_set_style_bg_color(g_startBtn, DARK_GRAY_COLOR, LV_PART_MAIN);
     lv_obj_clear_flag(g_startBtn, LV_OBJ_FLAG_CLICKABLE);
 
@@ -44,12 +52,31 @@ void GuiCreateBootUpdateSkipHandler(lv_event_t * e)
 
 void GuiBootUpdateDeInit(void)
 {
+    GUI_DEL_OBJ(g_noticeWindow)
     GUI_DEL_OBJ(g_bootUpdateCont)
+    g_startBtn = NULL;
+    g_bootUpdating = false;
 }
 
 void GuiBootUpdateSuccess(void)
 {
     printf("GuiBootUpdateSuccess\n");
+#if FIRMWARE_TRANSITION_ONLY
+    if (!NeedUpdateBoot()) {
+        GuiFrameCLoseView(&g_bootUpdateView);
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, GetUsbDetectState());
+    }
+#endif
+}
+
+void GuiBootUpdateFail(void)
+{
+    /* Restore the security-upgrade page so the user can retry after an error. */
+    GuiBootUpdateDeInit();
+    GuiBootUpdateInit();
+    g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("usb_transport_sign_unkown_error_title"),
+                                           _("try_again"), NULL, _("OK"), WHITE_COLOR_OPA20);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
 }
 
 void GuiBootUpdateInit(void)

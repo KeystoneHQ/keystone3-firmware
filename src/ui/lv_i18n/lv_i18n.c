@@ -18,6 +18,10 @@ static inline uint32_t op_f(uint32_t val) { UNUSED(val); return 0; }
 static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
+    {"transition_firmware_title", "Security Update Completed"},
+    {"transition_firmware_completed", "Security update has been completed successfully."},
+    {"transition_firmware_continue", "To finish setting up your device and get the latest protection and improvements, continue by updating to the latest firmware."},
+    {"transition_firmware_assets_safe", "Your assets remain safe. Always keep your seed phrase securely backed up."},
     {"Address", "Address"},
     {"Approve", "Approve"},
     {"Attention", "Attention"},
@@ -979,6 +983,10 @@ static const lv_i18n_lang_t en_lang = {
 };
 
 const static lv_i18n_phrase_t de_singulars[] = {
+    {"transition_firmware_title", "Sicherheitsupdate abgeschlossen"},
+    {"transition_firmware_completed", "Das Sicherheitsupdate wurde erfolgreich abgeschlossen."},
+    {"transition_firmware_continue", "Um die Einrichtung abzuschließen und den neuesten Schutz sowie Verbesserungen zu erhalten, aktualisieren Sie auf die neueste Firmware."},
+    {"transition_firmware_assets_safe", "Ihre Guthaben bleiben sicher. Bewahren Sie stets eine Sicherung Ihrer Seed-Phrase sicher auf."},
     {"Address", "Adresse"},
     {"Approve", "Genehmigen"},
     {"Attention", "Achtung"},
@@ -1940,6 +1948,10 @@ static const lv_i18n_lang_t de_lang = {
 };
 
 const static lv_i18n_phrase_t es_singulars[] = {
+    {"transition_firmware_title", "Actualización de seguridad completada"},
+    {"transition_firmware_completed", "La actualización de seguridad se ha completado correctamente."},
+    {"transition_firmware_continue", "Para terminar de configurar tu dispositivo y obtener la protección y las mejoras más recientes, continúa actualizando al último firmware."},
+    {"transition_firmware_assets_safe", "Tus activos siguen seguros. Guarda siempre una copia de tu frase semilla en un lugar seguro."},
     {"Address", "Dirección"},
     {"Approve", "Aprobar"},
     {"Attention", "Atención"},
@@ -2900,6 +2912,10 @@ static const lv_i18n_lang_t es_lang = {
 };
 
 const static lv_i18n_phrase_t ja_singulars[] = {
+    {"transition_firmware_title", "セキュリティ更新完了"},
+    {"transition_firmware_completed", "セキュリティ更新が正常に完了しました。"},
+    {"transition_firmware_continue", "デバイスの設定を完了し、最新の保護と改善を利用するため、最新のファームウェアへの更新を続けてください。"},
+    {"transition_firmware_assets_safe", "資産の安全は保たれています。シードフレーズのバックアップは常に安全に保管してください。"},
     {"Address", "住所"},
     {"Approve", "承認"},
     {"Attention", "注意"},
@@ -3859,6 +3875,10 @@ static const lv_i18n_lang_t ja_lang = {
 };
 
 const static lv_i18n_phrase_t ko_singulars[] = {
+    {"transition_firmware_title", "보안 업데이트 완료"},
+    {"transition_firmware_completed", "보안 업데이트가 성공적으로 완료되었습니다."},
+    {"transition_firmware_continue", "기기 설정을 마치고 최신 보안 및 개선 사항을 적용하려면 최신 펌웨어로 업데이트를 계속하세요."},
+    {"transition_firmware_assets_safe", "자산은 안전하게 유지됩니다. 시드 문구의 백업을 항상 안전하게 보관하세요."},
     {"Address", "주소"},
     {"Approve", "허락"},
     {"Attention", "주목"},
@@ -4818,6 +4838,10 @@ static const lv_i18n_lang_t ko_lang = {
 };
 
 const static lv_i18n_phrase_t ru_singulars[] = {
+    {"transition_firmware_title", "Обновление безопасности завершено"},
+    {"transition_firmware_completed", "Обновление безопасности успешно завершено."},
+    {"transition_firmware_continue", "Чтобы завершить настройку устройства и получить актуальную защиту и улучшения, обновите прошивку до последней версии."},
+    {"transition_firmware_assets_safe", "Ваши активы в безопасности. Всегда храните резервную копию сид-фразы в надёжном месте."},
     {"Address", "Адрес"},
     {"Approve", "Разрешить"},
     {"Attention", "Внимание"},
@@ -5782,6 +5806,10 @@ static const lv_i18n_lang_t ru_lang = {
 };
 
 const static lv_i18n_phrase_t zh_cn_singulars[] = {
+    {"transition_firmware_title", "安全升级已完成"},
+    {"transition_firmware_completed", "安全升级已成功完成。"},
+    {"transition_firmware_continue", "请继续升级至最新固件，以完成设备设置并获得最新的安全保护与功能改进。"},
+    {"transition_firmware_assets_safe", "您的资产仍然安全。请始终妥善备份并保管助记词。"},
     {"Address", "地址"},
     {"Approve", "允许"},
     {"Attention", "注意"},

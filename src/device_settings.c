@@ -458,7 +458,11 @@ void SetEnableBlindSigning(bool enable)
 
 uint32_t GetLanguage(void)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    return LANG_EN;
+#else
     return g_deviceSettings.language;
+#endif
 }
 
 void SetLanguage(uint32_t language)

@@ -36,6 +36,7 @@ static bool IsViewAllowed(const GUI_VIEW *view)
     switch (view->id) {
     case SCREEN_INIT:
     case SCREEN_TRANSITION:
+    case SCREEN_ABOUT_INFO:
     case SCREEN_BOOT_UPDATE:
     case SCREEN_SELF_DESTRUCT:
     case SCREEN_INACTIVE:

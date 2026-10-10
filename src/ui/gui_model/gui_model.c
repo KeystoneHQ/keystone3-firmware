@@ -117,7 +117,8 @@ static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen);
 bool IsTransitionAsyncAllowed(BackgroundAsyncFunc_t func)
 {
 #if FIRMWARE_TRANSITION_ONLY
-    return func == ModelUpdateBoot || func == ModelCopySdCardOta || func == ModelCalculateBinSha256;
+    return func == ModelUpdateBoot || func == ModelCopySdCardOta ||
+           func == ModelCalculateBinSha256 || func == ModelCalculateCheckSum;
 #else
     return true;
 #endif

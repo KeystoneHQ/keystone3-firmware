@@ -189,6 +189,8 @@ void GuiScanResult(bool result, void *param)
         UrViewType_t *urViewType = (UrViewType_t *)param;
         if (urViewType->viewType == InvalidMessage) {
             ThrowError(ERR_SIGN_MESSAGE_INVALID_CHARACTERS);
+        } else if (urViewType->viewType == URInputTooLarge) {
+            ThrowError(ERR_QRCODE_DATA_TOO_LARGE);
         } else {
             ThrowError(ERR_INVALID_QRCODE);
         }

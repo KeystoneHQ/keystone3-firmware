@@ -69,6 +69,7 @@ pub enum ErrorCodes {
     URProtobufEncodeError,
     URGzipDecodeError,
     URGzipEnCodeError,
+    URInputTooLarge,
 
     //Keystore errors
     KeystoreSeedError = 40,
@@ -337,6 +338,7 @@ impl From<&RustCError> for ErrorCodes {
             RustCError::WebAuthFailed(_) => Self::WebAuthFailed,
             RustCError::InvalidData(_) => Self::InvalidData,
             RustCError::InvalidMessage => Self::InvalidMessage,
+            RustCError::UrInputTooLarge(_) => Self::URInputTooLarge,
         }
     }
 }
@@ -619,6 +621,8 @@ pub enum RustCError {
     WebAuthFailed(String),
     #[error("invalid data: {0}")]
     InvalidData(String),
+    #[error("QR code data too large: {0}")]
+    UrInputTooLarge(String),
 }
 
 #[derive(Error, Debug, PartialEq)]

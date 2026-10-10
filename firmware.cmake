@@ -56,6 +56,7 @@ set(TASKS
     src/tasks/cmd_task.c
     src/tasks/mpu_sandbox_task.c
     src/tasks/mpu_sandbox_runtime.c
+    src/tasks/mpu_sandbox_validate.c
     src/tasks/watchdog_task.c
 )
 

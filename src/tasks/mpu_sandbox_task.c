@@ -66,13 +66,6 @@ static bool MpuSandboxIpcTransferToBusiness(uint32_t request_id, uint32_t result
 static void MpuSandboxIpcRelease(void);
 static bool MpuSandboxOperationIsAllowed(MpuSandboxOperation_t operation);
 
-static bool IsUrValidationStatusKnown(uint32_t status);
-static bool MpuSandboxValidateBuffer(MpuSandboxOperation_t operation,
-                                     size_t maximum_length,
-                                     const uint8_t *input, size_t input_length,
-                                     uint32_t *validation_status);
-static void MpuSandboxValidationFailClosedReset(void) __attribute__((noreturn));
-
 static StaticTask_t g_mpuSandboxTaskBuffer __attribute__((section("privileged_data")));
 static TaskHandle_t g_mpuSandboxTaskHandle __attribute__((section("privileged_data")));
 static uint32_t g_mpuSandboxNextRequestId __attribute__((section("privileged_data"))) = 1U;
@@ -373,106 +366,33 @@ bool MpuSandboxGetResponse(uint32_t request_id, MpuSandboxResponse_t *response, 
     return true;
 }
 
-bool MpuSandboxValidateUr(const uint8_t *input, size_t input_length,
-                          uint32_t *validation_status)
+/* One chunk's submit / response cycle for the chunk loop in
+ * mpu_sandbox_validate.c. The timeout is per chunk, not per payload: a large
+ * UR is thousands of chunks, so a whole-payload budget would turn "large
+ * transaction" into a fail-closed reset. */
+bool MpuSandboxRoundTrip(MpuSandboxOperation_t operation, const uint8_t *chunk,
+                         size_t chunk_length, MpuSandboxResponse_t *response,
+                         MpuSandboxUrChunkResult_t *result)
 {
-    return MpuSandboxValidateBuffer(MPU_SANDBOX_OP_UR_VALIDATE_CHUNK,
-                                    MPU_SANDBOX_UR_INPUT_MAX_SIZE,
-                                    input, input_length, validation_status);
-}
+    uint32_t requestId = 0U;
+    TickType_t started = xTaskGetTickCount();
 
-bool MpuSandboxValidateCbor(const uint8_t *input, size_t input_length,
-                            uint32_t *validation_status)
-{
-    return MpuSandboxValidateBuffer(MPU_SANDBOX_OP_CBOR_VALIDATE_CHUNK,
-                                    MPU_SANDBOX_CBOR_INPUT_MAX_SIZE,
-                                    input, input_length, validation_status);
-}
-
-bool MpuSandboxValidateEip712Json(const uint8_t *input, size_t input_length,
-                                  uint32_t *validation_status)
-{
-    return MpuSandboxValidateBuffer(MPU_SANDBOX_OP_EIP712_JSON_VALIDATE_CHUNK,
-                                    MPU_SANDBOX_EIP712_JSON_INPUT_MAX_SIZE,
-                                    input, input_length, validation_status);
-}
-
-static bool MpuSandboxValidateBuffer(MpuSandboxOperation_t operation,
-                                     size_t maximum_length,
-                                     const uint8_t *input, size_t input_length,
-                                     uint32_t *validation_status)
-{
-    uint8_t chunk[MPU_SANDBOX_INPUT_SIZE];
-    size_t offset = 0U;
-    uint32_t finalStatus = MPU_SANDBOX_UR_NOT_CHECKED;
-    TickType_t started;
-
-    if ((input == NULL) || (input_length == 0U) ||
-            (input_length > maximum_length) ||
-            (validation_status == NULL)) {
-        return false;
+    while (!MpuSandboxSubmit(operation, chunk, chunk_length, &requestId)) {
+        if ((xTaskGetTickCount() - started) >= MPU_SANDBOX_VALIDATION_TIMEOUT_TICKS) {
+            return false;
+        }
+        vTaskDelay(1U);
     }
-
-    started = xTaskGetTickCount();
-    while (offset < input_length) {
-        size_t chunkLength = input_length - offset;
-        uint32_t requestId = 0U;
-        MpuSandboxResponse_t response;
-        MpuSandboxUrChunkResult_t result;
-
-        if (chunkLength > MPU_SANDBOX_UR_CHUNK_DATA_SIZE) {
-            chunkLength = MPU_SANDBOX_UR_CHUNK_DATA_SIZE;
+    while (!MpuSandboxGetResponse(requestId, response, (uint8_t *)result, sizeof(*result))) {
+        if ((xTaskGetTickCount() - started) >= MPU_SANDBOX_VALIDATION_TIMEOUT_TICKS) {
+            return false;
         }
-        memset(chunk, 0, sizeof(chunk));
-        chunk[0] = (uint8_t)offset;
-        chunk[1] = (uint8_t)(offset >> 8U);
-        chunk[2] = (uint8_t)input_length;
-        chunk[3] = (uint8_t)(input_length >> 8U);
-        memcpy(chunk + MPU_SANDBOX_UR_CHUNK_HEADER_SIZE,
-               input + offset, chunkLength);
-
-        while (!MpuSandboxSubmit(operation,
-                                 chunk,
-                                 MPU_SANDBOX_UR_CHUNK_HEADER_SIZE + chunkLength,
-                                 &requestId)) {
-            if ((xTaskGetTickCount() - started) >= MPU_SANDBOX_VALIDATION_TIMEOUT_TICKS) {
-                MpuSandboxValidationFailClosedReset();
-            }
-            vTaskDelay(1U);
-        }
-
-        while (!MpuSandboxGetResponse(requestId, &response,
-                                      (uint8_t *)&result, sizeof(result))) {
-            if ((xTaskGetTickCount() - started) >= MPU_SANDBOX_VALIDATION_TIMEOUT_TICKS) {
-                MpuSandboxValidationFailClosedReset();
-            }
-            vTaskDelay(1U);
-        }
-
-        offset += chunkLength;
-        if ((response.status != MPU_SANDBOX_STATUS_OK) ||
-                (response.output_length != sizeof(result)) ||
-                (result.accepted_length != offset)) {
-            MpuSandboxValidationFailClosedReset();
-        }
-        if (offset < input_length) {
-            if (result.validation_status != MPU_SANDBOX_UR_NOT_CHECKED) {
-                MpuSandboxValidationFailClosedReset();
-            }
-        } else {
-            if (!IsUrValidationStatusKnown(result.validation_status)) {
-                MpuSandboxValidationFailClosedReset();
-            }
-            finalStatus = result.validation_status;
-        }
+        vTaskDelay(1U);
     }
-
-    memset(chunk, 0, sizeof(chunk));
-    *validation_status = finalStatus;
     return true;
 }
 
-static void MpuSandboxValidationFailClosedReset(void)
+void MpuSandboxValidationFailClosed(void)
 {
     __DSB();
     NVIC_SystemReset();
@@ -628,7 +548,7 @@ static bool IsEapduResultValid(const MpuSandboxEapduResult_t *result)
 
     if (status == EAPDU_FRAMING_COMPLETE) {
         if ((result->command_type == MPU_SANDBOX_RESOLVE_UR_COMMAND) &&
-                !IsUrValidationStatusKnown(result->ur_validation_status)) {
+                !MpuSandboxIsUrValidationStatusKnown(result->ur_validation_status)) {
             return false;
         }
         if ((result->command_type != MPU_SANDBOX_RESOLVE_UR_COMMAND) &&
@@ -656,9 +576,3 @@ static bool IsEapduResultValid(const MpuSandboxEapduResult_t *result)
 }
 
 #endif
-
-static bool IsUrValidationStatusKnown(uint32_t status)
-{
-    return (status >= MPU_SANDBOX_UR_OK) &&
-           (status <= MPU_SANDBOX_JSON_ROOT_TYPE);
-}

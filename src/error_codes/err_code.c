@@ -83,6 +83,7 @@ static const ErrCodeDesc_t g_faults[] = {
     {ERR_MULTISIG_TRANSACTION_ALREADY_SIGNED, "transaction already been signed"},
     {ERR_EXPORT_FILE_TO_MICRO_CARD_FAILED, "export file to micro card failed"},
     {ERR_SIGN_MESSAGE_INVALID_CHARACTERS, "sign message has invalid characters"},
+    {ERR_QRCODE_DATA_TOO_LARGE, "QR code data too large"},
 
     {ERR_END, "Unknown Error"},
 };

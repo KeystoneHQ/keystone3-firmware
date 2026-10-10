@@ -16,6 +16,7 @@
 #include "fingerprint_process.h"
 #include "se_manager.h"
 #include "log.h"
+#include "transition_firmware.h"
 #ifndef COMPILE_SIMULATOR
 #include "drv_battery.h"
 #else
@@ -91,11 +92,23 @@ void GuiAboutInfoWidgetsInit()
     lv_obj_clear_flag(cont, LV_OBJ_FLAG_SCROLL_ELASTIC);
     lv_obj_set_scrollbar_mode(cont, LV_SCROLLBAR_MODE_OFF);
     g_cont = cont;
+#if FIRMWARE_TRANSITION_ONLY
+    /* Expose only the existing source-code verifier, without device/wallet info. */
+    OpenVerifyFirmwareHandler(NULL);
+#else
     GuiAboutInfoEntranceWidget(cont);
+#endif
 }
 
 void GuiAboutInfoWidgetsDeInit()
 {
+#if FIRMWARE_TRANSITION_ONLY
+    if (g_noticeHintBox != NULL) {
+        GuiModelStopCalculateCheckSum();
+        GuiDeleteAnimHintBox();
+        g_noticeHintBox = NULL;
+    }
+#endif
     GUI_DEL_OBJ(g_firmwareVerifyCont)
     GUI_DEL_OBJ(g_noticeHintBox)
     if (g_cont != NULL) {
@@ -366,6 +379,11 @@ void GuiStopFirmwareCheckSumHandler(lv_event_t *e)
     GuiModelStopCalculateCheckSum();
     void **param = lv_event_get_user_data(e);
     if (param != NULL) {
+        if (param == (void **)&g_noticeHintBox) {
+            GuiDeleteAnimHintBox();
+            g_noticeHintBox = NULL;
+            return;
+        }
         lv_obj_t *obj = *param;
         lv_obj_del(obj);
         *param = NULL;
@@ -374,8 +392,12 @@ void GuiStopFirmwareCheckSumHandler(lv_event_t *e)
 
 static void CloseVerifyHintBoxHandler(lv_event_t *e)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    CloseCurrentViewHandler(e);
+#else
     GUI_DEL_OBJ(g_firmwareVerifyCont)
     GuiAboutNVSBarInit();
+#endif
 }
 
 static void OpenVerifyFirmwareHandler(lv_event_t *e)

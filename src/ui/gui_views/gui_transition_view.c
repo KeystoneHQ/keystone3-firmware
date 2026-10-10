@@ -7,6 +7,14 @@
 static lv_obj_t *g_transitionPage = NULL;
 static const char g_firmwareUrl[] = "https://keyst.one/firmware";
 
+static void ShowSourceHash(lv_event_t *e)
+{
+    lv_obj_add_flag(g_transitionPage, LV_OBJ_FLAG_HIDDEN);
+    if (GuiFrameOpenView(&g_aboutInfoView) != SUCCESS_CODE) {
+        lv_obj_clear_flag(g_transitionPage, LV_OBJ_FLAG_HIDDEN);
+    }
+}
+
 static void OpenUpdate(bool viaUsb)
 {
     static int entry = FIRMWARE_UPDATE_ENTRY_SETTING;
@@ -78,7 +86,7 @@ static void CreateTransitionPage(void)
     lv_obj_align(version, LV_ALIGN_TOP_MID, 0, 226);
 
     /* Long translations can scroll without covering the upgrade buttons. */
-    lv_obj_t *body = GuiCreateContainerWithParent(parent, 408, 318);
+    lv_obj_t *body = GuiCreateContainerWithParent(parent, 408, 300);
     lv_obj_set_pos(body, 36, 258);
     lv_obj_add_flag(body, LV_OBJ_FLAG_SCROLLABLE | LV_OBJ_FLAG_CLICKABLE);
     lv_obj_set_scroll_dir(body, LV_DIR_VER);
@@ -109,6 +117,15 @@ static void CreateTransitionPage(void)
     lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -36);
     lv_obj_add_event_cb(button, UpdateViaSdCard, LV_EVENT_CLICKED, NULL);
+
+    button = GuiCreateTextBtn(parent, _("about_info_verify_source_code_title"));
+    lv_obj_set_size(button, 408, 36);
+    lv_obj_set_style_bg_opa(button, LV_OPA_0, LV_PART_MAIN);
+    lv_obj_t *label = lv_obj_get_child(button, 0);
+    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
+    lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
+    lv_obj_set_pos(button, 36, 567);
+    lv_obj_add_event_cb(button, ShowSourceHash, LV_EVENT_CLICKED, NULL);
 }
 
 static int32_t TransitionViewEventProcess(void *self, uint16_t event, void *param, uint16_t len)

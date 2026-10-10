@@ -23,6 +23,11 @@ void Parallel8080Init(void);
 bool Parallel8080Busy(void);
 void Parallel8080Reset(void);
 void Parallel8080SendDmaData(uint8_t *data, uint32_t len);
+/* Register a one-shot callback invoked from the DMA completion IRQ when the
+ * FULL transfer finishes. Cleared automatically after firing, so callers that
+ * do not register it (blocking `while (Parallel8080Busy())` users) are
+ * unaffected. Used by the LVGL flush path for non-blocking flushes. */
+void Parallel8080SetDoneCallback(void (*cb)(void));
 
 //void Parallel8080ReadData(uint8_t cmd, uint8_t len)
 

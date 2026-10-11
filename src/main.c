@@ -126,24 +126,36 @@ int main(void)
 
 int _write(int fd, char *pBuffer, int size)
 {
+#ifdef BUILD_PRODUCTION
+    /* Production builds emit no debug UART output. Previously this still
+     * busy-waited on UART_IsTXEmpty() per byte (sending '-'), which blocks the
+     * calling task for ~size * (10 / 512000) s on every stray printf — including
+     * the per-view open/close/refresh logs in gui_framework.c — causing visible
+     * navigation stalls. Return immediately in production. */
+    (void)fd;
+    (void)pBuffer;
+    return size;
+#else
     for (int i = 0; i < size; i++) {
         while (!UART_IsTXEmpty(UART0));
-#ifdef BUILD_PRODUCTION
-        UART_SendData(UART0, '-');
-#else
         UART_SendData(UART0, (uint8_t) pBuffer[i]);
-#endif
     }
     return size;
+#endif
 }
 
 int fputc(int ch, FILE *f)
 {
     (void)(f);                              //unused arg
+#ifdef BUILD_PRODUCTION
+    /* No blocking UART wait in production (see _write). */
+    return ch;
+#else
     while (!UART_IsTXEmpty(UART0));
     UART_SendData(UART0, (uint8_t) ch);
 
     return ch;
+#endif
 }
 
 #ifdef  USE_FULL_ASSERT

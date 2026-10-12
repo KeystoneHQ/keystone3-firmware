@@ -58,7 +58,7 @@ static LOCK_SCREEN_PURPOSE_ENUM g_purpose = LOCK_SCREEN_PURPOSE_UNLOCK;
 static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_LoadingView = NULL;
 static lv_obj_t *g_verifyLoadingCont = NULL;
-static lv_timer_t *g_countDownTimer;
+static lv_timer_t *g_countDownTimer = NULL;
 static int8_t g_countDown = 0;
 static bool g_canDismissLoading = false;
 static bool g_isShowLoading = false;
@@ -531,18 +531,27 @@ void GuiLockScreenUpdatePassCode(void)
 #include "keystore.h"
 #endif
 
+static void StopCountDownTimer(void)
+{
+    if (g_countDownTimer != NULL) {
+        lv_timer_del(g_countDownTimer);
+        g_countDownTimer = NULL;
+    }
+    g_countDown = 0;
+}
+
+static void CountDownLabelDelete(lv_event_t *e)
+{
+    StopCountDownTimer();
+}
+
 static void CountDownTimerChangeLabelTextHandler(lv_timer_t *timer)
 {
     lv_obj_t *obj = (lv_obj_t *)timer->user_data;
     ++g_countDown;
     if (g_countDown == 3) {
         lv_label_set_text(obj, _("prepare_wallet_third_step"));
-        if (g_countDownTimer != NULL) {
-            g_countDown = 0;
-            lv_timer_del(g_countDownTimer);
-            g_countDownTimer = NULL;
-            UNUSED(g_countDownTimer);
-        }
+        StopCountDownTimer();
     }
 }
 
@@ -585,6 +594,7 @@ void GuiShowGenerateXPubLoading(void)
     g_isShowLoading = true;
     g_countDown = 0;
     g_countDownTimer = lv_timer_create(CountDownTimerChangeLabelTextHandler, 1000, hintLabel);
+    lv_obj_add_event_cb(hintLabel, CountDownLabelDelete, LV_EVENT_DELETE, NULL);
 }
 
 void GuiHideGenerateXPubLoading(void)

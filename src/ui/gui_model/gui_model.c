@@ -1922,7 +1922,7 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
                    g_checkResult->error_message != NULL ? g_checkResult->error_message : "");
         }
         GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
-        GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
+        GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(*g_checkResult));
     }
 
     return SUCCESS_CODE;

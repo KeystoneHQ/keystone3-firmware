@@ -19,8 +19,8 @@ static inline uint32_t op_t(uint32_t val) { UNUSED(val); return 0; }
 
 const static lv_i18n_phrase_t en_singulars[] = {
     {"transition_firmware_title", "Security Update Completed"},
-    {"transition_firmware_completed", "Security update has been completed successfully."},
-    {"transition_firmware_continue", "To finish setting up your device and get the latest protection and improvements, continue by updating to the latest firmware."},
+    {"transition_firmware_completed", "The security update has been completed successfully."},
+    {"transition_firmware_continue", "To get the latest security protection, features, and improvements, please continue with the latest firmware update right away."},
     {"transition_firmware_assets_safe", "Your assets remain safe. Always keep your seed phrase securely backed up."},
     {"Address", "Address"},
     {"Approve", "Approve"},

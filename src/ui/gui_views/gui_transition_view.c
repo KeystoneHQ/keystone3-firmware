@@ -104,7 +104,7 @@ static void CreateTransitionPage(void)
     lv_obj_add_flag(img, LV_OBJ_FLAG_CLICKABLE);
     lv_obj_add_event_cb(img, ShowFirmwareQr, LV_EVENT_CLICKED, NULL);
     lv_obj_update_layout(link);
-    CreateBullet(body, _("transition_firmware_assets_safe"), g_defIllustrateFont, lv_obj_get_y2(link) + 32);
+    CreateBullet(body, _("transition_firmware_assets_safe"), g_defIllustrateFont, lv_obj_get_y2(link) + 16);
 
     lv_obj_t *button = GuiCreateBtnWithFont(parent, _("firmware_update_via_usb"), g_defTextFont);
     lv_obj_set_size(button, 408, 66);

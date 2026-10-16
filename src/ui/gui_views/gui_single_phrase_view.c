@@ -5,7 +5,6 @@
 
 int32_t GuiSinglePhraseViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
-    int32_t ret = SUCCESS_CODE;
     GUI_ASSERT(g_singlePhraseView.isActive);
     uint8_t entropyMethod;
 
@@ -37,16 +36,8 @@ int32_t GuiSinglePhraseViewEventProcess(void *self, uint16_t usEvent, void *para
         GuiSinglePhraseUpdateMnemonic(param, usLen);
         break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
-        GuiWriteSeResult(true, 0);
-        break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL:
-        if (param != NULL) {
-            ret = *(int32_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiWriteSeResult(false, ret);
-        break;
+        return GuiHandleWriteSeResult(usEvent, param, usLen, GuiWriteSeResult);
     case SIG_SETTING_CHANGE_WALLET_DESC_PASS:
         return SUCCESS_CODE;
     default:

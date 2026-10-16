@@ -181,7 +181,7 @@ typedef unsigned long    UBaseType_t;
 #endif
 
 #define portSTACK_REGION                  ( configTOTAL_MPU_REGIONS - 5UL )
-#define portGENERAL_PERIPHERALS_REGION    ( configTOTAL_MPU_REGIONS - 4UL )
+#define portPSRAM_REGION                  ( configTOTAL_MPU_REGIONS - 4UL )
 #define portUNPRIVILEGED_FLASH_REGION     ( configTOTAL_MPU_REGIONS - 3UL )
 #define portPRIVILEGED_FLASH_REGION       ( configTOTAL_MPU_REGIONS - 2UL )
 #define portPRIVILEGED_RAM_REGION         ( configTOTAL_MPU_REGIONS - 1UL )

@@ -307,7 +307,7 @@ void GuiHomeRefresh(void)
     }
     printf("GuiHomeRefresh\n");
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
-    GuiSetSetupPhase(SETUP_PAHSE_DONE);
+    GuiSetSetupPhase(SETUP_PHASE_DONE);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_MANAGE, OpenWalletProfileHandler, NULL);
     SetNavBarMidBtn(g_pageWidget->navBarWidget, NVS_MID_BUTTON_BUTT, NULL, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_MORE_INFO, GuiMoreHandler, NULL);

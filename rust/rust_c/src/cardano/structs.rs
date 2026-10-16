@@ -397,7 +397,7 @@ impl From<ParsedCardanoTx> for DisplayCardanoTx {
 impl DisplayCardanoTx {
     pub fn from_with_raw_data(value: ParsedCardanoTx, raw_data: &[u8]) -> Self {
         let mut display = Self::from(value);
-        let mut raw = String::with_capacity(raw_data.len().saturating_mul(2));
+        let mut raw = String::with_capacity(raw_data.len().saturating_mul(2).saturating_add(1));
         append_hex(&mut raw, raw_data);
         display.raw_data = convert_c_char(raw);
         display

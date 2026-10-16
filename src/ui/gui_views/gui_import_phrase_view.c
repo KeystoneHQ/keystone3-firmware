@@ -18,7 +18,6 @@ int32_t GuiImportPhraseViewDeInit(void)
 int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t wordcnt;
-    int32_t ret;
     GUI_ASSERT(g_importPhraseView.isActive);
 
     switch (usEvent) {
@@ -44,16 +43,8 @@ int32_t GuiImportPhraseViewEventProcess(void *self, uint16_t usEvent, void *para
         GuiImportPhraseNextTile((const char *)param);
         break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
-        GuiImportPhraseWriteSe(true, 0);
-        break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL:
-        if (param != NULL) {
-            ret = *(int32_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiImportPhraseWriteSe(false, ret);
-        break;
+        return GuiHandleWriteSeResult(usEvent, param, usLen, GuiImportPhraseWriteSe);
     case GUI_EVENT_UPDATE_KEYBOARD:
         GuiImportPhraseUpdateKeyboard();
         break;

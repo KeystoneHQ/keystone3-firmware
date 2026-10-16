@@ -2,7 +2,9 @@ use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
 use crate::errors::Result;
-use crate::parser::detail::{CommonDetail, ProgramDetail, SolanaDetail};
+use crate::parser::detail::{
+    CommonDetail, ProgramDetail, ProgramDetailSquadsConfigTransactionCreate, SolanaDetail,
+};
 use crate::solana_lib::squads_v4::instructions::{
     MultisigCreateArgs, MultisigCreateArgsV2, ProposalCreateArgs, ProposalVoteArgs,
     SquadsInstructions, VaultTransactionCreateArgs,
@@ -11,6 +13,26 @@ use crate::solana_lib::squads_v4::instructions::{
 static PROGRAM_NAME: &str = "SquadsV4";
 pub fn resolve(instruction: SquadsInstructions, accounts: Vec<String>) -> Result<SolanaDetail> {
     match instruction {
+        SquadsInstructions::ConfigTransactionCreate(args) => {
+            if accounts.len() < 5 {
+                return Err(crate::errors::SolanaError::InvalidData(
+                    "missing Squads config transaction accounts".to_string(),
+                ));
+            }
+            Ok(SolanaDetail {
+                common: CommonDetail {
+                    program: PROGRAM_NAME.to_string(),
+                    method: "ConfigTransactionCreate".to_string(),
+                },
+                kind: ProgramDetail::SquadsV4ConfigTransactionCreate(
+                    ProgramDetailSquadsConfigTransactionCreate {
+                        multisig: accounts[0].clone(),
+                        creator: accounts[2].clone(),
+                        args,
+                    },
+                ),
+            })
+        }
         SquadsInstructions::MultisigCreate(arg) => resolve_multisig_create(arg),
         SquadsInstructions::MultisigCreateV2(arg) => resolve_multisig_create_v2(arg, accounts),
         SquadsInstructions::ProposalCreate(arg) => resolve_proposal_create(arg, accounts),

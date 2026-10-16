@@ -1,80 +1,149 @@
-#include <string.h>
-#include "stdlib.h"
-#include "gui.h"
 #include "gui_model.h"
-#include "gui_views.h"
-#include "gui_api.h"
-#include "bip39_english.h"
-#include "user_memory.h"
-#include "log_print.h"
-#include "secret_cache.h"
-#include "background_task.h"
-#include "fetch_sensitive_data_task.h"
-#include "bip39.h"
-#include "slip39.h"
-#include "gui_setting_widgets.h"
-#include "account_public_info.h"
-#include "user_utils.h"
-#include "gui_chain.h"
-#include "device_setting.h"
-#include "user_memory.h"
-#include "presetting.h"
-#include "ui_display_task.h"
-#include "motor_manager.h"
-#include "gui_animating_qrcode.h"
-#include "screen_manager.h"
-#include "keystore.h"
+
 #include "account_manager.h"
-#include "se_manager.h"
-#include "qrdecode_task.h"
-#include "gui_views.h"
+#include "account_public_info.h"
 #include "assert.h"
-#include "version.h"
+#include "background_task.h"
+#include "bip39.h"
+#include "bip39_english.h"
+#include "device_setting.h"
+#include "fetch_sensitive_data_task.h"
+#include "gui_animating_qrcode.h"
+#include "gui_api.h"
+#include "gui_chain.h"
+#include "gui_setting_widgets.h"
+#include "gui_setup_widgets.h"
+#include "gui_views.h"
+#include "keystore.h"
+#include "motor_manager.h"
+#include "presetting.h"
+#include "screen_manager.h"
+#include "se_manager.h"
+#include "secret_cache.h"
+#include "slip39.h"
+#include "stdlib.h"
+#include "ui_display_task.h"
 #include "user_delay.h"
+#include "user_memory.h"
+#include "user_utils.h"
+#include "version.h"
+
+#include <string.h>
 #ifndef COMPILE_SIMULATOR
-#include "sha256.h"
-#include "rust.h"
-#include "user_msg.h"
-#include "general_msg.h"
-#include "cmsis_os.h"
+#include "boot_update.h"
 #include "fingerprint_process.h"
-#include "user_fatfs.h"
-#include "mhscpu_qspi.h"
+#include "general_msg.h"
 #include "safe_mem_lib.h"
+#include "sha256.h"
 #include "usb_task.h"
-#include "drv_mpu.h"
+#include "user_fatfs.h"
+#include "user_msg.h"
 #else
+#include "lvgl.h"
 #include "simulator_model.h"
 #endif
 
-#define SECTOR_SIZE                         4096
-#define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
-#define APP_CHECK_START_ADDR                (0x1400000)
-#define APP_END_ADDR                        (0x2000000)
-#define SD_CARD_OTA_FILE_PATH               "0:/keystone3.bin"
-#define INTERNAL_STORAGE_OTA_FILE_PATH      "1:/keystone3.bin"
+#define SECTOR_SIZE                    4096
+#define APP_ADDR                       (0x1001000 + 0x80000)
+#define APP_CHECK_START_ADDR           (0x1400000)
+#define APP_END_ADDR                   (0x2000000)
+#define SD_CARD_OTA_FILE_PATH          "0:/keystone3.bin"
+#define INTERNAL_STORAGE_OTA_FILE_PATH "1:/keystone3.bin"
 
-#define MODEL_WRITE_SE_HEAD                 do {                                \
-        ret = CHECK_BATTERY_LOW_POWER();                                        \
-        CHECK_ERRCODE_BREAK("save low power", ret);                             \
-        ret = GetBlankAccountIndex(&newAccount);                                \
-        CHECK_ERRCODE_BREAK("get blank account", ret);                          \
-        ret = GetExistAccountNum(&accountCnt);                                  \
-        CHECK_ERRCODE_BREAK("get exist account", ret);                          \
-        printf("before accountCnt = %d\n", accountCnt);
+static volatile bool g_walletOperationAborted = false;
 
-#define MODEL_WRITE_SE_END                                                      \
-        ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());    \
-        CHECK_ERRCODE_BREAK("login error", ret);                                \
-        GetExistAccountNum(&accountCnt);                                        \
-        printf("after accountCnt = %d\n", accountCnt);                          \
-    } while (0);                                                                \
-    if (ret == SUCCESS_CODE) {                                                  \
-        ClearSecretCache();                                                     \
-        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));  \
-    } else {                                                                            \
-        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));     \
+static void ModelFinishAbort(int32_t error, uint8_t target, bool cleanupRequired, bool passcodeFailure);
+
+#ifdef COMPILE_SIMULATOR
+static int32_t g_deferredAbortError;
+static uint8_t g_deferredAbortTarget;
+static bool g_deferredAbortCleanupRequired;
+
+static void DeferredAbortTimerCb(lv_timer_t *timer)
+{
+    (void)timer;
+    ModelFinishAbort(g_deferredAbortError, g_deferredAbortTarget, g_deferredAbortCleanupRequired, true);
+}
+
+static void ScheduleDeferredAbort(int32_t error, uint8_t target, bool cleanupRequired)
+{
+    g_deferredAbortError = error;
+    g_deferredAbortTarget = target;
+    g_deferredAbortCleanupRequired = cleanupRequired;
+    lv_timer_t *timer = lv_timer_create(DeferredAbortTimerCb, 10000, NULL);
+    if (timer == NULL) {
+        ModelFinishAbort(error, target, cleanupRequired, true);
+        return;
     }
+    lv_timer_set_repeat_count(timer, 1);
+}
+#endif
+
+static void ModelFinishAbort(int32_t error, uint8_t target, bool cleanupRequired, bool passcodeFailure)
+{
+    if (cleanupRequired && target < 3) {
+        int32_t cleanup = DestroyAccount(target);
+        if (cleanup != SUCCESS_CODE) {
+            printf("wallet cleanup failed: account=%u error=%ld original=%ld\n", target, (long)cleanup, (long)error);
+        }
+    }
+    LogoutCurrentAccount();
+    if (passcodeFailure) {
+        SystemReboot();
+        return;
+    }
+#ifndef COMPILE_SIMULATOR
+    WDT_ReloadCounter();
+    osDelay(1000);
+#endif
+    SystemReboot();
+}
+
+static int32_t ModelAbortWalletWithNotice(int32_t error, uint8_t target, bool cleanupRequired, bool passcodeFailure)
+{
+    if (g_walletOperationAborted) {
+        return error;
+    }
+    g_walletOperationAborted = true;
+    SetPageLockScreen(false);
+    GuiApiEmitSignal(passcodeFailure ? SIG_WALLET_PASSCODE_ABORTED : SIG_WALLET_OPERATION_ABORTED, &error, sizeof(error));
+    CloseUsb();
+    SE_DisarmProvisionRecovery();
+    ClearSecretCache();
+    if (passcodeFailure) {
+#ifdef COMPILE_SIMULATOR
+        ScheduleDeferredAbort(error, target, cleanupRequired);
+        return error;
+#else
+        for (uint8_t i = 0; i < 10; i++) {
+            WDT_ReloadCounter();
+            osDelay(1000);
+        }
+#endif
+    }
+    ModelFinishAbort(error, target, cleanupRequired, passcodeFailure);
+    return error;
+}
+
+static int32_t ModelAbortWallet(int32_t error, uint8_t target, bool cleanupRequired)
+{
+    return ModelAbortWalletWithNotice(error, target, cleanupRequired, false);
+}
+
+static int32_t ModelWalletInputError(int32_t error)
+{
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
+    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &error, sizeof(error));
+    return error;
+}
+
+static bool ModelIsSlip39InputError(int32_t error)
+{
+    return error <= SLIP39_NOT_ENOUGH_MNEMONIC_WORDS && error >= SLIP39_NOT_BELONG_THIS_WALLET &&
+           error != SLIP39_INSUFFICIENT_SPACE && error != SLIP39_INVALID_SHARD_BUFFER;
+}
 
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen);
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen);
@@ -121,6 +190,125 @@ static bool g_stopCalChecksum = false;
 // mnemonic verify before prove).
 static uint8_t g_forgetResetIndex = 0xFF;
 
+void GuiModelResetForgetAuthorization(void)
+{
+    g_forgetResetIndex = 0xFF;
+    AbandonProvisionRecovery();
+}
+
+static int32_t ModelSaveMnemonicWallet(bool slip39, bool forget, const uint8_t *entropy, const uint8_t *ems, uint8_t len, uint16_t id, bool eb, uint8_t ie)
+{
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
+    uint8_t target = 0xFF, loggedIn = 0xFF;
+    bool cleanupRequired = false, retryable = false;
+    bool setupCheckpointed = false;
+    AccountInfo_t previous = {0};
+    int32_t ret = CHECK_BATTERY_LOW_POWER();
+    if (ret != SUCCESS_CODE) {
+        return ret == ERR_KEYSTORE_SAVE_LOW_POWER ? ModelWalletInputError(ret) : ModelAbortWallet(ret, target, false);
+    }
+    do {
+        ret = ModelComparePubkey(slip39 ? MNEMONIC_TYPE_SLIP39 : MNEMONIC_TYPE_BIP39,
+                                 (uint8_t *)ems,
+                                 len,
+                                 id,
+                                 eb,
+                                 ie,
+                                 forget ? &target : NULL);
+        if (forget) {
+            if (ret != ERR_KEYSTORE_MNEMONIC_REPEAT) {
+                retryable = ret == SUCCESS_CODE;
+                if (retryable) {
+                    ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
+                }
+                break;
+            }
+            if (target >= 3 || target != g_forgetResetIndex) {
+                ret = ERR_GENERAL_FAIL;
+                break;
+            }
+            ret = GetAccountInfo(target, &previous);
+            CHECK_ERRCODE_BREAK("read reset account", ret);
+        } else {
+            if (ret != SUCCESS_CODE) {
+                retryable = ret == ERR_KEYSTORE_MNEMONIC_REPEAT;
+                break;
+            }
+            ret = GetBlankAccountIndex(&target);
+            CHECK_ERRCODE_BREAK("get blank account", ret);
+            if (target >= 3) {
+                ret = ERR_GENERAL_FAIL;
+                break;
+            }
+        }
+        const char *password = SecretCacheGetNewPassword();
+        if (password == NULL || strnlen_s(password, PASSWORD_MAX_LEN) < 6) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        ret = CheckPasswordExisted(password, forget ? target : 0xFF);
+        if (ret != SUCCESS_CODE) {
+            retryable = ret == ERR_KEYSTORE_REPEAT_PASSWORD;
+            break;
+        }
+        uint8_t accountCount = 0;
+        ret = GetExistAccountNum(&accountCount);
+        CHECK_ERRCODE_BREAK("count accounts before write", ret);
+        if (!forget && accountCount == 0) {
+            ret = SaveSetupCheckpoint(SETUP_PHASE_WALLET_WRITE_PENDING);
+            CHECK_ERRCODE_BREAK("save setup recovery checkpoint", ret);
+            setupCheckpointed = true;
+        }
+        ret = slip39 ? CreateNewSlip39Account(target, ems, entropy, len, password, id, eb, ie, &cleanupRequired) :
+                       CreateNewAccount(target, entropy, len, password, &cleanupRequired);
+        CHECK_ERRCODE_BREAK("create account", ret);
+        ClearAccountPassphrase(target);
+        const char *passphrase = SecretCacheGetPassphrase();
+        if (strnlen_s(passphrase, PASSPHRASE_MAX_LEN) > 0) {
+            ret = SetSetupPassphrase(target, passphrase, password);
+            CHECK_ERRCODE_BREAK("setup passphrase", ret);
+            ret = SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+            CHECK_ERRCODE_BREAK("save passphrase preference", ret);
+        }
+        ret = VerifyPasswordAndLogin(&loggedIn, password);
+        CHECK_ERRCODE_BREAK("verify created account", ret);
+        if (loggedIn != target) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        if (forget) {
+            ret = SetWalletDesc(previous.walletName, previous.iconIndex);
+            CHECK_ERRCODE_BREAK("restore wallet description", ret);
+        }
+        UpdateFingerSignFlag(target, false);
+        ret = SE_SetAccountStatus(target, ACCOUNT_STATUS_CREATED);
+        CHECK_ERRCODE_BREAK("commit wallet", ret);
+        if (setupCheckpointed) {
+            ret = SaveSetupCheckpoint(SETUP_PHASE_DONE);
+            CHECK_ERRCODE_BREAK("commit setup checkpoint", ret);
+        }
+        if (forget) {
+            LogoutCurrentAccount();
+            CloseUsb();
+        }
+    } while (0);
+    CLEAR_OBJECT(previous);
+    if (ret == SUCCESS_CODE) {
+        g_forgetResetIndex = 0xFF;
+        SE_DisarmProvisionRecovery();
+        ClearSecretCache();
+        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
+    } else if (retryable && !cleanupRequired) {
+        ModelWalletInputError(ret);
+    } else {
+        g_forgetResetIndex = 0xFF;
+        ModelAbortWallet(ret, target, cleanupRequired);
+    }
+    return ret;
+}
+
 #ifdef COMPILE_SIMULATOR
 // On the real device, AsyncExecute posts to a FreeRTOS background task
 // (FIFO). On the simulator we approximate this with a FIFO queue drained
@@ -128,7 +316,6 @@ static uint8_t g_forgetResetIndex = 0xFF;
 // after the current event chain unwinds. Using lv_async_call directly
 // doesn't work because lv_timer_create inserts at the list head (LIFO).
 // inData is deep-copied because callers often pass stack buffers.
-#include "lvgl.h"
 
 typedef enum {
     ASYNC_KIND_FUNC,
@@ -137,10 +324,12 @@ typedef enum {
 
 typedef struct AsyncQueueNode {
     AsyncKind_t kind;
+
     union {
         BackgroundAsyncFunc_t func;
         BackgroundAsyncFuncWithRunnable_t funcWithRunnable;
     } u;
+
     BackgroundAsyncRunnable_t runnable;
     uint32_t dataLen;
     struct AsyncQueueNode *next;
@@ -197,6 +386,9 @@ static void EnqueueAsync(AsyncQueueNode_t *node)
 
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted || func == NULL || (inDataLen > 0 && inData == NULL) ||
+        inDataLen > SIZE_MAX - sizeof(AsyncQueueNode_t))
+        return ERR_GENERAL_FAIL;
     AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
     if (node == NULL) {
         return ERR_GENERAL_FAIL;
@@ -214,6 +406,9 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
 
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable)
 {
+    if (g_walletOperationAborted || func == NULL || runnable == NULL || (inDataLen > 0 && inData == NULL) ||
+        inDataLen > SIZE_MAX - sizeof(AsyncQueueNode_t))
+        return ERR_GENERAL_FAIL;
     AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
     if (node == NULL) {
         return ERR_GENERAL_FAIL;
@@ -251,18 +446,15 @@ void GuiModelBip39CalWriteSe(Bip39Data_t bip39)
     AsyncExecute(ModelBip39CalWriteEntropyAndSeed, &bip39, sizeof(bip39));
 }
 
-
 void GuiModelBip39RecoveryCheck(uint8_t wordsCnt)
 {
     AsyncExecute(ModelBip39VerifyMnemonic, &wordsCnt, sizeof(wordsCnt));
 }
 
-
 void GuiModelBip39ForgetPassword(uint8_t wordsCnt)
 {
     AsyncExecute(ModelBip39ForgetPass, &wordsCnt, sizeof(wordsCnt));
 }
-
 
 void GuiModelSlip39WriteSe(uint8_t wordsCnt)
 {
@@ -426,6 +618,9 @@ void GuiModelParseTransaction(ReturnVoidPointerFunc func)
 // bip39 generate
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = ERR_GENERAL_FAIL;
@@ -433,7 +628,7 @@ static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
     uint8_t entropy[32];
     uint32_t mnemonicNum = 0, entropyLen = 0;
 
-    if (inData == NULL) {
+    if (inData == NULL || inDataLen != sizeof(uint32_t)) {
         goto cleanup;
     }
     mnemonicNum = *((const uint32_t *)inData);
@@ -468,8 +663,7 @@ cleanup:
         SRAM_FREE(mnemonic);
     }
     if (ret != SUCCESS_CODE) {
-        // This error path should theoretically not be reached if entropy generation and mnemonic creation work correctly
-        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC_FAIL, &ret, sizeof(ret));
+        ModelAbortWallet(ret, 0xFF, false);
     } else {
         GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &ret, sizeof(ret));
     }
@@ -480,6 +674,9 @@ cleanup:
 
 static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
@@ -487,6 +684,11 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
     uint8_t entropy[32];
     uint8_t *hash = NULL;
     uint32_t mnemonicNum, entropyLen;
+    if (inData == NULL || inDataLen != sizeof(uint32_t)) {
+        ret = ModelAbortWallet(ERR_GENERAL_FAIL, 0xFF, false);
+        SetLockScreen(enable);
+        return ret;
+    }
     mnemonicNum = *((uint32_t *)inData);
 
     do {
@@ -500,6 +702,10 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
         }
         entropyLen = (mnemonicNum == 24) ? 32 : 16;
         hash = SecretCacheGetDiceRollHash();
+        if (hash == NULL) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
         memcpy_s(entropy, sizeof(entropy), hash, entropyLen);
         SecretCacheSetEntropy(entropy, entropyLen);
 
@@ -515,9 +721,9 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
         SRAM_FREE(mnemonic);
     }
     if (ret == SUCCESS_CODE) {
-        GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &ret, sizeof(ret));
+        GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC, &ret, sizeof(ret));
     } else {
-        GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_UPDATE_MNEMONIC_FAIL, &ret, sizeof(ret));
+        ModelAbortWallet(ret, 0xFF, false);
     }
     CLEAR_ARRAY(entropy);
     SetLockScreen(enable);
@@ -526,6 +732,9 @@ static int32_t ModelGenerateEntropyWithDiceRolls(const void *inData, uint32_t in
 
 static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     UserDelay(100);
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING_DELAY, NULL, 0);
     return SUCCESS_CODE;
@@ -533,6 +742,9 @@ static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataL
 
 static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     GuiApiEmitSignal(SIG_HIDE_TRANSACTION_PARSE_LOADING_DELAY, NULL, 0);
     return SUCCESS_CODE;
 }
@@ -540,110 +752,72 @@ static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t in
 // Generate bip39 wallet writes
 static int32_t ModelWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    int32_t ret;
-    uint8_t *entropy, *entropyCheck;
-    uint32_t entropyLen;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    size_t entropyOutLen;
-
-    entropy = SecretCacheGetEntropy(&entropyLen);
-    entropyCheck = SRAM_MALLOC(entropyLen);
-    ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropyCheck, entropyLen, &entropyOutLen);
-    if (memcmp(entropyCheck, entropy, entropyLen) != 0) {
-        memset_s(entropyCheck, entropyLen, 0, entropyLen);
-        SRAM_FREE(entropyCheck);
-        SetLockScreen(enable);
-        return 0;
+    uint8_t check[32] = {0};
+    uint32_t len = 0;
+    size_t decodedLen = 0;
+    uint8_t *entropy = SecretCacheGetEntropy(&len);
+    int32_t ret = ERR_GENERAL_FAIL;
+    if (entropy != NULL && (len == 16 || len == 32) && SecretCacheGetMnemonic() != NULL) {
+        ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), check, sizeof(check), &decodedLen);
+        if (ret != SUCCESS_CODE || decodedLen != len || memcmp(check, entropy, len) != 0) {
+            ret = ERR_GENERAL_FAIL;
+        }
     }
-    memset_s(entropyCheck, entropyLen, 0, entropyLen);
-    SRAM_FREE(entropyCheck);
-    MODEL_WRITE_SE_HEAD
-    ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
-    CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewAccount(newAccount, entropy, entropyLen, SecretCacheGetNewPassword());
-    ClearAccountPassphrase(newAccount);
-    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
-        CHECK_ERRCODE_BREAK("set passphrase error", ret);
-        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    CLEAR_ARRAY(check);
+    if (ret == SUCCESS_CODE) {
+        ret = ModelSaveMnemonicWallet(false, false, entropy, NULL, len, 0, false, 0);
+    } else {
+        ModelAbortWallet(ret, 0xFF, false);
     }
-    MODEL_WRITE_SE_END
     SetLockScreen(enable);
-    return 0;
+    return ret;
 }
 
 // Import of mnemonic words for bip39
 static int32_t ModelBip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
-    uint8_t *entropy = NULL;
-    size_t entropyInLen;
-    size_t entropyOutLen;
-    Bip39Data_t *bip39Data = (Bip39Data_t *)inData;
-    uint8_t newAccount = 0;
-    uint8_t accountCnt = 0;
-    AccountInfo_t accountInfo = {0};
-
-    entropyInLen = bip39Data->wordCnt * 16 / 12;
-    entropy = SRAM_MALLOC(entropyInLen);
-
-    MODEL_WRITE_SE_HEAD
-    ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropy, entropyInLen, &entropyOutLen);
-    CHECK_ERRCODE_BREAK("mnemonic error", ret);
-    if (bip39Data->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, &newAccount);
-        CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
+    uint8_t entropy[32] = {0};
+    size_t len = 0;
+    int32_t ret = ERR_GENERAL_FAIL;
+    if (inData == NULL || inDataLen != sizeof(Bip39Data_t)) {
+        ModelAbortWallet(ret, 0xFF, false);
+        goto cleanup;
+    }
+    const Bip39Data_t *data = inData;
+    if (data->wordCnt < 12 || data->wordCnt > 24 || data->wordCnt % 3 != 0 || SecretCacheGetMnemonic() == NULL) {
+        ModelAbortWallet(ret, 0xFF, false);
+        goto cleanup;
+    }
+    ret = bip39_mnemonic_to_bytes(NULL, SecretCacheGetMnemonic(), entropy, sizeof(entropy), &len);
+    if (ret == -2 || (ret == SUCCESS_CODE && len != data->wordCnt * 16 / 12)) {
+        ret = ModelWalletInputError(ERR_KEYSTORE_MNEMONIC_INVALID);
+    } else if (ret != SUCCESS_CODE) {
+        ModelAbortWallet(ret, 0xFF, false);
     } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, NULL);
-        CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
+        ret = ModelSaveMnemonicWallet(false, data->forget, entropy, NULL, len, 0, false, 0);
     }
-    if (bip39Data->forget) {
-        ret = GetAccountInfo(newAccount, &accountInfo);
-        CHECK_ERRCODE_BREAK("get account info error", ret);
-    }
-    ret = CreateNewAccount(newAccount, entropy, (uint8_t)entropyOutLen, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("save entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
-        CHECK_ERRCODE_BREAK("set passphrase error", ret);
-        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
-    }
-    ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("login error", ret);
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    if (bip39Data->forget) {
-        SetWalletName(accountInfo.walletName);
-        SetWalletIconIndex(accountInfo.iconIndex);
-        LogoutCurrentAccount();
-        CloseUsb();
-    }
-    GetExistAccountNum(&accountCnt);
-}
-while (0);
-if (ret == SUCCESS_CODE)
-{
-    ClearSecretCache();
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-} else
-{
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-}
-memset_s(entropy, entropyInLen, 0, entropyInLen);
-memset_s(&accountInfo, sizeof(accountInfo), 0, sizeof(accountInfo));
-SRAM_FREE(entropy);
-SetLockScreen(enable);
-return 0;
+cleanup:
+    CLEAR_ARRAY(entropy);
+    SetLockScreen(enable);
+    return ret;
 }
 
 // Auxiliary word verification for bip39
 static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = SUCCESS_CODE;
@@ -651,6 +825,17 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     uint8_t seed[64] = {0};
 
     do {
+        if (SecretCacheGetMnemonic() == NULL) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        ret = bip39_mnemonic_validate(NULL, SecretCacheGetMnemonic());
+        if (ret != SUCCESS_CODE) {
+            if (ret == -2) {
+                ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+            }
+            break;
+        }
         ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
         if (ret != SUCCESS_CODE) {
             break;
@@ -662,10 +847,12 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
         }
         CLEAR_ARRAY(seed);
         char *xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC);
-        if (xpub != NULL && !strcmp(xpub, xPubResult->data)) {
+        if (xpub == NULL) {
+            ret = ERR_GENERAL_FAIL;
+        } else if (!strcmp(xpub, xPubResult->data)) {
             ret = SUCCESS_CODE;
         } else {
-            ret = ERR_GENERAL_FAIL;
+            ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
         }
     } while (0);
     if (xPubResult != NULL) {
@@ -673,10 +860,12 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
     }
     CLEAR_ARRAY(seed);
     ClearSecretCache();
-    if (ret != SUCCESS_CODE) {
+    if (ret == ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET || ret == ERR_KEYSTORE_MNEMONIC_INVALID) {
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_FAIL, NULL, 0);
-    } else {
+    } else if (ret == SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_CREATE_SINGLE_PHRASE_WRITESE_PASS, NULL, 0);
+    } else {
+        ModelAbortWallet(ret, 0xFF, false);
     }
     SetLockScreen(enable);
     return ret;
@@ -685,26 +874,49 @@ static int32_t ModelBip39VerifyMnemonic(const void *inData, uint32_t inDataLen)
 // Auxiliary word verification for bip39
 static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
+    g_forgetResetIndex = 0xFF;
+    int32_t ret = ERR_GENERAL_FAIL;
+    bool retryable = false;
     do {
+        if (inData == NULL || inDataLen != sizeof(uint8_t) || SecretCacheGetMnemonic() == NULL) {
+            break;
+        }
+        ret = bip39_mnemonic_validate(NULL, SecretCacheGetMnemonic());
+        if (ret != SUCCESS_CODE) {
+            retryable = ret == -2;
+            if (retryable) {
+                ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+            }
+            break;
+        }
         ret = CHECK_BATTERY_LOW_POWER();
-        CHECK_ERRCODE_BREAK("save low power", ret);
-        // Capture the matched (reset) wallet index for the prove-ownership guard. ModelComparePubkey returns
-        // ERR_KEYSTORE_MNEMONIC_REPEAT (!= SUCCESS) exactly when the mnemonic matches an existing wallet — the
-        // forget-pass SUCCESS path — and sets *index to that wallet.
+        if (ret != SUCCESS_CODE) {
+            retryable = ret == ERR_KEYSTORE_SAVE_LOW_POWER;
+            break;
+        }
         ret = ModelComparePubkey(MNEMONIC_TYPE_BIP39, NULL, 0, 0, false, 0, &g_forgetResetIndex);
         if (ret == ERR_KEYSTORE_MNEMONIC_REPEAT) {
+            ret = SUCCESS_CODE;
             GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
             SetLockScreen(enable);
             return ret;
         }
-        if (ret == SUCCESS_CODE) {
+        retryable = ret == SUCCESS_CODE;
+        if (retryable) {
             ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
         }
     } while (0);
-    GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
+    g_forgetResetIndex = 0xFF;
+    if (retryable) {
+        GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
+    } else {
+        ModelAbortWallet(ret, 0xFF, false);
+    }
     SetLockScreen(enable);
     return ret;
 }
@@ -713,6 +925,9 @@ static UREncodeResult *g_urResult = NULL;
 
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     GenerateUR func = (GenerateUR)getUR;
     g_urResult = func();
     if (g_urResult == NULL) {
@@ -733,8 +948,12 @@ static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, Bac
 
 static bool ShouldUseCyclicPart(void)
 {
-    if (g_urResult == NULL) return false;
-    if (strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) < 6) return false;
+    if (g_urResult == NULL) {
+        return false;
+    }
+    if (strnlen_s(g_urResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) < 6) {
+        return false;
+    }
     if (strncmp(g_urResult->data, "ur:xmr", 6) == 0 || strncmp(g_urResult->data, "UR:XMR", 6) == 0) {
         return true;
     }
@@ -743,7 +962,12 @@ static bool ShouldUseCyclicPart(void)
 
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
 {
-    if (g_urResult == NULL) return SUCCESS_CODE;
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
+    if (g_urResult == NULL) {
+        return SUCCESS_CODE;
+    }
     if (g_urResult->is_multi_part) {
         UREncodeMultiResult *result = NULL;
         if (ShouldUseCyclicPart()) {
@@ -751,19 +975,24 @@ static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen)
         } else {
             result = get_next_part(g_urResult->encoder);
         }
-        if (result->error_code == 0) {
+        if (result != NULL && result->error_code == 0 && result->data != NULL) {
             // printf("%s\r\n", result->data);
             GuiApiEmitSignal(SIG_BACKGROUND_UR_UPDATE, result->data, strnlen_s(result->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1);
         } else {
-            //TODO: deal with error
+            GuiApiEmitSignal(SIG_BACKGROUND_UR_GENERATE_FAIL, NULL, 0);
         }
-        free_ur_encode_muilt_result(result);
+        if (result != NULL) {
+            free_ur_encode_muilt_result(result);
+        }
     }
     return SUCCESS_CODE;
 }
 
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     if (g_urResult != NULL) {
         free_ur_encode_result(g_urResult);
         g_urResult = NULL;
@@ -774,6 +1003,9 @@ static int32_t ModelURClear(const void *inData, uint32_t inDataLen)
 // Compare the generated extended public key
 static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, bool eb, uint8_t ie, uint8_t *index)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     bool bip39 = mnemonicType == MNEMONIC_TYPE_BIP39;
@@ -787,6 +1019,10 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
 
     do {
         SimpleResponse_c_char *xPubResult = NULL;
+        if (!bip39 && !slip39) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
         if (bip39) {
             ret = bip39_mnemonic_to_seed(SecretCacheGetMnemonic(), NULL, seed, 64, NULL);
             CHECK_ERRCODE_BREAK("bip39_mnemonic_to_seed", ret);
@@ -806,7 +1042,9 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
             break;
         }
         CLEAR_ARRAY(seed);
-        existIndex = SpecifiedXPubExist(xPubResult->data);
+        ret = FindAccountByXpub(xPubResult->data, &existIndex);
+        free_simple_response_c_char(xPubResult);
+        CHECK_ERRCODE_BREAK("find account public key", ret);
         if (index != NULL) {
             *index = existIndex;
         }
@@ -815,7 +1053,6 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
         } else {
             ret = SUCCESS_CODE;
         }
-        free_simple_response_c_char(xPubResult);
     } while (0);
     CLEAR_ARRAY(seed);
     SetLockScreen(enable);
@@ -824,6 +1061,9 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
 
 static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret = ERR_GENERAL_FAIL;
@@ -832,7 +1072,7 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
     uint16_t id = 0;
     uint8_t ie = 0;
     bool eb = false;
-    char *wordsList[SLIP39_MAX_MEMBER];
+    char *wordsList[SLIP39_MAX_MEMBER] = {0};
 
     if (slip39 == NULL) {
         goto cleanup;
@@ -848,7 +1088,9 @@ static int32_t Slip39CreateGenerate(Slip39Data_t *slip39, bool isDiceRoll)
 
     if (isDiceRoll) {
         const uint8_t *dice = SecretCacheGetDiceRollHash();
-        if (dice == NULL) goto cleanup;
+        if (dice == NULL) {
+            goto cleanup;
+        }
         if (slip39->wordCnt == SLIP39_MNEMONIC_33_WORDS && SecretCacheGetDiceRollsLen() < 100) {
             goto cleanup;
         }
@@ -888,7 +1130,7 @@ cleanup_words:
     }
 cleanup:
     if (ret != SUCCESS_CODE) {
-        GuiApiEmitSignal(SIG_CREATE_SHARE_UPDATE_MNEMONIC_FAIL, NULL, 0);
+        ModelAbortWallet(ret, 0xFF, false);
     }
     CLEAR_ARRAY(ems);
     CLEAR_ARRAY(entropy);
@@ -899,206 +1141,192 @@ cleanup:
 // slip39 generate
 static int32_t ModelGenerateSlip39Entropy(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     return Slip39CreateGenerate((Slip39Data_t *)inData, false);
 }
 
 // slip39 generate
 static int32_t ModelGenerateSlip39EntropyWithDiceRolls(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     return Slip39CreateGenerate((Slip39Data_t *)inData, true);
 }
 
 // Generate slip39 wallet writes
 static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    uint8_t *entropy = NULL;
-    uint8_t *ems = NULL;
-    uint32_t entropyLen = 0;
-    uint8_t newAccount = 0;
-    uint8_t accountCnt = 0;
+    uint8_t entropyCheck[32] = {0}, emsCheck[32] = {0};
+    uint32_t entropyLen = 0, emsLen = 0;
+    uint8_t *entropy = SecretCacheGetEntropy(&entropyLen);
+    uint8_t *ems = SecretCacheGetEms(&emsLen);
+    int32_t ret = ERR_GENERAL_FAIL;
+    uint8_t threshold = 0;
     uint16_t id = 0;
     uint8_t ie = 0;
     bool eb = false;
-    uint8_t msCheck[32] = {0}, emsCheck[32] = {0};
-    uint8_t threShold = 0;
-    uint8_t wordCnt = *(uint8_t *)inData;
-    int ret;
-
-    ems = SecretCacheGetEms(&entropyLen);
-    entropy = SecretCacheGetEntropy(&entropyLen);
-    id = SecretCacheGetIdentifier();
-    eb = SecretCacheGetExtendable();
-    ie = SecretCacheGetIteration();
-
-    MODEL_WRITE_SE_HEAD
-    if (wordCnt != SLIP39_MNEMONIC_20_WORDS && wordCnt != SLIP39_MNEMONIC_33_WORDS) {
-        ret = ERR_KEYSTORE_MNEMONIC_INVALID;
-        break;
-    }
-    ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), wordCnt, &threShold);
-    char *words[threShold];
-    for (int i = 0; i < threShold; i++) {
-        words[i] = SecretCacheGetSlip39Mnemonic(i);
-    }
-    ret = Slip39GetMasterSecret(threShold, wordCnt, emsCheck, msCheck, words, &id, &eb, &ie);
-    if ((ret != SUCCESS_CODE) || (memcmp(msCheck, entropy, entropyLen) != 0) || (memcmp(emsCheck, ems, entropyLen) != 0)) {
-        ret = ERR_KEYSTORE_MNEMONIC_INVALID;
-        break;
-    }
+    char *words[SLIP39_MAX_MEMBER] = {0};
+    do {
+        if (inData == NULL || inDataLen != sizeof(uint8_t) || entropy == NULL || ems == NULL ||
+            entropyLen != emsLen || (entropyLen != 16 && entropyLen != 32)) {
+            break;
+        }
+        uint8_t count = *(const uint8_t *)inData;
+        if ((count != 20 && count != 33) || entropyLen != (count == 20 ? 16 : 32) ||
+            SecretCacheGetSlip39Mnemonic(0) == NULL) {
+            break;
+        }
+        ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), count, &threshold);
+        if (ret != SUCCESS_CODE || threshold == 0 || threshold > SLIP39_MAX_MEMBER) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+        for (uint8_t i = 0; i < threshold; i++) {
+            words[i] = SecretCacheGetSlip39Mnemonic(i);
+            if (words[i] == NULL) {
+                ret = ERR_GENERAL_FAIL;
+                break;
+            }
+        }
+        if (ret != SUCCESS_CODE) {
+            break;
+        }
+        ret = Slip39GetMasterSecret(threshold, count, emsCheck, entropyCheck, words, &id, &eb, &ie);
+        if (ret != SUCCESS_CODE || memcmp(entropyCheck, entropy, entropyLen) != 0 ||
+            memcmp(emsCheck, ems, entropyLen) != 0) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
+    } while (0);
+    CLEAR_ARRAY(entropyCheck);
     CLEAR_ARRAY(emsCheck);
-    CLEAR_ARRAY(msCheck);
-    ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
-    CHECK_ERRCODE_BREAK("duplicated entropy", ret);
-    ret = CreateNewSlip39Account(newAccount, ems, entropy, entropyLen, SecretCacheGetNewPassword(), SecretCacheGetIdentifier(), SecretCacheGetExtendable(), SecretCacheGetIteration());
-    CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
-        CHECK_ERRCODE_BREAK("set passphrase error", ret);
-        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
+    if (ret == SUCCESS_CODE) {
+        ret = ModelSaveMnemonicWallet(true, false, entropy, ems, entropyLen, id, eb, ie);
+    } else {
+        ModelAbortWallet(ret, 0xFF, false);
     }
-    MODEL_WRITE_SE_END
-
     SetLockScreen(enable);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 // Import of mnemonic words for slip39
 static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    int32_t ret;
-    uint16_t id;
-    uint8_t ie;
-    bool eb;
-    uint8_t newAccount;
-    uint8_t accountCnt;
-    Slip39Data_t *slip39 = (Slip39Data_t *)inData;
-    AccountInfo_t accountInfo;
-
-    entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
-    entropy = SRAM_MALLOC(entropyLen);
-    uint8_t ems[32] = {0};
-    uint8_t emsBak[32] = {0};
-
-    char *words[slip39->threShold];
-    for (int i = 0; i < slip39->threShold; i++) {
+    uint8_t entropy[32] = {0}, ems[32] = {0};
+    char *words[SLIP39_MAX_MEMBER] = {0};
+    uint16_t id = 0;
+    uint8_t ie = 0;
+    bool eb = false;
+    int32_t ret = ERR_GENERAL_FAIL;
+    if (inData == NULL || inDataLen != sizeof(Slip39Data_t)) {
+        ModelAbortWallet(ret, 0xFF, false);
+        goto cleanup;
+    }
+    const Slip39Data_t *data = inData;
+    if ((data->wordCnt != 20 && data->wordCnt != 33) ||
+        data->threShold == 0 || data->threShold > SLIP39_MAX_MEMBER) {
+        ModelAbortWallet(ret, 0xFF, false);
+        goto cleanup;
+    }
+    for (uint8_t i = 0; i < data->threShold; i++) {
         words[i] = SecretCacheGetSlip39Mnemonic(i);
+        if (words[i] == NULL) {
+            ModelAbortWallet(ret, 0xFF, false);
+            goto cleanup;
+        }
     }
-
-    MODEL_WRITE_SE_HEAD
-    ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
-    if (ret != SUCCESS_CODE) {
-        printf("get master secret error\n");
-        break;
-    }
-    memcpy_s(emsBak, sizeof(emsBak), ems, entropyLen);
-
-    if (slip39->forget) {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &newAccount);
-        CHECK_ERRCODE_BREAK("mnemonic not match", !ret);
+    ret = Slip39GetMasterSecret(data->threShold, data->wordCnt, ems, entropy, words, &id, &eb, &ie);
+    if (ModelIsSlip39InputError(ret)) {
+        ret = ModelWalletInputError(ERR_KEYSTORE_MNEMONIC_INVALID);
+    } else if (ret != SUCCESS_CODE) {
+        ModelAbortWallet(ret, 0xFF, false);
     } else {
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, NULL);
-        CHECK_ERRCODE_BREAK("mnemonic repeat", ret);
+        ret = ModelSaveMnemonicWallet(true, data->forget, entropy, ems, data->wordCnt == 20 ? 16 : 32, id, eb, ie);
     }
-    printf("before accountCnt = %d\n", accountCnt);
-    if (slip39->forget) {
-        GetAccountInfo(newAccount, &accountInfo);
-    }
-    ret = CreateNewSlip39Account(newAccount, emsBak, entropy, entropyLen, SecretCacheGetNewPassword(), id, eb, ie);
-    CHECK_ERRCODE_BREAK("save slip39 entropy error", ret);
-    ClearAccountPassphrase(newAccount);
-    if (strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) > 0) {
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetNewPassword());
-        CHECK_ERRCODE_BREAK("set passphrase error", ret);
-        SetPassphraseQuickAccess(GuiPassphraseQuickAccess());
-    }
-    ret = VerifyPasswordAndLogin(&newAccount, SecretCacheGetNewPassword());
-    CHECK_ERRCODE_BREAK("login error", ret);
-    UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-    if (slip39->forget) {
-        SetWalletName(accountInfo.walletName);
-        SetWalletIconIndex(accountInfo.iconIndex);
-        LogoutCurrentAccount();
-        CloseUsb();
-    }
+cleanup:
     CLEAR_ARRAY(ems);
-    CLEAR_ARRAY(emsBak);
-    GetExistAccountNum(&accountCnt);
-    printf("after accountCnt = %d\n", accountCnt);
-}
-while (0);
-if (ret == SUCCESS_CODE)
-{
-    ClearSecretCache();
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-} else
-{
-    GuiApiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL, &ret, sizeof(ret));
-}
-SRAM_FREE(entropy);
-SetLockScreen(enable);
-return SUCCESS_CODE;
+    CLEAR_ARRAY(entropy);
+    SetLockScreen(enable);
+    return ret;
 }
 
 static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    int32_t ret = SUCCESS_CODE;
-#ifndef COMPILE_SIMULATOR
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    uint16_t id;
-    uint8_t ie;
-    bool eb;
-    Slip39Data_t *slip39 = (Slip39Data_t *)inData;
-
-    entropyLen = (slip39->wordCnt == 20) ? 16 : 32;
-    entropy = SRAM_MALLOC(entropyLen);
-    uint8_t ems[32] = {0};
-
-    char *words[slip39->threShold];
-    for (int i = 0; i < slip39->threShold; i++) {
-        words[i] = SecretCacheGetSlip39Mnemonic(i);
-    }
-
+    g_forgetResetIndex = 0xFF;
+    uint8_t entropy[32] = {0}, ems[32] = {0};
+    char *words[SLIP39_MAX_MEMBER] = {0};
+    uint16_t id = 0;
+    uint8_t ie = 0;
+    bool eb = false, retryable = false, matched = false;
+    int32_t ret = ERR_GENERAL_FAIL;
     do {
-        ret = CHECK_BATTERY_LOW_POWER();
-        CHECK_ERRCODE_BREAK("save low power", ret);
-        ret = Slip39GetMasterSecret(slip39->threShold, slip39->wordCnt, ems, entropy, words, &id, &eb, &ie);
-        if (ret != SUCCESS_CODE) {
-            printf("get master secret error\n");
+        if (inData == NULL || inDataLen != sizeof(Slip39Data_t)) {
             break;
         }
-        // Capture the matched (reset) wallet index for the prove-ownership guard (see ModelBip39ForgetPass).
-        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, entropyLen, id, eb, ie, &g_forgetResetIndex);
-        if (ret == ERR_KEYSTORE_MNEMONIC_REPEAT) {
-            GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
-            CLEAR_ARRAY(ems);
-            memset_s(entropy, entropyLen, 0, entropyLen);
-            SRAM_FREE(entropy);
-            SetLockScreen(enable);
-            return ret;
+        const Slip39Data_t *data = inData;
+        if ((data->wordCnt != 20 && data->wordCnt != 33) ||
+            data->threShold == 0 || data->threShold > SLIP39_MAX_MEMBER)
+            break;
+        for (uint8_t i = 0; i < data->threShold; i++) {
+            words[i] = SecretCacheGetSlip39Mnemonic(i);
+            if (words[i] == NULL) {
+                break;
+            }
         }
-        if (ret == SUCCESS_CODE) {
+        if (words[data->threShold - 1] == NULL) {
+            break;
+        }
+        ret = CHECK_BATTERY_LOW_POWER();
+        if (ret != SUCCESS_CODE) {
+            retryable = ret == ERR_KEYSTORE_SAVE_LOW_POWER;
+            break;
+        }
+        ret = Slip39GetMasterSecret(data->threShold, data->wordCnt, ems, entropy, words, &id, &eb, &ie);
+        if (ret != SUCCESS_CODE) {
+            retryable = ModelIsSlip39InputError(ret);
+            if (retryable) {
+                ret = ERR_KEYSTORE_MNEMONIC_INVALID;
+            }
+            break;
+        }
+        ret = ModelComparePubkey(MNEMONIC_TYPE_SLIP39, ems, data->wordCnt == 20 ? 16 : 32, id, eb, ie, &g_forgetResetIndex);
+        matched = ret == ERR_KEYSTORE_MNEMONIC_REPEAT;
+        retryable = ret == SUCCESS_CODE;
+        if (retryable) {
             ret = ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET;
         }
     } while (0);
-    GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
-
     CLEAR_ARRAY(ems);
-    memset_s(entropy, entropyLen, 0, entropyLen);
-    SRAM_FREE(entropy);
-#else
-    GuiEmitSignal(SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS, &ret, sizeof(ret));
-#endif
+    CLEAR_ARRAY(entropy);
+    if (matched) {
+        ret = SUCCESS_CODE;
+        GuiApiEmitSignal(SIG_FORGET_PASSWORD_SUCCESS, NULL, 0);
+    } else {
+        g_forgetResetIndex = 0xFF;
+        if (retryable) {
+            GuiApiEmitSignal(SIG_FORGET_PASSWORD_FAIL, &ret, sizeof(ret));
+        } else {
+            ModelAbortWallet(ret, 0xFF, false);
+        }
+    }
     SetLockScreen(enable);
     return ret;
 }
@@ -1106,27 +1334,45 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
 // save wallet desc
 static int32_t ModelSaveWalletDesc(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    WalletDesc_t *wallet = (WalletDesc_t *)inData;
-    SetWalletName(wallet->name);
-    SetWalletIconIndex(wallet->iconIndex);
-
-    GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
+    int32_t ret = ERR_GENERAL_FAIL;
+    if (inData != NULL && inDataLen == sizeof(WalletDesc_t) && GetCurrentAccountIndex() < 3) {
+        const WalletDesc_t *wallet = inData;
+        ret = SetWalletDesc(wallet->name, wallet->iconIndex);
+    }
+    if (ret == SUCCESS_CODE) {
+        GuiApiEmitSignal(SIG_SETTING_CHANGE_WALLET_DESC_PASS, NULL, 0);
+    } else {
+        ModelAbortWallet(ret, 0xFF, false);
+    }
     SetLockScreen(enable);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 // del wallet
 static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     int32_t ret;
     uint8_t accountIndex = GetCurrentAccountIndex();
+    if (accountIndex >= 3) {
+        ret = ModelAbortWallet(ERR_KEYSTORE_NOT_LOGIN, 0xFF, false);
+        SetLockScreen(enable);
+        return ret;
+    }
+    ClearSecretCache();
+    SE_DisarmProvisionRecovery();
     UpdateFingerSignFlag(accountIndex, false);
     CloseUsb();
-    ret = DestroyAccount(accountIndex);   // gen-2 SE key rotation now happens inside DestroyAccount
+    ret = DestroyAccount(accountIndex);  // gen-2 SE key rotation now happens inside DestroyAccount
     if (ret == SUCCESS_CODE) {
         // reset address index in receive page
         {
@@ -1143,7 +1389,12 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
         }
 
         uint8_t accountNum;
-        GetExistAccountNum(&accountNum);
+        ret = GetExistAccountNum(&accountNum);
+        if (ret != SUCCESS_CODE) {
+            ModelAbortWallet(ret, accountIndex, false);
+            SetLockScreen(enable);
+            return ret;
+        }
         if (accountNum == 0) {
             FpWipeManageInfo();
             SetSetupStep(0);
@@ -1155,19 +1406,30 @@ static int32_t ModelDelWallet(const void *inData, uint32_t inDataLen)
             GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
         }
     } else {
-        GuiApiEmitSignal(SIG_SETTING_DEL_WALLET_FAIL, &ret, sizeof(ret));
+        ModelAbortWallet(ret, accountIndex, false);
     }
     SetLockScreen(enable);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 // del all wallet
 static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
+    ClearSecretCache();
+    SE_DisarmProvisionRecovery();
+    CloseUsb();
 #ifndef COMPILE_SIMULATOR
-    WipeDevice();
+    int32_t ret = WipeDevice();
+    if (ret != SUCCESS_CODE) {
+        ModelAbortWallet(ret, 0xFF, false);
+        SetLockScreen(enable);
+        return ret;
+    }
     SystemReboot();
 #else
     GuiEmitSignal(SIG_SETTING_DEL_WALLET_PASS, NULL, 0);
@@ -1179,71 +1441,78 @@ static int32_t ModelDelAllWallet(const void *inData, uint32_t inDataLen)
 // write passphrase
 static int32_t ModelWritePassphrase(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    int32_t ret = 0;
-    if (CheckPassphraseSame(GetCurrentAccountIndex(), SecretCacheGetPassphrase())) {
+    uint8_t target = GetCurrentAccountIndex();
+    const char *passphrase = SecretCacheGetPassphrase();
+    int32_t ret = ERR_GENERAL_FAIL;
+    if (target < 3 && passphrase != NULL && SecretCacheGetPassword() != NULL) {
+        ret = CheckPassphraseSame(target, passphrase) ? SUCCESS_CODE : SetSetupPassphrase(target, passphrase, SecretCacheGetPassword());
+    }
+    ClearSecretCache();
+    if (ret == SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
     } else {
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
-        if (ret == SUCCESS_CODE) {
-            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
-            ClearSecretCache();
-        } else {
-            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
-        }
-        ClearSecretCache();
+        ClearAccountPassphrase(target);
+        ModelAbortWallet(ret, target, false);
     }
     SetLockScreen(enable);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 // reset wallet password
 static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-#ifndef COMPILE_SIMULATOR
-    int32_t ret;
-
-    // Gate change-PIN on low battery like wallet creation (MODEL_WRITE_SE_HEAD) so it can't start on a dying
-    // battery and be interrupted mid-flight.
-    ret = CHECK_BATTERY_LOW_POWER();
-    if (ret != SUCCESS_CODE) {
-        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, NULL, 0);
-        ClearSecretCache();
-        SetLockScreen(enable);
-        return SUCCESS_CODE;
-    }
-
-    ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
-    if (ret == SUCCESS_CODE) {
-        ret = ChangePassword(GetCurrentAccountIndex(), SecretCacheGetNewPassword(), SecretCacheGetPassword());
-    }
-    if (ret == SUCCESS_CODE) {
-        UpdateFingerSignFlag(GetCurrentAccountIndex(), false);
-        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
-    } else {
-        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, NULL, 0);
-    }
-
+    uint8_t target = GetCurrentAccountIndex();
+    int32_t ret = ERR_GENERAL_FAIL;
+    bool retryable = false;
+    bool modified = false;
+    do {
+        if (target >= 3 || SecretCacheGetPassword() == NULL || SecretCacheGetNewPassword() == NULL) {
+            break;
+        }
+        ret = GetCurrentDisplayPercent() < 20 ? ERR_KEYSTORE_SAVE_LOW_POWER : SUCCESS_CODE;
+        if (ret != SUCCESS_CODE) {
+            retryable = ret == ERR_KEYSTORE_SAVE_LOW_POWER;
+            break;
+        }
+        ret = VerifyCurrentAccountPassword(SecretCacheGetPassword());
+        if (ret != SUCCESS_CODE) {
+            retryable = ret == ERR_KEYSTORE_PASSWORD_ERR;
+            break;
+        }
+        ret = ChangePassword(target, SecretCacheGetNewPassword(), SecretCacheGetPassword(), &modified);
+        if (ret != SUCCESS_CODE) {
+            retryable = !modified && ret == ERR_KEYSTORE_REPEAT_PASSWORD;
+            break;
+        }
+    } while (0);
     ClearSecretCache();
-#else
-    uint8_t *entropy;
-    uint8_t entropyLen;
-    int32_t ret;
-    uint8_t *accountIndex = (uint8_t *)inData;
-
-    // GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
-    GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, &ret, sizeof(ret));
-#endif
+    if (ret == SUCCESS_CODE) {
+        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_PASS, NULL, 0);
+    } else if (retryable) {
+        GuiApiEmitSignal(SIG_SETTING_CHANGE_PASSWORD_FAIL, &ret, sizeof(ret));
+    } else {
+        ModelAbortWalletWithNotice(ret, target, modified, modified);
+    }
     SetLockScreen(enable);
-    return SUCCESS_CODE;
+    return ret;
 }
 
 // calculate auth code
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 #ifndef COMPILE_SIMULATOR
@@ -1294,7 +1563,11 @@ static void ModelVerifyPassSuccess(uint16_t *param)
     uint8_t walletAmount;
     switch (*param) {
     case DEVICE_SETTING_ADD_WALLET:
-        GetExistAccountNum(&walletAmount);
+        ret = GetExistAccountNum(&walletAmount);
+        if (ret != SUCCESS_CODE) {
+            ModelAbortWallet(ret, 0xFF, false);
+            break;
+        }
         if (walletAmount == 3) {
             GuiApiEmitSignal(SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT, NULL, 0);
         } else {
@@ -1313,11 +1586,11 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         if (SecretCacheGetPassphrase() == NULL) {
             SecretCacheSetPassphrase("");
         }
-        ret = SetPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
+        ret = SetSetupPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
 #ifdef BTC_ONLY
         if (ret == SUCCESS_CODE &&
-                strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
-            AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
+            strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
+            ret = AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
         }
 #endif
         SetPageLockScreen(true);
@@ -1325,7 +1598,8 @@ static void ModelVerifyPassSuccess(uint16_t *param)
             GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_PASS, NULL, 0);
             ClearSecretCache();
         } else {
-            GuiApiEmitSignal(SIG_SETTING_WRITE_PASSPHRASE_FAIL, NULL, 0);
+            ClearAccountPassphrase(GetCurrentAccountIndex());
+            ModelAbortWallet(ret, 0xFF, false);
         }
         break;
     case SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE:
@@ -1350,7 +1624,7 @@ static void ModelVerifyPassFailed(uint16_t *param)
     switch (*param) {
     case SIG_LOCK_VIEW_VERIFY_PIN:
     case SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS:
-    case SIG_FORGET_PASSWORD_PROVE_OWNERSHIP:   // prove-ownership uses the login error counter
+    case SIG_FORGET_PASSWORD_PROVE_OWNERSHIP:  // prove-ownership uses the login error counter
         g_passwordVerifyResult.errorCount = GetLoginPasswordErrorCount();
         printf("gui model get login error count %d \n", g_passwordVerifyResult.errorCount);
         assert(g_passwordVerifyResult.errorCount <= MAX_LOGIN_PASSWORD_ERROR_COUNT);
@@ -1391,28 +1665,41 @@ static void ModelVerifyPassFailed(uint16_t *param)
 // verify wallet password
 static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     static bool firstVerify = true;
     SetLockScreen(false);
-    uint8_t accountIndex;
+    uint8_t accountIndex = 0xFF;
     int32_t ret;
     uint16_t *param = (uint16_t *)inData;
+    if (param == NULL || inDataLen != sizeof(*param) || SecretCacheGetPassword() == NULL) {
+        ret = ModelAbortWallet(ERR_GENERAL_FAIL, 0xFF, false);
+        SetLockScreen(enable);
+        return ret;
+    }
 
     // Unlock screen
     if (SIG_LOCK_VIEW_VERIFY_PIN == *param || SIG_LOCK_VIEW_SCREEN_GO_HOME_PASS == *param) {
         ret = VerifyPasswordAndLogin(&accountIndex, SecretCacheGetPassword());
         if (ret == ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH) {
-            GuiApiEmitSignal(SIG_EXTENDED_PUBLIC_KEY_NOT_MATCH, NULL, 0);
+            ModelAbortWallet(ret, 0xFF, false);
+            SetLockScreen(enable);
             return ret;
         } else if (ret == SUCCESS_CODE) {
             ModeGetWalletDesc(NULL, 0);
         }
     } else if (SIG_FORGET_PASSWORD_PROVE_OWNERSHIP == *param) {
+        if (g_forgetResetIndex >= 3) {
+            ret = ModelAbortWallet(ERR_GENERAL_FAIL, 0xFF, false);
+            SetLockScreen(enable);
+            return ret;
+        }
         // Forget-pass (gen-2 multi-wallet): prove device ownership by authenticating ANY existing wallet.
         // Try-all check (no login), ticking the login error counter, clamped at MAX_LOGIN so it stops at the
         // wipe threshold instead of running past it.
-        ret = VerifyOwnershipPasswordTryAll(&accountIndex, SecretCacheGetPassword(),
-                                            MAX_LOGIN_PASSWORD_ERROR_COUNT);
+        ret = VerifyOwnershipPasswordTryAll(&accountIndex, SecretCacheGetPassword(), MAX_LOGIN_PASSWORD_ERROR_COUNT);
         // Ownership must be proven via a DIFFERENT wallet than the one being reset. If the entered password
         // matches the reset wallet ITSELF (g_forgetResetIndex, resolved at the mnemonic-verify step), reject the
         // proof. Unreachable in normal use (unique passwords mean only its own password maps to its index) —
@@ -1438,45 +1725,50 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
         SE_ArmProvisionRecovery(GetCurrentAccountIndex(), SecretCacheGetPassword());
     }
 
-    if (SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
+    if (ret == SUCCESS_CODE && SIG_LOCK_VIEW_VERIFY_PIN == *param && firstVerify && ModelGetPassphraseQuickAccess()) {
         *param = SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE;
         firstVerify = false;
     }
 
     // some scene would need clear secret after check
     if (*param != SIG_SETTING_CHANGE_PASSWORD &&
-            *param != SIG_SETTING_WRITE_PASSPHRASE &&
-            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
-            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
-            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
-            *param != SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD &&
-            *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
-            *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
-            *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
-            *param != SIG_INIT_CONNECT_USB &&
-            // forget-pass prove-ownership: the user already entered the seed; clearing it here would blank the
-            // mnemonic before the upcoming re-save (it would fail with "mnemonic error"). The other wallet's PIN
-            // we just verified is already captured in the dedicated provision-recovery holder; the forget-pass
-            // DeInit clears the cache.
-            *param != SIG_FORGET_PASSWORD_PROVE_OWNERSHIP &&
-            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
-            !GuiCheckIfViewOpened(&g_createWalletView) &&
-            !ModelGetPassphraseQuickAccess()) {
+        *param != SIG_SETTING_WRITE_PASSPHRASE &&
+        *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+        *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+        *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+        *param != SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD &&
+        *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
+        *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
+        *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
+        *param != SIG_INIT_CONNECT_USB &&
+        // forget-pass prove-ownership: the user already entered the seed; clearing it here would blank the
+        // mnemonic before the upcoming re-save (it would fail with "mnemonic error"). The other wallet's PIN
+        // we just verified is already captured in the dedicated provision-recovery holder; the forget-pass
+        // DeInit clears the cache.
+        *param != SIG_FORGET_PASSWORD_PROVE_OWNERSHIP &&
+        !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
+        !GuiCheckIfViewOpened(&g_createWalletView) &&
+        !ModelGetPassphraseQuickAccess()) {
         ClearSecretCache();
     }
     SetLockScreen(enable);
     if (ret == SUCCESS_CODE) {
         ModelVerifyPassSuccess(param);
-    } else {
+    } else if (ret == ERR_KEYSTORE_PASSWORD_ERR) {
         ModelVerifyPassFailed(param);
+    } else {
+        ModelAbortWallet(ret, 0xFF, false);
     }
-    return SUCCESS_CODE;
+    return ret;
 }
 
 // get wallet amount
 static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     static uint8_t walletAmount;
@@ -1494,6 +1786,9 @@ static int32_t ModeGetAccount(const void *inData, uint32_t inDataLen)
 // get wallet desc
 static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     static WalletDesc_t wallet;
@@ -1511,18 +1806,21 @@ static int32_t ModeGetWalletDesc(const void *inData, uint32_t inDataLen)
 // stop/start qr decode
 static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
     bool *en = (bool *)inData;
 #ifndef COMPILE_SIMULATOR
     UserDelay(100);
-    if (en) {
+    if (en != NULL && *en) {
         PubValueMsg(QRDECODE_MSG_START, 0);
     } else {
         PubValueMsg(QRDECODE_MSG_STOP, 0);
     }
 #else
-    if (en) {
+    if (en != NULL && *en) {
         read_qrcode();
     }
 #endif
@@ -1532,10 +1830,13 @@ static int32_t ModeControlQrDecode(const void *inData, uint32_t inDataLen)
 
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
 
-    uint32_t time = *(uint32_t*)inData;
+    uint32_t time = *(uint32_t *)inData;
     SetLastLockDeviceTime(time);
 
     SetLockScreen(enable);
@@ -1544,6 +1845,9 @@ static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataL
 
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
 #ifndef COMPILE_SIMULATOR
     static uint8_t walletAmount;
     SetPageLockScreen(false);
@@ -1574,9 +1878,11 @@ static bool CheckNeedDelay(ViewType viewType)
 
 static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
 #ifdef BUILD_PRODUCTION
     osDelay(1000);
-    static uint8_t walletAmount;
     SetPageLockScreen(false);
     int32_t ret = UpdateBootFromFlash();
     SetPageLockScreen(true);
@@ -1593,8 +1899,12 @@ static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
 }
 
 static PtrT_TransactionCheckResult g_checkResult = NULL;
+
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     GuiApiEmitSignal(SIG_SHOW_TRANSACTION_LOADING, NULL, 0);
     ViewType viewType = *((ViewType *)inData);
 #ifdef CYPHERPUNK_VERSION
@@ -1606,7 +1916,11 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     if (g_checkResult != NULL && g_checkResult->error_code == 0) {
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_PASS, NULL, 0);
     } else {
-        printf("transaction check fail, error code: %d, error msg: %s\r\n", (int)g_checkResult->error_code, g_checkResult->error_message);
+        if (g_checkResult != NULL) {
+            printf("transaction check fail, error code: %d, error message: %s\r\n",
+                   (int)g_checkResult->error_code,
+                   g_checkResult->error_message != NULL ? g_checkResult->error_message : "");
+        }
         GuiApiEmitSignal(SIG_HIDE_TRANSACTION_LOADING, NULL, 0);
         GuiApiEmitSignal(SIG_TRANSACTION_CHECK_FAIL, g_checkResult, sizeof(g_checkResult));
     }
@@ -1614,9 +1928,11 @@ static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     if (g_checkResult != NULL) {
         free_TransactionCheckResult(g_checkResult);
         g_checkResult = NULL;
@@ -1626,6 +1942,9 @@ static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inD
 
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     ReturnVoidPointerFunc func = (ReturnVoidPointerFunc)parseTransactionFunc;
     SetPageLockScreen(false);
     // There is no need to release here, the parsing results will be released when exiting the details page.
@@ -1643,10 +1962,14 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
 }
 
 static const uint8_t APP_END_MAGIC_NUMBER[] = {'m', 'h', '1', '9', '0', '3', 'a', 'p', 'p', 'e', 'n', 'd'};
+
 uint32_t BinarySearchLastNonFFSector(void)
 {
     size_t APP_END_MAGIC_NUMBER_SIZE = sizeof(APP_END_MAGIC_NUMBER);
     uint8_t *buffer = SRAM_MALLOC(SECTOR_SIZE);
+    if (buffer == NULL) {
+        return UINT32_MAX;
+    }
     uint32_t startIndex = (APP_CHECK_START_ADDR - APP_ADDR) / SECTOR_SIZE;
     uint32_t endIndex = (APP_END_ADDR - APP_ADDR) / SECTOR_SIZE;
 
@@ -1676,12 +1999,18 @@ uint32_t BinarySearchLastNonFFSector(void)
 
 static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
 #ifndef COMPILE_SIMULATOR
     g_stopCalChecksum = false;
     uint8_t buffer[4096] = {0};
     uint8_t hash[32] = {0};
     int num = BinarySearchLastNonFFSector();
-    ASSERT(num >= 0);
+    if (num <= 0) {
+        SetPageLockScreen(true);
+        return ERR_GENERAL_FAIL;
+    }
     if (g_stopCalChecksum == true) {
         return SUCCESS_CODE;
     }
@@ -1717,13 +2046,18 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-#define FATFS_SHA256_BUFFER_SIZE              4096
+#define FATFS_SHA256_BUFFER_SIZE 4096
+
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     uint8_t percent;
 #ifndef COMPILE_SIMULATOR
     g_stopCalChecksum = false;
     FIL fp;
+    bool fileOpened = false;
     uint8_t *data = NULL;
     uint32_t fileSize, actualSize, copyOffset, totalSize = 0;
     uint8_t oldPercent = 0;
@@ -1734,11 +2068,20 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
     do {
         res = f_open(&fp, SD_CARD_OTA_BIN_PATH, FA_OPEN_EXISTING | FA_READ);
         if (res) {
-            return res;
+            break;
         }
+        fileOpened = true;
         fileSize = f_size(&fp);
+        if (fileSize == 0) {
+            res = FR_INT_ERR;
+            break;
+        }
         data = SRAM_MALLOC(FATFS_SHA256_BUFFER_SIZE);
-        for (copyOffset = 0; copyOffset <= fileSize; copyOffset += FATFS_SHA256_BUFFER_SIZE) {
+        if (data == NULL) {
+            res = FR_NOT_ENOUGH_CORE;
+            break;
+        }
+        for (copyOffset = 0; copyOffset < fileSize; copyOffset += actualSize) {
             if (!SdCardInsert() || (g_stopCalChecksum == true)) {
                 res = ERR_GENERAL_FAIL;
                 break;
@@ -1749,10 +2092,14 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
                 FatfsError(res);
                 break;
             }
+            if (actualSize == 0 || actualSize > fileSize - totalSize) {
+                res = FR_INT_ERR;
+                break;
+            }
             sha256_update(&ctx, data, actualSize);
             totalSize += actualSize;
 
-            uint8_t percent = totalSize * 100 / fileSize;
+            uint8_t percent = (uint64_t)totalSize * 100 / fileSize;
             if (oldPercent != percent) {
                 printf("==========copy %d%%==========\n", percent);
                 oldPercent = percent;
@@ -1775,7 +2122,9 @@ static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen)
         GuiApiEmitSignal(SIG_SETTING_SHA256_PERCENT_ERROR, NULL, 0);
     }
     SRAM_FREE(data);
-    f_close(&fp);
+    if (fileOpened) {
+        f_close(&fp);
+    }
     SetPageLockScreen(true);
 #else
     percent = 100;
@@ -1801,6 +2150,9 @@ bool ModelGetPassphraseQuickAccess(void)
 
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     int ret = FormatSdFatfs();
     if (ret != SUCCESS_CODE) {
         GuiApiEmitSignal(SIG_SETTING_MICRO_CARD_FORMAT_FAILED, NULL, 0);
@@ -1812,7 +2164,6 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
-
 #ifdef WEB3_VERSION
 static int32_t ModelRsaGenerateKeyPair(const void *inData, uint32_t inDataLen);
 
@@ -1823,12 +2174,18 @@ void GuiModelRsaGenerateKeyPair(bool allowGenerate)
 
 static int32_t ModelRsaGenerateKeyPair(const void *inData, uint32_t inDataLen)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     bool allowGenerate = inData != NULL && inDataLen == sizeof(bool) && *(const bool *)inData;
     return RsaGenerateKeyPair(true, allowGenerate, NULL);
 }
 
 int32_t RsaGenerateKeyPair(bool needEmitSignal, bool allowGenerate, SimpleResponse_c_char **publicKeyOut)
 {
+    if (g_walletOperationAborted) {
+        return ERR_GENERAL_FAIL;
+    }
     if (publicKeyOut != NULL) {
         *publicKeyOut = NULL;
     }
@@ -1841,7 +2198,7 @@ int32_t RsaGenerateKeyPair(bool needEmitSignal, bool allowGenerate, SimpleRespon
 
     int32_t ret = SUCCESS_CODE;
     uint8_t seed[SEED_LEN] = {0};
-    SimpleResponse_u8* secret = NULL;
+    SimpleResponse_u8 *secret = NULL;
     SimpleResponse_c_char *publicKey = NULL;
     SimpleResponse_c_char *address = NULL;
 

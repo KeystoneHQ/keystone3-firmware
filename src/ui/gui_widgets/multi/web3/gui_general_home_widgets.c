@@ -724,7 +724,7 @@ void GuiHomeRefresh(void)
     }
     GuiInitWalletState();
     g_countDownTimer = lv_timer_create(AddFlagCountDownTimerHandler, 500, NULL);
-    GuiSetSetupPhase(SETUP_PAHSE_DONE);
+    GuiSetSetupPhase(SETUP_PHASE_DONE);
     if (g_manageCont != NULL) {
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, _("home_manage_assets"));
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnManageWalletHandler, NULL);

@@ -18,7 +18,6 @@ static int32_t GuiImportShareViewDeInit(void)
 int32_t GuiImportShareViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
     uint8_t wordsCnt = 0;
-    int32_t ret = SUCCESS_CODE;
     GUI_ASSERT(g_importShareView.isActive);
 
     switch (usEvent) {
@@ -35,16 +34,8 @@ int32_t GuiImportShareViewEventProcess(void *self, uint16_t usEvent, void *param
         GuiImportShareRefresh();
         break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS:
-        GuiImportShareWriteSe(true, 0);
-        break;
     case SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL:
-        if (param != NULL) {
-            ret = *(int32_t *)param;
-        } else {
-            return ERR_GUI_ERROR;
-        }
-        GuiImportShareWriteSe(false, ret);
-        break;
+        return GuiHandleWriteSeResult(usEvent, param, usLen, GuiImportShareWriteSe);
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiImportSharePrevTile();
         break;

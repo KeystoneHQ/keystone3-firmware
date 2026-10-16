@@ -232,8 +232,12 @@ pub enum JupiterInstructions {
 impl Dispatch for JupiterInstructions {
     fn dispatch(instrucion_data: &[u8]) -> Result<Self, ProgramError> {
         let data = instrucion_data;
-        let ix_type = &data[..8];
-        let ix_data = &data[8..];
+        let ix_type = data
+            .get(..8)
+            .ok_or(JupiterError::UnknownJupiterInstruction)?;
+        let ix_data = data
+            .get(8..)
+            .ok_or(JupiterError::UnknownJupiterInstruction)?;
         let ix_type_hex = hex::encode(ix_type);
         match ix_type_hex.as_str() {
             "c1209b3341d69c81" => {
@@ -277,6 +281,13 @@ mod tests {
     use crate::solana_lib::utils::{sighash, SIGHASH_GLOBAL_NAMESPACE};
 
     use super::*;
+
+    #[test]
+    fn rejects_short_discriminator_without_panicking() {
+        for len in 0..8 {
+            assert!(JupiterInstructions::dispatch(&vec![0x42; len]).is_err());
+        }
+    }
 
     #[test]
     fn test_generate_shared_accounts_route_sighash() {
@@ -1386,6 +1397,12 @@ mod tests {
               "program_account": "JUP4Fb2cqiRUcaTHdrPC8h2gNsA2ETXiPDD33WcGuJB",
               "program":"Unknown"
         });
+        let mut expect_msg_detail = expect_msg_detail;
+        for account in expect_msg_detail["accounts"].as_array_mut().unwrap() {
+            if let Some((table, index)) = account.as_str().and_then(|s| s.split_once('#')) {
+                *account = json!({"Table": table, "Index": index.parse::<u8>().unwrap(), "Status": "Unresolved offline"});
+            }
+        }
         assert_eq!(
             expect_msg_detail,
             serde_json::to_value(&msg_detail[5]).unwrap()

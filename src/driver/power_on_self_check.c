@@ -22,7 +22,7 @@
 LV_FONT_DECLARE(openSans_20);
 LV_FONT_DECLARE(openSans_24);
 
-void PowerOnSelfCheck(void)
+int32_t PowerOnSelfCheck(void)
 {
     int ret = SUCCESS_CODE;
     uint32_t flashId = 0;
@@ -55,16 +55,23 @@ void PowerOnSelfCheck(void)
         DrawStringOnLcd(190, 408, "Loading...", 0xFFFF, &openSans_24);
         uint32_t c = 0x666666;
         DrawStringOnLcd(170, 456, "About 1 minute", (uint16_t)(((c & 0xF80000) >> 16) | ((c & 0xFC00) >> 13) | ((c & 0x1C00) << 3) | ((c & 0xF8) << 5)), &openSans_20);
-        FpWipeManageInfo();
-        SE_WipeAll();
-        DestroyAccount(0);
-        DestroyAccount(1);
-        DestroyAccount(2);
+        FpClearManageInfo();
+        ret = SE_WipeAll();
+        CHECK_ERRCODE_RETURN_INT(ret);
+        for (uint8_t index = 0; index < 3; index++) {
+            ret = DestroyAccount(index);
+            CHECK_ERRCODE_RETURN_INT(ret);
+        }
+        ret = ErasePublicInfo();
+        CHECK_ERRCODE_RETURN_INT(ret);
         for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
-            Gd25FlashBlockErase(addr);
+            ret = Gd25FlashBlockErase(addr);
+            CHECK_ERRCODE_RETURN_INT(ret);
             printf("flash erase address: %#x\n", (unsigned int)addr);
         }
-        ErasePublicInfo();
         NVIC_SystemReset();
     }
+    ret = DeviceSettingsRecoverSetupStep();
+    ASSERT(ret == SUCCESS_CODE);
+    return ret;
 }

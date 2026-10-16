@@ -1,3 +1,4 @@
+use crate::utils::io::write_varinteger;
 use alloc::vec::Vec;
 use curve25519_dalek::edwards::EdwardsPoint;
 
@@ -52,12 +53,17 @@ impl Extra {
         self.0.push(ExtraField::Nonce(nonce));
     }
 
+    pub(crate) fn push_padding(&mut self, size: usize) {
+        if size > 0 {
+            self.0.push(ExtraField::Padding(size));
+        }
+    }
+
     pub fn serialize(&self) -> Vec<u8> {
         let mut res = Vec::new();
         for field in &self.0 {
             match field {
                 ExtraField::Padding(size) => {
-                    res.push(0x00);
                     res.extend(core::iter::repeat_n(0, *size));
                 }
                 ExtraField::PublicKey(key) => {
@@ -66,7 +72,7 @@ impl Extra {
                 }
                 ExtraField::Nonce(nonce) => {
                     res.push(0x02);
-                    res.extend_from_slice(&[nonce.len() as u8]);
+                    res.extend_from_slice(&write_varinteger(nonce.len() as u64));
                     res.extend_from_slice(nonce);
                 }
                 ExtraField::MergeMining(size, data) => {
@@ -76,7 +82,7 @@ impl Extra {
                 }
                 ExtraField::PublicKeys(keys) => {
                     res.push(0x04);
-                    res.extend_from_slice(&[keys.len() as u8]);
+                    res.extend_from_slice(&write_varinteger(keys.len() as u64));
                     for key in keys {
                         res.extend_from_slice(&key.compress().to_bytes());
                     }
@@ -112,7 +118,7 @@ mod tests {
         ]);
 
         let serialized = extra.serialize();
-        let mut expected = vec![0x00, 0x00, 0x00];
+        let mut expected = vec![0x00, 0x00];
         expected.push(0x01);
         expected.extend_from_slice(&public_key.compress().to_bytes());
         expected.extend_from_slice(&[0x02, 0x02, 0x10, 0x20]);

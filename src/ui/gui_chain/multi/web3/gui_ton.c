@@ -2,6 +2,7 @@
 #include "rust.h"
 #include "account_manager.h"
 #include "secret_cache.h"
+#include "assert.h"
 #include "gui_chain.h"
 #include "gui_chain_components.h"
 
@@ -47,7 +48,7 @@ UREncodeResult *GuiGetTonSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t seed[64];
     do {
@@ -67,7 +68,7 @@ UREncodeResult *GuiGetTonProofSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
     uint8_t seed[64];
     do {
@@ -215,20 +216,42 @@ static lv_obj_t *CreateOverviewActionView(lv_obj_t *parent, DisplayTonMessage *d
     return container;
 }
 
+static void FormatTonAddress(char *dest, uint32_t destLen, const char *address)
+{
+    if (address == NULL) {
+        address = "";
+    }
+    if (strnlen_s(address, destLen) > 22) {
+        snprintf_s(dest, destLen, "%.22s\n%s", address, &address[22]);
+    } else {
+        snprintf_s(dest, destLen, "%s", address);
+    }
+}
+
 static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonMessage *data, lv_obj_t *lastView)
 {
     lv_obj_t *container = CreateContentContainer(parent, 408, 244);
     lv_obj_align_to(container, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    char *xPub = NULL;
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+    char *xPub = GetCurrentAccountPublicKey(XPUB_TYPE_TON_BIP39);
+    bool valid = xPub != NULL && xPub[0] != '\0';
+    if (!valid) {
+        ClearSecretCache();
+    }
+    ASSERT(valid);
     SimpleResponse_c_char *from = ton_get_address(xPub);
+    valid = from != NULL && from->error_code == 0 && from->data != NULL && from->data[0] != '\0';
+    if (!valid) {
+        ClearSecretCache();
+    }
+    ASSERT(valid);
 
     lv_obj_t *label = GuiCreateIllustrateLabel(container, _("From"));
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     char fromAddress[128] = {0};
-    snprintf_s(fromAddress, 128, "%.22s\n%s", from->data, &from->data[22]);
+    FormatTonAddress(fromAddress, sizeof(fromAddress), from->data);
+    free_simple_response_c_char(from);
 
     label = GuiCreateIllustrateLabel(container, fromAddress);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 54);
@@ -240,7 +263,7 @@ static lv_obj_t *CreateOverviewDestinationView(lv_obj_t *parent, DisplayTonMessa
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
 
     char toAddress[128] = {0};
-    snprintf_s(toAddress, 128, "%.22s\n%s", data->to, &data->to[22]);
+    FormatTonAddress(toAddress, sizeof(toAddress), data->to);
 
     label = GuiCreateIllustrateLabel(container, toAddress);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 168);

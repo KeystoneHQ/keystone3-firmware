@@ -2,6 +2,8 @@
 #![allow(dead_code)] // add for solana use a lot of external code
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
+pub mod advanced;
+
 extern crate alloc;
 extern crate core;
 #[cfg(test)]
@@ -23,6 +25,7 @@ mod compact;
 pub mod errors;
 mod instruction;
 pub mod message;
+mod message_json;
 mod message_v1;
 pub mod parser;
 pub mod read;
@@ -105,6 +108,7 @@ fn parse_offchain_message_v0(data: &[u8]) -> Option<&str> {
 }
 
 pub fn parse_message(tx_hex: Vec<u8>, from_key: &String) -> errors::Result<SolanaMessage> {
+    let message_length = tx_hex.len();
     // Keep only the representation that is displayed. Retaining both the
     // UTF-8 string and its hex encoding doubles peak memory for long messages.
     let offchain_message = parse_offchain_message_v0(&tx_hex).map(ToString::to_string);
@@ -119,7 +123,7 @@ pub fn parse_message(tx_hex: Vec<u8>, from_key: &String) -> errors::Result<Solan
             Err(error) => (hex::encode(error.as_bytes()), String::new()),
         },
     };
-    SolanaMessage::from(raw_message, utf8_message, from_key)
+    SolanaMessage::from(raw_message, utf8_message, from_key, message_length)
 }
 
 pub fn validate_tx(message: &mut Vec<u8>) -> bool {
@@ -154,6 +158,53 @@ pub fn parse_for_signer(data: &Vec<u8>, signer: &[u8; 32]) -> errors::Result<Par
     ParsedSolanaTx::build_for_signer(data, signer)
 }
 
+const MAX_DERIVATION_PATH_DEPTH: usize = 5;
+const MAX_DERIVATION_PATH_LEN: usize = 2 + MAX_DERIVATION_PATH_DEPTH * 12 - 1;
+
+pub fn validate_derivation_path(path: &str) -> errors::Result<String> {
+    let max_input_len = if path.starts_with("m/") {
+        MAX_DERIVATION_PATH_LEN
+    } else {
+        MAX_DERIVATION_PATH_LEN - 2
+    };
+    if path.len() > max_input_len {
+        return Err(errors::SolanaError::InvalidData(
+            "Solana derivation path exceeds maximum length".to_string(),
+        ));
+    }
+    let normalized = if path.starts_with("m/") {
+        path.to_string()
+    } else {
+        format!("m/{path}")
+    };
+    let components = normalized
+        .strip_prefix("m/")
+        .unwrap_or("")
+        .split('/')
+        .collect::<Vec<_>>();
+    if components.len() > MAX_DERIVATION_PATH_DEPTH {
+        return Err(errors::SolanaError::InvalidData(
+            "Solana derivation path exceeds maximum depth of 5".to_string(),
+        ));
+    }
+    let parse_hardened = |component: &str| {
+        component
+            .strip_suffix('\'')
+            .filter(|digits| !digits.is_empty() && digits.bytes().all(|byte| byte.is_ascii_digit()))
+            .and_then(|digits| digits.parse::<u32>().ok())
+            .filter(|index| *index < 0x8000_0000)
+    };
+    if components
+        .iter()
+        .any(|component| parse_hardened(component).is_none())
+    {
+        return Err(errors::SolanaError::InvalidData(
+            "invalid hardened Solana derivation path".to_string(),
+        ));
+    }
+    Ok(normalized)
+}
+
 pub fn sign(message: Vec<u8>, hd_path: &String, seed: &[u8]) -> errors::Result<[u8; 64]> {
     keystore::algorithms::ed25519::slip10_ed25519::sign_message_by_seed(seed, hd_path, &message)
         .map_err(|e| errors::SolanaError::KeystoreError(format!("sign failed {:?}", e.to_string())))
@@ -165,6 +216,51 @@ mod tests {
     use ur_registry::solana::sol_sign_request::SolSignRequest;
 
     use super::*;
+
+    #[test]
+    fn validates_supported_derivation_paths() {
+        for path in [
+            "44'/501'",
+            "m/44'/501'",
+            "m/44'/501'/0'",
+            "m/44'/501'/49'",
+            "m/44'/501'/0'/0'",
+            "m/44'/501'/49'/0'",
+            "m/44'/501'/50'",
+            "m/44'/501'/1000'/1'",
+            "m/44'/501'/0'/0'/0'",
+            "m/44'/501'/2147483647'",
+            "m/44'/60'/0'",
+            "m/501'/0'",
+            "m/0'",
+        ] {
+            assert!(validate_derivation_path(path).is_ok(), "{path}");
+        }
+        for path in [
+            "",
+            "m/",
+            "m/44'/501",
+            "m/44/501'",
+            "m/44'/501'/50",
+            "m/44'/501'/2147483648'",
+            "m/44'/501'/+1'",
+            "m/44'/501'//0'",
+        ] {
+            assert!(validate_derivation_path(path).is_err(), "{path}");
+        }
+    }
+
+    #[test]
+    fn bounds_derivation_path_depth_and_length() {
+        let deepest = "2147483647'/2147483647'/2147483647'/2147483647'/2147483647'";
+        assert_eq!(deepest.len() + 2, MAX_DERIVATION_PATH_LEN);
+        assert!(validate_derivation_path(deepest).is_ok());
+        assert!(validate_derivation_path(&format!("m/{deepest}")).is_ok());
+        assert!(validate_derivation_path("m/0'/0'/0'/0'/0'/0'").is_err());
+        assert!(validate_derivation_path("0'/0'/0'/0'/0'/0'").is_err());
+        assert!(validate_derivation_path(&format!("m/{}'", "0".repeat(1000))).is_err());
+        assert!(validate_derivation_path(&format!("{}'", "0".repeat(1000))).is_err());
+    }
 
     #[test]
     fn test_solana_sign() {
@@ -198,6 +294,8 @@ mod tests {
         assert!(!has_tx_prefix(&mut data.clone()));
 
         let parsed = parse_message(data.clone(), &String::new()).unwrap();
+        assert_eq!(parsed.message_length, data.len());
+        assert!(parsed.message_length > parsed.utf8_message.len());
         assert!(parsed.raw_message.is_empty());
         assert!(parsed
             .utf8_message
@@ -246,7 +344,6 @@ mod tests {
     #[test]
     fn test_solana_version_message() {
         let mut buffer = hex::decode("8001000308ad7dba70a9559a85961a00a0d00e7caf6967ff28c5861360cd8e22abcbb9b3eb080a39da2d35d3c666ff3d5195bb9065ed97a2208b4245bc70e69ff4b1d2b73fff21b6871e314c96e0848ba15117ec8cef8433b5a594ff2b88798b7e6d37b84e0a0cc6b26d4216a826e48cbb719136037e76cc273efb63ec73a6f2cb56cfa6015f376f7759fe1a4270a9b568d86110869cb073c8580adc986a178c876c18ee3d0306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a4000000004b2acb11258cce3682c418ba872ff3df91102712f15af12b6be69b3435b0008eaa020c61cc479712813461ce153894a96a6c00b21ed0cfc2798d1f9a9e9c94a5b6bfd38a1d64b54c65490c10b1be53496be5ede8d18086335aade667915e9e90705000502400d03000500090310010a00000000000606080d0706060e0802da8aeb4fc9196606030d010808218493e497c04859060b0001090802030d0f101112098c90fd150a4af80300060c00010d09080a0b0c04061113104b5d5ddc2296dac4ffffffffffffffff060b0001090802030d0f101112098c90fd150a4af803000110aaf654f15c22d8c9aa80622becb4872b0f5a52cc8f467d8a0da58b19197d690540024544420701757403060704").unwrap();
-        let pubkey = "e671e524ef43ccc5ef0006876f9a2fd66681d5abc5871136b343a3e4b073efde".to_string();
         let parsed = validate_tx(&mut buffer);
         assert_eq!(true, parsed)
     }
@@ -254,7 +351,6 @@ mod tests {
     #[test]
     fn test_solana_version_message_2() {
         let buffer = hex::decode("800100080ed027455eccf0385fc38f217c5bfbb95f711a16fbe782af7b33a97d1f17ebcd79281764ffe753b4a7a87393561a7178e5d7048eabf5302f5b0ac9ff8c2cd40560f06ebde13476f2455bc64dd1d49730033c0bac118dcbf72c38da62354df37a861c98c04915df1902f5c239c753a4bb55932b2e60b713c81bc81be9badfed8e7968e9def8e27815d652d0072a832a901e7960d89173ba8cb1c9450507eb7129f6d82fac025f4fec4efb956ef13dc4145063534dcddc006382f016f49a64eb71818c97258f4e2489f1bb3d1029148e0d830b5a1399daff1084048e7bd8dbe9f8591b8ffe6224eb2dcd8c0558731a23be68b7f64292a77e9b76889a44264468fff3000000000000000000000000000000000000000000000000000000000000000006ddf6e1d765a193d9cbe146ceeb79ac1cb485ed5f5b37913a8cf5857eff00a90306466fe5211732ffecadba72c39be7bc8ce5bbc5f7126b2c439b3a40000000069b8857feab8184fb687f634618c035dac439dc1aeb3b5598a0f00000000001ca4d39964c9cb5f9790d0a12969f60fd9724936284ea4a12daded42ddfa69c5d0479d52dedbf6bc5ecd09d84534a34aea5975043b36fd02b24650bb58443595c973c265a4390cf341062b67c0c2df7225807028c17a4006a4cfea9e5cfebe53f0706060001071e080901010a000502c05c15000a000903d8d600000000000006060002000b0809010106060003000c080901010d280900041b091c1d00050e0f0210111b091f20000212130314152122160003041718191a092324250126e517cb977ae3ad2a0003000000020302030219a086010000000000054000000000000032004b0903020000010903fe234c2bed04b83d2bc2e13d5320d2c0e31393816adb2d0bca769afbeb0bea1004c6c8c4c30304c5c2ac6488e2949297db40612a5f2340f0bc6a1c476982accc1a20b032e4d99c04fa048e8b898a031d8f8dd64fd4ba4db1bd148b9135fd8024bc94a40d9849e774d871cb2d366ae6a0265205b7b5bfbeb60564bca2bbba").unwrap();
-        let pubkey = "e671e524ef43ccc5ef0006876f9a2fd66681d5abc5871136b343a3e4b073efde".to_string();
         let parsed = parse(&buffer);
         assert_eq!(true, parsed.is_ok())
     }

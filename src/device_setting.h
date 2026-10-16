@@ -10,8 +10,20 @@
 #define MIN_BRIGHT                              4
 #define MAX_BRIGHT                              50
 
+typedef enum {
+    SETUP_PHASE_WELCOME = 0,
+    SETUP_PHASE_LANGUAGE,
+    SETUP_PHASE_WEB_AUTH,
+    SETUP_PHASE_FIRMWARE_UPDATE,
+    SETUP_PHASE_CREATE_WALLET,
+    SETUP_PHASE_DONE,
+    SETUP_PHASE_WALLET_WRITE_PENDING,
+} SETUP_PHASE_ENUM;
+
 void DeviceSettingsInit(void);
+int32_t DeviceSettingsRecoverSetupStep(void);
 void SaveDeviceSettings(void);
+int32_t SaveSetupCheckpoint(uint32_t setupStep);
 
 uint32_t GetSetupStep(void);
 void SetSetupStep(uint32_t setupStep);
@@ -49,7 +61,7 @@ bool IsNftScreenValid(void);
 void SetNftBinValid(bool en);
 
 bool IsUpdateSuccess(void);
-void WipeDevice(void);
+int32_t WipeDevice(void);
 void DeviceSettingsTest(int argc, char *argv[]);
 
 bool GetEnableBlindSigning(void);

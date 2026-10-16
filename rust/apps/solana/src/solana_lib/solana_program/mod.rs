@@ -30,23 +30,75 @@ pub mod clock {
 pub mod program_utils {
     use crate::solana_lib::solana_program::errors::InstructionError;
 
-    const DECODE_LIMIT: usize = u64::MAX as usize;
-
     /// Deserialize with a limit based the maximum amount of data a program can expect to get.
     /// This function should be used in place of direct deserialization to help prevent OOM errors
-    pub fn limited_deserialize<T>(
+    pub fn limited_deserialize<T, const LIMIT: usize>(
         instruction_data: &[u8],
-        _limit: u64,
     ) -> Result<T, InstructionError>
     where
         T: serde::de::DeserializeOwned,
     {
+        if instruction_data.len() > LIMIT {
+            return Err(InstructionError::InvalidInstructionData);
+        }
         let config = bincode::config::legacy()
-            .with_limit::<DECODE_LIMIT>()
+            .with_limit::<LIMIT>()
             .with_fixed_int_encoding(); // As per https://github.com/servo/bincode/issues/333, these two options are needed
-        let (result, _) = bincode::serde::decode_from_slice(instruction_data, config)
+        let (result, consumed) = bincode::serde::decode_from_slice(instruction_data, config)
             .map_err(|_| InstructionError::InvalidInstructionData)?;
+        if consumed != instruction_data.len() {
+            return Err(InstructionError::InvalidInstructionData);
+        }
         Ok(result)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use alloc::{string::String, vec::Vec};
+
+        #[test]
+        fn rejects_oversized_declared_lengths() {
+            let oversized_length = u64::MAX.to_le_bytes();
+            assert!(limited_deserialize::<String, 1232>(&oversized_length).is_err());
+            assert!(limited_deserialize::<Vec<u8>, 1232>(&oversized_length).is_err());
+        }
+
+        #[test]
+        fn vote_sequences_reject_huge_hints_and_preserve_valid_wire_data() {
+            use crate::solana_lib::solana_program::vote::state::{Vote, VoteStateUpdate};
+            let huge = u64::MAX.to_le_bytes();
+            assert!(limited_deserialize::<Vote, 1232>(&huge).is_err());
+            assert!(limited_deserialize::<VoteStateUpdate, 1232>(&huge).is_err());
+            let mut vote = 1u64.to_le_bytes().to_vec();
+            vote.extend_from_slice(&42u64.to_le_bytes());
+            vote.extend_from_slice(&[0; 32]);
+            vote.push(0);
+            assert_eq!(
+                limited_deserialize::<Vote, 1232>(&vote).unwrap().slots,
+                [42]
+            );
+            let mut update = 1u64.to_le_bytes().to_vec();
+            update.extend_from_slice(&42u64.to_le_bytes());
+            update.extend_from_slice(&3u32.to_le_bytes());
+            update.push(0);
+            update.extend_from_slice(&[0; 32]);
+            update.push(0);
+            let parsed = limited_deserialize::<VoteStateUpdate, 1232>(&update).unwrap();
+            assert_eq!(parsed.lockouts[0].slot, 42);
+            assert_eq!(parsed.lockouts[0].confirmation_count, 3);
+        }
+
+        #[test]
+        fn enforces_decode_limit_and_exact_consumption() {
+            let mut data = 3u64.to_le_bytes().to_vec();
+            data.extend_from_slice(b"abc");
+            assert_eq!(limited_deserialize::<String, 11>(&data).unwrap(), "abc");
+            assert!(limited_deserialize::<String, 10>(&data).is_err());
+            data.push(0);
+            assert!(limited_deserialize::<String, 1232>(&data).is_err());
+            assert!(limited_deserialize::<String, 1232>(&1233u64.to_le_bytes()).is_err());
+        }
     }
 }
 

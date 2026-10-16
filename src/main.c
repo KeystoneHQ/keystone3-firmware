@@ -82,7 +82,10 @@ int main(void)
     DS28S60_Init();
     Atecc608bInit();
     SeManagerInit();               // resolve SE generation once (after the 608B is up, before any SE-account use)
-    AccountsDataCheck();
+    if (AccountsDataCheck() != SUCCESS_CODE) {
+        printf("Account recovery failed; normal startup is blocked.\r\n");
+        while (1);
+    }
     MountUsbFatfs();
     RtcInit();
     MotorInit();
@@ -94,7 +97,10 @@ int main(void)
     UserSqlite3Init();
     ScreenManagerInit();
     AccountManagerInit();
-    PowerOnSelfCheck();
+    if (PowerOnSelfCheck() != SUCCESS_CODE) {
+        printf("Device cleanup failed; normal startup is blocked.\r\n");
+        while (1);
+    }
 
     PrintSystemInfo();
     osKernelInitialize();

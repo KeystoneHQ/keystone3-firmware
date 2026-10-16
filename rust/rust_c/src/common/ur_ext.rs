@@ -90,7 +90,7 @@ impl InferViewType for CryptoPSBTExtend {
         match self.get_coin_id() {
             Some(2) => Ok(ViewType::LtcTx),
             Some(3) => Ok(ViewType::DogeTx),
-            Some(4) => Ok(ViewType::DashTx),
+            Some(5) => Ok(ViewType::DashTx),
             Some(145) => Ok(ViewType::BchTx),
             _ => Ok(ViewType::BtcTx),
         }
@@ -466,6 +466,55 @@ impl InferViewType for QRHardwareCall {
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "multi-coins")]
+    #[test]
+    fn dash_psbt_extend_uses_coin_id_five() {
+        use super::CryptoPSBTExtend;
+        let request = CryptoPSBTExtend::try_from(hex::decode("a20142aabb0205").unwrap()).unwrap();
+        assert_eq!(request.get_coin_id(), Some(5));
+        assert!(matches!(request.infer(), Ok(ViewType::DashTx)));
+    }
+
+    #[cfg(feature = "solana")]
+    #[test]
+    fn solana_view_type_follows_the_payload_not_the_type_hint() {
+        use super::{InferViewType, SolSignRequest, ViewType};
+        use ur_registry::solana::sol_sign_request::SignType;
+        let dataset: serde_json::Value =
+            serde_json::from_str(include_str!("../../tests/fixtures/solana-security.json"))
+                .unwrap();
+        for fixture in dataset["fixtures"].as_array().unwrap() {
+            let mut decoder = ur::Decoder::default();
+            for frame in fixture["ur"].as_array().unwrap() {
+                decoder
+                    .receive(&frame.as_str().unwrap().to_lowercase())
+                    .unwrap();
+            }
+            let mut request =
+                SolSignRequest::try_from(decoder.message().unwrap().unwrap()).unwrap();
+            let expected = match app_solana::classify_payload(&request.get_sign_data()) {
+                app_solana::SolanaPayloadType::Message => ViewType::SolanaMessage,
+                app_solana::SolanaPayloadType::Transaction
+                | app_solana::SolanaPayloadType::MalformedTransaction => ViewType::SolanaTx,
+            };
+            assert_eq!(
+                request.infer().ok().as_ref(),
+                Some(&expected),
+                "{}",
+                fixture["id"]
+            );
+            request.set_sign_type(match request.get_sign_type() {
+                SignType::Transaction => SignType::Message,
+                SignType::Message => SignType::Transaction,
+            });
+            assert_eq!(
+                request.infer().ok().as_ref(),
+                Some(&expected),
+                "type hint changed the view type of {}",
+                fixture["id"]
+            );
+        }
+    }
     use alloc::vec::Vec;
 
     use hex::FromHex;

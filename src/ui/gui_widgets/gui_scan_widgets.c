@@ -39,9 +39,7 @@ static void ThrowError(int32_t errorCode);
 static void GuiScanStart();
 static void GuiScanResumeAfterError();
 
-#ifdef BTC_ONLY
-static lv_obj_t *g_noticeWindow;
-
+#if defined(BTC_ONLY) || defined(CYPHERPUNK_VERSION)
 static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, size_t filterSize)
 {
     for (size_t i = 0; i < filterSize; i++) {
@@ -53,6 +51,10 @@ static bool IsViewTypeSupported(ViewType viewType, ViewType *viewTypeFilter, siz
 }
 #endif
 
+#ifdef BTC_ONLY
+static lv_obj_t *g_noticeWindow;
+#endif
+
 #ifdef CYPHERPUNK_VERSION
 #define IsSlip39WalletNotSupported(viewType) (viewType == CHAIN_XMR)
 #endif
@@ -61,16 +63,17 @@ static PageWidget_t *g_pageWidget;
 static lv_obj_t *g_scanErrorHintBox = NULL;
 static ViewType g_qrcodeViewType;
 static uint8_t g_chainType = CHAIN_BUTT;
-static ViewType g_viewTypeFilter[2];
+static ViewType g_viewTypeFilter[2] = {0xFF, 0xFF};
+
 
 void GuiScanInit(void *param, uint16_t len)
 {
-    if (param == NULL) {
-        for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
-            g_viewTypeFilter[i] = 0xFF;
-        }
-    } else {
-        memcpy_s(g_viewTypeFilter, sizeof(g_viewTypeFilter), param, len);
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+        g_viewTypeFilter[i] = 0xFF;
+    }
+    if (param != NULL) {
+        uint16_t copyLen = len > (uint16_t)sizeof(g_viewTypeFilter) ? (uint16_t)sizeof(g_viewTypeFilter) : len;
+        memcpy_s(g_viewTypeFilter, sizeof(g_viewTypeFilter), param, copyLen);
         for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
             printf("g_viewTypeFilter %d = %d\n", i, g_viewTypeFilter[i]);
         }
@@ -85,6 +88,9 @@ void GuiScanInit(void *param, uint16_t len)
 
 void GuiScanDeInit()
 {
+    for (int i = 0; i < NUMBER_OF_ARRAYS(g_viewTypeFilter); i++) {
+        g_viewTypeFilter[i] = 0xFF;
+    }
     if (g_pageWidget != NULL) {
         DestroyPageWidget(g_pageWidget);
         g_pageWidget = NULL;
@@ -107,6 +113,24 @@ void GuiScanResult(bool result, void *param)
     if (result) {
         UrViewType_t urViewType = *(UrViewType_t *)param;
         g_qrcodeViewType = urViewType.viewType;
+#ifdef CYPHERPUNK_VERSION
+        if (g_qrcodeViewType == ZcashAddressCheck &&
+                (g_pageWidget == NULL || !GuiCheckIfTopView(&g_scanView) || GuiLockScreenIsTop())) {
+            return;
+        }
+        if (g_viewTypeFilter[0] != 0xFF &&
+                !IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {
+            ThrowError(ERR_INVALID_QRCODE);
+            return;
+        }
+        if (g_qrcodeViewType == ZcashAddressCheck) {
+            GuiCloseCurrentWorkingView();
+            const ZcashAddressScanResult_t *scanResult = param;
+            GuiFrameOpenViewWithParam(&g_zcashVerifyResultView, (void *)scanResult->address,
+                                      sizeof(scanResult->address));
+            return;
+        }
+#endif
 #ifdef BTC_ONLY
         if (g_viewTypeFilter[0] != 0xFF) {
             if (!IsViewTypeSupported(g_qrcodeViewType, g_viewTypeFilter, NUMBER_OF_ARRAYS(g_viewTypeFilter))) {

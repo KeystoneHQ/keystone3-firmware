@@ -67,7 +67,13 @@ pub unsafe extern "C" fn utxo_parse_extend_psbt(
 
     let mfp = extract_array!(master_fingerprint, u8, 4);
     let public_keys = recover_c_array(public_keys);
-    parse_psbt(mfp, public_keys, psbt, None)
+    parse_psbt_with_coin(
+        mfp,
+        public_keys,
+        psbt,
+        None,
+        Some(crypto_psbt.get_coin_id()),
+    )
 }
 
 #[no_mangle]
@@ -395,13 +401,25 @@ pub unsafe extern "C" fn utxo_check_psbt_extend(
     let crypto_psbt = extract_ptr_with_type!(ptr, CryptoPSBTExtend);
     let psbt = crypto_psbt.get_psbt();
 
-    btc_check_psbt_common(
+    let mfp = extract_array!(master_fingerprint, u8, length as usize);
+    let keys = recover_c_array(public_keys);
+    let verify = if verify_code.is_null() {
+        None
+    } else {
+        Some(recover_c_char(verify_code))
+    };
+    let wallet = if multisig_wallet_config.is_null() {
+        None
+    } else {
+        Some(recover_c_char(multisig_wallet_config))
+    };
+    check_psbt_with_coin(
+        mfp,
+        keys,
         psbt,
-        master_fingerprint,
-        length,
-        public_keys,
-        verify_code,
-        multisig_wallet_config,
+        verify,
+        wallet,
+        Some(crypto_psbt.get_coin_id()),
     )
 }
 
@@ -569,6 +587,16 @@ unsafe fn parse_psbt(
     psbt: Vec<u8>,
     multisig_wallet_config: Option<String>,
 ) -> *mut TransactionParseResult<DisplayTx> {
+    parse_psbt_with_coin(mfp, public_keys, psbt, multisig_wallet_config, None)
+}
+
+unsafe fn parse_psbt_with_coin(
+    mfp: &[u8],
+    public_keys: &[ExtendedPublicKey],
+    psbt: Vec<u8>,
+    multisig_wallet_config: Option<String>,
+    coin_id: Option<Option<i128>>,
+) -> *mut TransactionParseResult<DisplayTx> {
     let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
         .map_err(|_e| RustCError::InvalidMasterFingerprint);
     match master_fingerprint {
@@ -598,7 +626,10 @@ unsafe fn parse_psbt(
                 Err(e) => return TransactionParseResult::from(e).c_ptr(),
             };
             let context = ParseContext::new(fp, keys, None, wallet_config);
-            let parsed_psbt = app_bitcoin::parse_psbt(psbt, context);
+            let parsed_psbt = match coin_id {
+                Some(coin) => app_bitcoin::parse_psbt_extend(psbt, context, coin),
+                None => app_bitcoin::parse_psbt(psbt, context),
+            };
             match parsed_psbt {
                 Ok(res) => {
                     TransactionParseResult::success(Box::into_raw(Box::new(DisplayTx::from(res))))
@@ -617,6 +648,24 @@ unsafe fn check_psbt(
     psbt: Vec<u8>,
     verify_code: Option<String>,
     multisig_wallet_config: Option<String>,
+) -> PtrT<TransactionCheckResult> {
+    check_psbt_with_coin(
+        mfp,
+        public_keys,
+        psbt,
+        verify_code,
+        multisig_wallet_config,
+        None,
+    )
+}
+
+unsafe fn check_psbt_with_coin(
+    mfp: &[u8],
+    public_keys: &[ExtendedPublicKey],
+    psbt: Vec<u8>,
+    verify_code: Option<String>,
+    multisig_wallet_config: Option<String>,
+    coin_id: Option<Option<i128>>,
 ) -> PtrT<TransactionCheckResult> {
     let master_fingerprint = bitcoin::bip32::Fingerprint::from_str(hex::encode(mfp).as_str())
         .map_err(|_e| RustCError::InvalidMasterFingerprint);
@@ -647,7 +696,10 @@ unsafe fn check_psbt(
                 Err(e) => return TransactionCheckResult::from(e).c_ptr(),
             };
             let context = ParseContext::new(fp, keys, verify_code, wallet_config);
-            let check_result = app_bitcoin::check_psbt(psbt, context);
+            let check_result = match coin_id {
+                Some(coin) => app_bitcoin::check_psbt_extend(psbt, context, coin),
+                None => app_bitcoin::check_psbt(psbt, context),
+            };
             match check_result {
                 Ok(_) => TransactionCheckResult::new().c_ptr(),
                 Err(e) => TransactionCheckResult::from(e).c_ptr(),
@@ -693,7 +745,7 @@ unsafe fn utxo_sign_psbt_extend_dynamic(
         };
 
     let seed = extract_array!(seed, u8, seed_len as usize);
-    let result = app_bitcoin::sign_psbt(psbt, seed, master_fingerprint);
+    let result = app_bitcoin::sign_psbt_extend(psbt, seed, master_fingerprint, coin_id);
 
     match result {
         Ok(psbt_data) => match CryptoPSBTExtend::new(psbt_data, coin_id) {

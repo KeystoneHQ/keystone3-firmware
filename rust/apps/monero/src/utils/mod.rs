@@ -33,7 +33,8 @@ pub struct DecryptUrData {
 }
 
 pub fn generate_decrypt_key(pvk: [u8; PUBKEY_LEH]) -> [u8; 32] {
-    cryptonight_hash_v0(&pvk)
+    let pvk = zeroize::Zeroizing::new(pvk);
+    cryptonight_hash_v0(&*pvk)
 }
 
 pub fn encrypt_data_with_pincode(data: String, pin: [u8; 6]) -> Vec<u8> {
@@ -113,9 +114,10 @@ pub fn decrypt_data_with_pvk(
     if pvk.len() != PUBKEY_LEH {
         return Err(MoneroError::InvalidPrivateViewKey);
     }
-    let pvk_hash = cryptonight_hash_v0(&pvk);
+    let pvk = zeroize::Zeroizing::new(pvk);
+    let pvk_hash = zeroize::Zeroizing::new(cryptonight_hash_v0(&*pvk));
 
-    decrypt_data_with_decrypt_key(pvk_hash, pvk, data, magic)
+    decrypt_data_with_decrypt_key(*pvk_hash, *pvk, data, magic)
 }
 
 pub fn decrypt_data_with_decrypt_key(
@@ -124,68 +126,60 @@ pub fn decrypt_data_with_decrypt_key(
     data: Vec<u8>,
     magic: &str,
 ) -> Result<DecryptUrData> {
-    let key = GenericArray::from_slice(&decrypt_key);
-
-    let magic_bytes = magic.as_bytes();
-
-    let mut data = data.clone();
-    let mut magic_bytes_found = true;
-    for i in 0..magic_bytes.len() {
-        if data[i] != magic_bytes[i] {
-            magic_bytes_found = false;
-            break;
-        }
+    use zeroize::Zeroizing;
+    let decrypt_key = Zeroizing::new(decrypt_key);
+    let pvk = Zeroizing::new(pvk);
+    let envelope = data
+        .strip_prefix(magic.as_bytes())
+        .ok_or(MoneroError::FormatError)?;
+    let start = if magic == KEY_IMAGE_EXPORT_MAGIC {
+        4
+    } else {
+        0
+    };
+    let has_public_keys = magic == OUTPUT_EXPORT_MAGIC || magic == KEY_IMAGE_EXPORT_MAGIC;
+    let header = start + if has_public_keys { PUBKEY_LEH * 2 } else { 0 };
+    if envelope.len() < 8 + header + 64 {
+        return Err(MoneroError::FormatError);
     }
-
-    if magic_bytes_found {
-        data = data[magic_bytes.len()..].to_vec();
-    }
-
-    let nonce_bytes = data[0..8].to_vec();
-    let nonce = GenericArray::from_slice(&nonce_bytes);
-
-    let raw_data = data[0..data.len() - 64].to_vec();
-    let data = data[8..].to_vec();
-
-    let mut cipher = ChaCha20Legacy::new(key, nonce);
-
-    let mut buffer = data.clone();
-
-    let signature = buffer[buffer.len() - 64..].to_vec();
-
+    let split = envelope.len() - 64;
+    let raw_data = &envelope[..split];
+    let signature = envelope[split..].to_vec();
     if !check_signature(
-        &keccak256(&raw_data.clone()),
-        &PrivateKey::from_bytes(&pvk).get_public_key(),
-        &Signature(signature.clone().try_into().unwrap()),
+        &keccak256(raw_data),
+        &PrivateKey::from_bytes(pvk.as_ref()).get_public_key(),
+        &Signature(
+            signature
+                .as_slice()
+                .try_into()
+                .map_err(|_| MoneroError::FormatError)?,
+        ),
     ) {
         return Err(MoneroError::DecryptInvalidSignature);
     }
-
+    let nonce_bytes = envelope[..8].to_vec();
+    let mut buffer = Zeroizing::new(envelope[8..split].to_vec());
+    let mut cipher = ChaCha20Legacy::new(
+        GenericArray::from_slice(decrypt_key.as_ref()),
+        GenericArray::from_slice(&nonce_bytes),
+    );
     cipher.apply_keystream(&mut buffer);
-
-    let start = match magic {
-        KEY_IMAGE_EXPORT_MAGIC => 4,
-        _ => 0,
+    let (pk1, pk2) = if has_public_keys {
+        (
+            Some(PublicKey::from_bytes(&buffer[start..start + PUBKEY_LEH])?),
+            Some(PublicKey::from_bytes(&buffer[start + PUBKEY_LEH..header])?),
+        )
+    } else {
+        (None, None)
     };
-    let has_pubilc_keys = magic == OUTPUT_EXPORT_MAGIC || magic == KEY_IMAGE_EXPORT_MAGIC;
-
-    let mut pk1 = None;
-    let mut pk2 = None;
-    if has_pubilc_keys {
-        pk1 = Some(PublicKey::from_bytes(&buffer[start..start + PUBKEY_LEH]).unwrap());
-        pk2 = Some(
-            PublicKey::from_bytes(&buffer[start + PUBKEY_LEH..start + PUBKEY_LEH * 2]).unwrap(),
-        );
-    }
     Ok(DecryptUrData {
         pk1,
         pk2,
-        data: buffer[(start + if has_pubilc_keys { PUBKEY_LEH * 2 } else { 0 })..buffer.len() - 64]
-            .to_vec(),
+        data: buffer[header..].to_vec(),
         nonce: Some(nonce_bytes),
         magic: magic.to_string(),
         signature: Some(signature),
-        hash: keccak256(&raw_data).to_vec(),
+        hash: keccak256(raw_data).to_vec(),
     })
 }
 
@@ -203,14 +197,20 @@ pub fn get_key_image_from_input(input: Input) -> Result<Keyimage> {
 }
 
 pub fn fmt_monero_amount(value: u64) -> String {
-    let value = value as f64 / 1_000_000_000_000.0;
-    let value = format!("{value:.12}");
-    let value = value.trim_end_matches('0').to_string();
-    if value.ends_with('.') {
-        format!("{} XMR", &value[..value.len() - 1])
-    } else {
-        format!("{value} XMR")
+    const PICONERO: u64 = 1_000_000_000_000;
+
+    let whole = value / PICONERO;
+    let fraction = value % PICONERO;
+    if fraction == 0 {
+        return format!("{whole} XMR");
     }
+
+    let mut fraction = format!("{fraction:012}");
+    while fraction.ends_with('0') {
+        fraction.pop();
+    }
+
+    format!("{whole}.{fraction} XMR")
 }
 
 #[cfg(test)]
@@ -391,6 +391,12 @@ mod tests {
 
     #[test]
     fn test_fmt_monero_amount() {
+        assert_eq!(fmt_monero_amount(u64::MAX), "18446744.073709551615 XMR");
+        assert_eq!(
+            fmt_monero_amount(9_007_199_254_740_993),
+            "9007.199254740993 XMR"
+        );
+
         let amount = 10000000000001;
         let res = fmt_monero_amount(amount);
         assert_eq!(res, "10.000000000001 XMR");

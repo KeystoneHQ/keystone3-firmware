@@ -514,7 +514,7 @@ impl ParsedCardanoTx {
             None => vec![],
         };
 
-        Ok(Self {
+        let mut parsed = Self {
             total_input: total_input_amount,
             total_output: total_output_amount,
             from: from_list_detail,
@@ -566,14 +566,17 @@ impl ParsedCardanoTx {
             withdrawals: Self::parse_withdrawals(&tx)?,
             auxiliary_data: Self::parse_auxiliary_data(&tx)?,
             governance_data: None,
-            advanced_data: Self::parse_advanced_data(&tx)?,
+            advanced_data: None,
             voting_procedures,
             voting_proposals,
             mint_assets,
             collateral_assets,
             has_multi_assets,
             has_unknown_inputs,
-        })
+        };
+        let advanced = Self::advanced_data_fields(tx);
+        parsed.advanced_data = Self::finish_json(advanced)?;
+        Ok(parsed)
     }
 
     fn merge_network_id(network_id: &mut Option<u8>, candidate: u8) -> Result<()> {
@@ -723,20 +726,19 @@ impl ParsedCardanoTx {
     }
 
     fn json_or_cbor_value<E>(
-        json: core::result::Result<String, E>,
-        cbor: Vec<u8>,
+        json: core::result::Result<serde_json::Value, E>,
+        cbor: impl FnOnce() -> Vec<u8>,
     ) -> serde_json::Value {
         json.ok()
-            .and_then(|value| serde_json::from_str(&value).ok())
             .map(Self::normalize_json_for_display)
-            .unwrap_or_else(|| Self::cbor_fallback_value(cbor))
+            .unwrap_or_else(|| Self::cbor_fallback_value(cbor()))
     }
 
     fn insert_json_or_cbor_field<E>(
         map: &mut serde_json::Map<String, serde_json::Value>,
         key: &str,
-        json: core::result::Result<String, E>,
-        cbor: Vec<u8>,
+        json: core::result::Result<serde_json::Value, E>,
+        cbor: impl FnOnce() -> Vec<u8>,
     ) {
         map.insert(key.to_string(), Self::json_or_cbor_value(json, cbor));
     }
@@ -754,16 +756,15 @@ impl ParsedCardanoTx {
                 }
                 Value::String(text)
             }
-            Value::Array(values) => Value::Array(
-                values
-                    .into_iter()
-                    .map(Self::normalize_json_for_display)
-                    .collect(),
-            ),
-            Value::Object(values) => {
-                let mut normalized = serde_json::Map::new();
-                for (key, value) in values {
-                    normalized.insert(key, Self::normalize_json_for_display(value));
+            Value::Array(mut values) => {
+                for value in &mut values {
+                    *value = Self::normalize_json_for_display(core::mem::take(value));
+                }
+                Value::Array(values)
+            }
+            Value::Object(mut normalized) => {
+                for value in normalized.values_mut() {
+                    *value = Self::normalize_json_for_display(core::mem::take(value));
                 }
 
                 if normalized.len() == 1 {
@@ -811,14 +812,38 @@ impl ParsedCardanoTx {
         if map.is_empty() {
             return Ok(None);
         }
-        let json = serde_json::to_string_pretty(&serde_json::Value::Object(map))
-            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
-        if json.len() > 64 * 1024 {
+        use core::fmt::Write;
+
+        struct JsonSize(usize);
+        impl core::fmt::Write for JsonSize {
+            fn write_str(&mut self, text: &str) -> core::fmt::Result {
+                self.0 = self.0.saturating_add(text.len());
+                Ok(())
+            }
+        }
+        let value = serde_json::Value::Object(map);
+        let mut size = JsonSize(0);
+        write!(&mut size, "{value:#}").map_err(|_| {
+            CardanoError::InvalidTransaction("advanced JSON exceeds 64 KiB limit".to_string())
+        })?;
+        if size.0 > 64 * 1024 {
             return Err(CardanoError::InvalidTransaction(
                 "advanced JSON exceeds 64 KiB limit".to_string(),
             ));
         }
+        let mut json = String::with_capacity(size.0 + 1);
+        write!(&mut json, "{value:#}")
+            .map_err(|e| CardanoError::InvalidTransaction(e.to_string()))?;
         Ok(Some(json))
+    }
+
+    fn json_object<const N: usize>(fields: [(&str, serde_json::Value); N]) -> serde_json::Value {
+        serde_json::Value::Object(
+            fields
+                .into_iter()
+                .map(|(key, value)| (key.to_string(), value))
+                .collect(),
+        )
     }
 
     fn plutus_data_json(data: &PlutusData, depth: usize) -> serde_json::Value {
@@ -834,12 +859,22 @@ impl ParsedCardanoTx {
                 .as_constr_plutus_data()
                 .map(|constr| {
                     let fields = constr.data();
-                    serde_json::json!({
-                        "constructor": constr.alternative().to_str(),
-                        "fields": (0..fields.len())
-                            .map(|index| Self::plutus_data_json(&fields.get(index), depth + 1))
-                            .collect::<Vec<_>>()
-                    })
+                    Self::json_object([
+                        (
+                            "constructor",
+                            serde_json::Value::String(constr.alternative().to_str()),
+                        ),
+                        (
+                            "fields",
+                            serde_json::Value::Array(
+                                (0..fields.len())
+                                    .map(|index| {
+                                        Self::plutus_data_json(&fields.get(index), depth + 1)
+                                    })
+                                    .collect(),
+                            ),
+                        ),
+                    ])
                 })
                 .unwrap_or_else(|| Self::cbor_fallback_value(data.to_bytes())),
             PlutusDataKind::Map => data
@@ -852,25 +887,28 @@ impl ParsedCardanoTx {
                         if let Some(values) = map.get(&key) {
                             for value_index in 0..values.len() {
                                 if let Some(value) = values.get(value_index) {
-                                    entries.push(serde_json::json!({
-                                        "k": Self::plutus_data_json(&key, depth + 1),
-                                        "v": Self::plutus_data_json(&value, depth + 1)
-                                    }));
+                                    entries.push(Self::json_object([
+                                        ("k", Self::plutus_data_json(&key, depth + 1)),
+                                        ("v", Self::plutus_data_json(&value, depth + 1)),
+                                    ]));
                                 }
                             }
                         }
                     }
-                    serde_json::json!({ "map": entries })
+                    Self::json_object([("map", serde_json::Value::Array(entries))])
                 })
                 .unwrap_or_else(|| Self::cbor_fallback_value(data.to_bytes())),
             PlutusDataKind::List => data
                 .as_list()
                 .map(|list| {
-                    serde_json::json!({
-                        "list": (0..list.len())
-                            .map(|index| Self::plutus_data_json(&list.get(index), depth + 1))
-                            .collect::<Vec<_>>()
-                    })
+                    Self::json_object([(
+                        "list",
+                        serde_json::Value::Array(
+                            (0..list.len())
+                                .map(|index| Self::plutus_data_json(&list.get(index), depth + 1))
+                                .collect(),
+                        ),
+                    )])
                 })
                 .unwrap_or_else(|| Self::cbor_fallback_value(data.to_bytes())),
             PlutusDataKind::Integer => data
@@ -899,7 +937,7 @@ impl ParsedCardanoTx {
         let amount = output.amount();
         value.insert(
             "amount".to_string(),
-            Self::json_or_cbor_value(amount.to_json(), amount.to_bytes()),
+            Self::json_or_cbor_value(serde_json::to_value(&amount), || amount.to_bytes()),
         );
         if let Some(data_hash) = output.data_hash() {
             value.insert(
@@ -916,45 +954,47 @@ impl ParsedCardanoTx {
         if let Some(script_ref) = output.script_ref() {
             value.insert(
                 "script_ref".to_string(),
-                Self::json_or_cbor_value(script_ref.to_json(), script_ref.to_bytes()),
+                Self::json_or_cbor_value(serde_json::to_value(&script_ref), || {
+                    script_ref.to_bytes()
+                }),
             );
         }
         serde_json::Value::Object(value)
     }
 
-    fn parse_advanced_data(tx: &Transaction) -> Result<Option<String>> {
+    fn advanced_data_fields(tx: Transaction) -> serde_json::Map<String, serde_json::Value> {
         let body = tx.body_ref();
         let mut map = serde_json::Map::new();
         if let Some(value) = tx.auxiliary_data_ref() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "auxiliary_data",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.voting_proposals_ref() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "voting_proposals",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.voting_procedures_ref() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "voting_procedures",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.certs_ref() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "certificates",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.auxiliary_data_hash() {
@@ -967,8 +1007,8 @@ impl ParsedCardanoTx {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "protocol_update",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.script_data_hash() {
@@ -981,32 +1021,32 @@ impl ParsedCardanoTx {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "collateral_inputs",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.required_signers() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "required_signers",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.collateral_return() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "collateral_return",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.reference_inputs() {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "reference_inputs",
-                value.to_json(),
-                value.to_bytes(),
+                serde_json::to_value(&value),
+                || value.to_bytes(),
             );
         }
         if let Some(value) = body.current_treasury_value() {
@@ -1022,16 +1062,19 @@ impl ParsedCardanoTx {
             .filter(|output| {
                 output.has_data_hash() || output.has_plutus_data() || output.has_script_ref()
             })
-            .map(Self::output_with_data_json)
+            .cloned()
             .collect::<Vec<_>>();
+        let witness_set = tx.witness_set();
+        drop(tx);
+
         if !outputs_with_data.is_empty() {
-            map.insert(
-                "outputs_with_datum_or_script".to_string(),
-                outputs_with_data.into(),
-            );
+            let values = outputs_with_data
+                .into_iter()
+                .map(|output| Self::output_with_data_json(&output))
+                .collect::<Vec<_>>();
+            map.insert("outputs_with_datum_or_script".to_string(), values.into());
         }
 
-        let witness_set = tx.witness_set();
         if witness_set.native_scripts().is_some()
             || witness_set.plutus_scripts().is_some()
             || witness_set.plutus_data().is_some()
@@ -1040,11 +1083,12 @@ impl ParsedCardanoTx {
             Self::insert_json_or_cbor_field(
                 &mut map,
                 "witness_set",
-                witness_set.to_json(),
-                witness_set.to_bytes(),
+                serde_json::to_value(&witness_set),
+                || witness_set.to_bytes(),
             );
         }
-        Self::finish_json(map)
+        drop(witness_set);
+        map
     }
 
     fn format_stake_credential(network_id: Option<u8>, credential: &Credential) -> Result<String> {
@@ -3061,8 +3105,8 @@ mod tests {
         ParsedCardanoTx::insert_json_or_cbor_field::<String>(
             &mut map,
             "payload",
-            Ok("{\"string\":\"decoded\"}".to_string()),
-            vec![],
+            Ok(serde_json::json!({"string": "decoded"})),
+            || vec![],
         );
         let json = ParsedCardanoTx::finish_json(map).unwrap().unwrap();
         assert!(json.contains("decoded"));
@@ -3073,10 +3117,53 @@ mod tests {
         ParsedCardanoTx::insert_json_or_cbor_field::<String>(
             &mut fallback,
             "invalid",
-            Ok("not-json".to_string()),
-            vec![0x01, 0x02],
+            Err("not-json".to_string()),
+            || vec![0x01, 0x02],
         );
         assert_eq!(fallback["invalid"]["cbor"], "0102");
+    }
+
+    #[test]
+    fn test_advanced_json_fallback_is_lazy() {
+        let result = ParsedCardanoTx::json_or_cbor_value::<String>(
+            Ok(serde_json::json!({"list": [{"int": "443000000000000000000"}]})),
+            || panic!("successful JSON must not allocate fallback CBOR"),
+        );
+        assert_eq!(result, serde_json::json!(["443000000000000000000"]));
+        let fallback = ParsedCardanoTx::json_or_cbor_value(
+            Err::<serde_json::Value, _>("serialization failed"),
+            || vec![0x01, 0xff],
+        );
+        assert_eq!(fallback["cbor"], "01ff");
+    }
+
+    #[test]
+    fn test_advanced_json_exact_sizing_and_limit() {
+        let mut map = serde_json::Map::new();
+        map.insert(
+            "escaped\nkey".to_string(),
+            serde_json::json!([
+                {"text": "中文\n\t\"\\", "values": [null, true, -1, 1.25]},
+                [], {}
+            ]),
+        );
+        let expected = serde_json::to_string_pretty(&map).unwrap();
+        assert_eq!(
+            ParsedCardanoTx::finish_json(map).unwrap().unwrap(),
+            expected
+        );
+
+        for size in [64 * 1024 - 13, 64 * 1024 - 12] {
+            let mut map = serde_json::Map::new();
+            map.insert("x".to_string(), serde_json::Value::String("a".repeat(size)));
+            let expected = serde_json::to_string_pretty(&map).unwrap();
+            let result = ParsedCardanoTx::finish_json(map);
+            if expected.len() <= 64 * 1024 {
+                assert_eq!(result.unwrap().unwrap(), expected);
+            } else {
+                assert!(result.unwrap_err().to_string().contains("64 KiB"));
+            }
+        }
     }
 
     #[test]

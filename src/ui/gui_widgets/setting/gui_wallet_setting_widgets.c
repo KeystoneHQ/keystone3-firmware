@@ -1,5 +1,6 @@
 /* INCLUDES */
 #include "gui.h"
+#include "gui_obj.h"
 #include "gui_views.h"
 #include "gui_status_bar.h"
 #include "gui_keyboard.h"
@@ -24,6 +25,7 @@
 #include "fingerprint_process.h"
 #include "keystore.h"
 #include "gui_home_widgets.h"
+#include "drv_battery.h"
 
 /* DEFINES */
 
@@ -51,6 +53,9 @@ static lv_obj_t *g_mfpLabel = NULL;                         // wallet setting la
 static lv_obj_t *g_resetingCont = NULL;                     // resetting container
 static lv_timer_t *g_countDownTimer = NULL;                 // count down timer
 static lv_obj_t *g_hintBox = NULL;
+static lv_obj_t *g_passcodeNotice = NULL;
+static lv_obj_t *g_passcodeNoticeChecks[3];
+static lv_obj_t *g_passcodeNoticeContinue;
 
 /* FUNC */
 void GuiAddWalletGetWalletAmount(uint8_t walletAmount)
@@ -255,6 +260,86 @@ void GuiWalletSettingDeinit(void)
 {
     g_delWalletStatus = false;
     GUI_DEL_OBJ(g_hintBox)
+    GUI_DEL_OBJ(g_passcodeNotice)
+    CLEAR_ARRAY(g_passCode);
+}
+
+static void PasscodeNoticeCheckHandler(lv_event_t *e)
+{
+    lv_obj_t *check = lv_event_get_user_data(e);
+    if (lv_obj_has_state(check, LV_STATE_CHECKED)) {
+        lv_obj_clear_state(check, LV_STATE_CHECKED);
+    } else {
+        lv_obj_add_state(check, LV_STATE_CHECKED);
+    }
+    bool checked = true;
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_passcodeNoticeChecks); i++) {
+        checked = checked && lv_obj_has_state(g_passcodeNoticeChecks[i], LV_STATE_CHECKED);
+    }
+    GuiSetConfirmButtonEnabled(g_passcodeNoticeContinue, checked);
+}
+
+static void PasscodeNoticeContinueHandler(lv_event_t *e)
+{
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_passcodeNoticeChecks); i++) {
+        if (!lv_obj_has_state(g_passcodeNoticeChecks[i], LV_STATE_CHECKED)) return;
+    }
+    if (GetCurrentDisplayPercent() < 20) {
+        GUI_DEL_OBJ(g_hintBox)
+        g_hintBox = GuiCreateConfirmHintBox(&imgWarn, _("error_box_low_power"),
+            _("passcode_change_low_power_desc"), NULL, _("OK"), ORANGE_COLOR);
+        lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_hintBox), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
+        return;
+    }
+    GuiShowKeyboardHandler(e);
+    GUI_DEL_OBJ(g_passcodeNotice)
+}
+
+void GuiChangePasswordNoticeHandler(lv_event_t *e)
+{
+    static uint16_t signal = SIG_SETTING_CHANGE_PASSWORD;
+    static const char *items[] = {
+        "passcode_change_notice_backup_desc",
+        "passcode_change_notice_power_desc",
+        "passcode_change_notice_recovery_desc",
+    };
+    GUI_DEL_OBJ(g_passcodeNotice)
+    g_passcodeNotice = GuiCreateContainerWithParent(lv_scr_act(), 480, 800);
+    lv_obj_set_style_bg_color(g_passcodeNotice, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(g_passcodeNotice, LV_OPA_COVER, 0);
+    lv_obj_add_flag(g_passcodeNotice, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(g_passcodeNotice, LV_OBJ_FLAG_SCROLLABLE);
+    lv_obj_t *back = GuiCreateImg(g_passcodeNotice, &imgArrowLeft);
+    lv_obj_align(back, LV_ALIGN_TOP_LEFT, 36, 80);
+    lv_obj_add_flag(back, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_set_ext_click_area(back, 20);
+    lv_obj_add_event_cb(back, CloseHintBoxHandler, LV_EVENT_CLICKED, &g_passcodeNotice);
+    lv_obj_t *label = GuiCreateTitleLabel(g_passcodeNotice, _("passcode_change_notice_title"));
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 156);
+    label = GuiCreateNoticeLabel(g_passcodeNotice, _("single_backup_notice_page_desc"));
+    lv_obj_set_width(label, 408);
+    lv_obj_align(label, LV_ALIGN_TOP_LEFT, 36, 216);
+    for (size_t i = 0; i < NUMBER_OF_ARRAYS(items); i++) {
+        lv_obj_t *row = GuiCreateContainerWithParent(g_passcodeNotice, 408, 112);
+        lv_obj_set_style_bg_opa(row, LV_OPA_TRANSP, 0);
+        lv_obj_align(row, LV_ALIGN_TOP_LEFT, 36, 312 + i * 112);
+        lv_obj_add_flag(row, LV_OBJ_FLAG_CLICKABLE);
+        lv_obj_t *check = GuiCreateSingleCheckBox(row, "");
+        lv_obj_set_size(check, 36, 36);
+        lv_obj_align(check, LV_ALIGN_TOP_LEFT, 0, 0);
+        lv_obj_clear_flag(check, LV_OBJ_FLAG_CLICKABLE);
+        label = GuiCreateIllustrateLabel(row, _(items[i]));
+        lv_obj_set_width(label, 348);
+        lv_label_set_long_mode(label, LV_LABEL_LONG_WRAP);
+        lv_obj_align(label, LV_ALIGN_TOP_LEFT, 45, 0);
+        lv_obj_add_event_cb(row, PasscodeNoticeCheckHandler, LV_EVENT_CLICKED, check);
+        g_passcodeNoticeChecks[i] = check;
+    }
+    g_passcodeNoticeContinue = GuiCreateTextBtn(g_passcodeNotice, _("Continue"));
+    lv_obj_set_size(g_passcodeNoticeContinue, 408, 66);
+    lv_obj_align(g_passcodeNoticeContinue, LV_ALIGN_BOTTOM_MID, 0, -24);
+    GuiSetConfirmButtonEnabled(g_passcodeNoticeContinue, false);
+    lv_obj_add_event_cb(g_passcodeNoticeContinue, PasscodeNoticeContinueHandler, LV_EVENT_CLICKED, &signal);
 }
 
 void GuiWalletSettingRefresh(void)
@@ -320,8 +405,31 @@ void GuiChangePassWord(bool result)
 {
     GuiStopCircleAroundAnimation();
     GUI_DEL_OBJ(g_resetingCont)
+    if (!result) return;
     SetKeyboardWidgetMode((g_setPassCode->mode == ENTER_PASSCODE_SET_PIN) ? KEYBOARD_HINTBOX_PIN : KEYBOARD_HINTBOX_PASSWORD);
     GuiResettingPassWordSuccess();
+}
+
+void GuiChangePasswordFailed(int32_t error)
+{
+    GuiChangePassWord(false);
+    ClearSecretCache();
+    CLEAR_ARRAY(g_passCode);
+    GuiSettingCloseToTargetTileView(DEVICE_SETTING_FINGERPRINT_PASSCODE);
+    SetPageLockScreen(true);
+    const char *title = _("passcode_update_failed_title");
+    const char *description = _("passcode_update_unchanged_desc");
+    if (error == ERR_KEYSTORE_SAVE_LOW_POWER) {
+        title = _("error_box_low_power");
+        description = _("passcode_change_low_power_desc");
+    } else if (error == ERR_KEYSTORE_REPEAT_PASSWORD) {
+        description = _("passcode_update_duplicate_desc");
+    } else if (error == ERR_KEYSTORE_PASSWORD_ERR) {
+        description = _("passcode_update_incorrect_desc");
+    }
+    GUI_DEL_OBJ(g_hintBox)
+    g_hintBox = GuiCreateConfirmHintBox(&imgWarn, title, description, NULL, _("OK"), ORANGE_COLOR);
+    lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_hintBox), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
 }
 
 void GuiResettingWriteSe(void)

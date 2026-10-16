@@ -63,6 +63,31 @@ static bool g_backupConfirmationAccepted = false;
 static void ResetConfirmInput(void);
 static void SelectPhraseCntHandler(lv_event_t *e);
 
+#ifdef CYPHERPUNK_VERSION
+static lv_obj_t *g_zcashSeedWarning = NULL;
+static bool g_zcashSeedWarningAccepted = false;
+
+static void ZcashSeedWarningBackHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_zcashSeedWarning)
+    SelectPhraseCntHandler(e);
+}
+
+static void ZcashSeedWarningContinueHandler(lv_event_t *e)
+{
+    g_zcashSeedWarningAccepted = true;
+    GUI_DEL_OBJ(g_zcashSeedWarning)
+}
+
+static void ShowZcashSeedWarning(void)
+{
+    if (g_phraseCnt == 12 && !g_zcashSeedWarningAccepted && g_zcashSeedWarning == NULL) {
+        g_zcashSeedWarning = GuiCreateZcashSeedWarning(ZcashSeedWarningBackHandler,
+                             ZcashSeedWarningContinueHandler);
+    }
+}
+#endif
+
 static void BackupConfirmationHandler(lv_event_t *e)
 {
     g_backupConfirmationAccepted = true;
@@ -259,6 +284,9 @@ static void GuiConfirmPhraseWidget(lv_obj_t *parent)
 
 void GuiSinglePhraseInit(uint8_t entropyMethod)
 {
+#ifdef CYPHERPUNK_VERSION
+    g_zcashSeedWarningAccepted = false;
+#endif
     g_entropyMethod = entropyMethod;
     g_isDiceRolls = g_entropyMethod & ENTROPY_TYPE_MASK;
     if (DiceRollsNotEnoughForWordCnt(g_phraseCnt)) {
@@ -292,6 +320,9 @@ void GuiSinglePhraseInit(uint8_t entropyMethod)
     lv_obj_set_tile_id(g_singlePhraseTileView.tileView, g_singlePhraseTileView.currentTile, 0, LV_ANIM_OFF);
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_WORD_SELECT, SelectPhraseCntHandler, NULL);
+#ifdef CYPHERPUNK_VERSION
+    ShowZcashSeedWarning();
+#endif
 }
 
 void GuiSinglePhraseUpdateMnemonic(void *signalParam, uint16_t paramLen)
@@ -315,6 +346,9 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     lv_obj_add_state(actCb, LV_STATE_CHECKED);
     *active_id = lv_obj_get_index(actCb);
 
+#ifdef CYPHERPUNK_VERSION
+    g_zcashSeedWarningAccepted = false;
+#endif
     // TODO: use id to identity position
     const char *currText = lv_checkbox_get_text(actCb);
     if (!strcmp(currText, _("wallet_phrase_12words"))) {
@@ -346,6 +380,9 @@ static void SelectCheckBoxHandler(lv_event_t* e)
     }
     lv_obj_scroll_to_y(g_randomPhraseKb->cont, 0, LV_ANIM_ON);
     GUI_DEL_OBJ(g_noticeHintBox)
+#ifdef CYPHERPUNK_VERSION
+    ShowZcashSeedWarning();
+#endif
 }
 
 static void SelectPhraseCntHandler(lv_event_t *e)
@@ -392,6 +429,12 @@ int8_t GuiSinglePhraseNextTile(const char *passphrase)
     case SINGLE_PHRASE_CONNECT:
         return SUCCESS_CODE;
     case SINGLE_PHRASE_RANDOM_PHRASE:
+#ifdef CYPHERPUNK_VERSION
+        if (g_phraseCnt == 12 && !g_zcashSeedWarningAccepted) {
+            ShowZcashSeedWarning();
+            return SUCCESS_CODE;
+        }
+#endif
         if (!g_backupConfirmationAccepted) {
             ShowBackupConfirmation();
             return SUCCESS_CODE;
@@ -461,6 +504,10 @@ int8_t GuiSinglePhrasePrevTile(void)
 
 void GuiSinglePhraseDeInit(void)
 {
+#ifdef CYPHERPUNK_VERSION
+    GUI_DEL_OBJ(g_zcashSeedWarning)
+    g_zcashSeedWarningAccepted = false;
+#endif
     GUI_DEL_OBJ(g_noticeHintBox)
     GUI_DEL_OBJ(g_noticeWindow);
 

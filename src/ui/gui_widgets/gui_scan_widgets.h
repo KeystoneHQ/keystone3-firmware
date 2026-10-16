@@ -2,6 +2,14 @@
 #define _GUI_SCAN_WIDGETS_H
 
 #include "rust.h"
+#include "qrdecode_task.h"
+
+#ifdef CYPHERPUNK_VERSION
+typedef struct {
+    UrViewType_t viewType;
+    char address[1025];
+} ZcashAddressScanResult_t;
+#endif
 
 void GuiScanInit(void *param, uint16_t len);
 void GuiScanDeInit();

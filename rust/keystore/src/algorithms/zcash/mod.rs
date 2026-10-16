@@ -8,7 +8,7 @@ use zcash_vendor::{
     zip32::{self, fingerprint::SeedFingerprint},
 };
 
-use crate::algorithms::utils::is_all_zero_or_ff;
+use crate::algorithms::utils::ensure_valid_seed;
 
 use crate::errors::{KeystoreError, Result};
 
@@ -49,10 +49,7 @@ pub fn derive_ufvk<P: consensus::Parameters>(
 }
 
 fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
-    if is_all_zero_or_ff(seed) {
-        return Err(KeystoreError::SeedError("invalid seed".to_string()));
-    }
-    Ok(())
+    ensure_valid_seed(seed)
 }
 
 pub fn calculate_seed_fingerprint(seed: &[u8]) -> Result<[u8; 32]> {

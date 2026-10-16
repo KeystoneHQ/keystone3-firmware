@@ -62,11 +62,10 @@ MnemonicType GetMnemonicType(void);
 void SetPasscodeType(PasscodeType type);
 void SetMnemonicType(MnemonicType type);
 
-int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password);
-int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, bool eb, uint8_t ie);
-int32_t ClearCurrentPasswordErrorCount(void);
+int32_t CreateNewAccount(uint8_t accountIndex, const uint8_t *entropy, uint8_t entropyLen, const char *password, bool *cleanupRequired);
+int32_t CreateNewSlip39Account(uint8_t accountIndex, const uint8_t *ems, const uint8_t *entropy, uint8_t entropyLen, const char *password, uint16_t id, bool eb, uint8_t ie, bool *cleanupRequired);
 int32_t VerifyCurrentAccountPassword(const char *password);
-uint8_t RecordCurrentPasswordError(uint8_t maxCount);
+int32_t RecordCurrentPasswordError(uint8_t maxCount, uint8_t *errorCount);
 int32_t VerifyOwnershipPasswordTryAll(uint8_t *accountIndex, const char *password, uint8_t maxCount);
 int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password);
 void LogoutCurrentAccount(void);
@@ -79,14 +78,15 @@ int32_t DestroyAccount(uint8_t accountIndex);
 int32_t SaveCurrentAccountInfo(void);
 void SetCurrentAccountMfp(uint8_t* mfp);
 void SetCurrentAccountEntropyLen(uint8_t entropyLen);
-void SetPassphraseQuickAccess(bool exist);
+int32_t SetPassphraseQuickAccess(bool exist);
 bool GetPassphraseQuickAccess(void);
 bool GetPassphraseMark(void);
 uint8_t GetWalletIconIndex(void);
 char *GetWalletName(void);
-void SetPassphraseMark(bool enable);
-void SetWalletIconIndex(uint8_t iconIndex);
-void SetWalletName(const char *walletName);
+int32_t SetPassphraseMark(bool enable);
+int32_t SetWalletDesc(const char *walletName, uint8_t iconIndex);
+int32_t SetWalletIconIndex(uint8_t iconIndex);
+int32_t SetWalletName(const char *walletName);
 uint8_t GetLoginPasswordErrorCount(void);
 uint8_t GetCurrentPasswordErrorCount(void);
 uint32_t GetLastLockDeviceTime(void);
@@ -105,7 +105,7 @@ uint16_t GetSlip39Id(void);
 uint8_t GetSlip39Ie(void);
 uint8_t GetSlip39Eb(void);
 
-void AccountsDataCheck(void);
+int32_t AccountsDataCheck(void);
 
 #ifndef BTC_ONLY
 bool IsZcashSupportedForCurrentMnemonic(void);

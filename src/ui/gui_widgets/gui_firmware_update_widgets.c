@@ -256,9 +256,9 @@ void GuiFirmwareUpdateRefresh(void)
     }
 
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP) {
-        GuiSetSetupPhase(SETUP_PAHSE_FIRMWARE_UPDATE);
+        GuiSetSetupPhase(SETUP_PHASE_FIRMWARE_UPDATE);
         if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_FIRMWARE_UPDATE)) {
+            if (!GuiJudgeCurrentPahse(SETUP_PHASE_FIRMWARE_UPDATE)) {
                 GuiFrameOpenView(&g_purposeView);
             } else {
                 g_reboot = false;

@@ -74,7 +74,7 @@ execute_build() {
         cmake_parm="${cmake_parm} -DBTC_ONLY=true"
     fi
     if [[ "${build_options[cypherpunk]}" == true ]]; then
-        cmake_parm="${cmake_parm} -DCYBERPUNK=true"
+        cmake_parm="${cmake_parm} -DCYPHERPUNK=true"
     fi
     if [[ "${build_options[screen]}" == true ]]; then
         cmake_parm="${cmake_parm} -DENABLE_SCREEN_SHOT=true"

@@ -24,6 +24,29 @@
 | seed       | uint8 \* | seed of current wallet                     |
 | seed_len   | uint32   | length of seed                             |
 
+## Validation and ownership
+
+`solana_check` requires a non-null, four-byte device fingerprint matching the
+request source fingerprint. `solana_parse_tx` and `solana_parse_tx_with_pubkey`
+reuse `validated_payload` and accept only Transaction requests; the latter also
+checks the supplied signer public key.
+
+Final signing validates the payload and path, derives the BIP32 master fingerprint
+from the actual signing seed and rejects missing or mismatched source fingerprints.
+Transactions additionally require the derived public key to be a required signer.
+The signature covers the original request bytes. Arbitrary-message classification
+still has the truncated/unknown-version limitations described in the specification.
+
+Both successful and failed parse results must be released with the matching
+`free_TransactionParseResult_DisplaySolanaTx` or
+`free_TransactionParseResult_DisplaySolanaMessage` function. C page entry points
+release failed results before returning.
+
+Raw instruction Overview retains message-level V1 configuration in `general`.
+The UI renders warning, configuration, then instructions; metadata uses ordinal 0
+and does not change instruction numbering. Squads creation and Squads with System
+transfers use this layout, while ordinary proposals may retain their dedicated UI.
+
 ## Structs
 
 ### <a id="display_solana_tx">DisplaySolanaTx</a>
@@ -32,7 +55,24 @@
 |:---------|:----------------------------------------------------------|:--------------------------------------------------------------|
 | overview | [DisplaySolanaTxOverview](#display_solana_tx_overview) \* | the specific values on overview page                          |
 | detail   | char \*                                                   | the [json string](#detail_json_string_example) on detail page |
-| network  | char \*                                                   | network text, "Solana Mainnet"                                |
+| advanced | VecFFI<DisplaySolanaAdvancedItem> \* | structured Advanced review items |
+| network  | char \*                                                   | "Solana / Cluster not encoded"; the message does not identify the cluster                                |
+
+`DisplaySolanaTx` follows the `#[repr(C)]` field order in `structs.rs`:
+`network`, `overview`, `detail`, `advanced`. Generated bindings are authoritative
+for the C layout; the field table above is descriptive.
+
+`advanced` is a pointer to `VecFFI<DisplaySolanaAdvancedItem>`. Each item contains
+owned `title` and `value` strings with internal `{{solana_advanced_*}}` translation
+tokens, expanded by the C UI. They must not be displayed verbatim. Release the
+result through the existing transaction parse result cleanup; do not free these
+fields separately.
+
+`detail` now contains lossless wire-message JSON, not the old semantic instruction
+array. The historical examples below describe business resolver output only;
+they are not the current `detail` contract. See
+[Solana transaction review specification](../../../../specs/solana-transaction-review.md) for the current
+review behavior and format boundaries.
 
 ### <a id="display_solana_tx_overview">DisplaySolanaTxOverview</a>
 
@@ -45,7 +85,7 @@
 | transfer_to    | char \*                                                                   | available for `"Transfer"` display type                                                                                         |
 | votes_on       | [DisplaySolanaTxOverviewVotesOn](#display_solana_tx_overview_votes_on) \* | available for `"Vote"` display type, a list of slots                                                                            |
 | vote_account   | char \*                                                                   | available for `"Vote"` display type                                                                                             |
-| general        | [DisplaySolanaTxOverviewGeneral](#display_solana_tx_overview_general) \*  | available for `"General"` display type, a list of general overview for programs                                                 |
+| general        | [DisplaySolanaTxOverviewGeneral](#display_solana_tx_overview_general) \*  | general program cards and additional metadata; includes V1 TransactionConfig in raw review                                                 |
 
 ### <a id="display_solana_tx_overview_votes_on">DisplaySolanaTxOverviewVotesOn</a>
 

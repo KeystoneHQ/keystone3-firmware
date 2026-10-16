@@ -32,6 +32,25 @@ pub unsafe extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> 
     if !is_ok {
         return URParseResult::from(RustCError::InvalidMessage).c_ptr();
     }
+    #[cfg(feature = "cypherpunk")]
+    if ["u1", "utest1", "uregtest1"].iter().any(|prefix| {
+        value
+            .get(..prefix.len())
+            .is_some_and(|head| head.eq_ignore_ascii_case(prefix))
+    }) {
+        if value.len() > 1024 {
+            return URParseResult::from(RustCError::InvalidMessage).c_ptr();
+        }
+        if let Ok(address) = cstr_core::CString::new(value.as_bytes()) {
+            return URParseResult::single(
+                super::ur::ViewType::ZcashAddressCheck,
+                super::ur::QRCodeType::ZcashAddressText,
+                address,
+            )
+            .c_ptr();
+        }
+        return URParseResult::from(RustCError::InvalidMessage).c_ptr();
+    }
     if value.to_lowercase().starts_with("signmessage") {
         if let Some((headers, message)) = value.split_once(':') {
             if message.is_empty() {

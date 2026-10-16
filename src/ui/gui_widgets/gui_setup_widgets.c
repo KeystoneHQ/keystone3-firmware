@@ -208,9 +208,9 @@ uint8_t GuiSetupNextTile(void)
     g_setupTileView.currentTile++;
     lv_obj_set_tile_id(g_setupTileView.tileView, g_setupTileView.currentTile, 0, LV_ANIM_OFF);
     if (g_setupTileView.currentTile == SETUP_SET_LANGUAGE) {
-        GuiSetSetupPhase(SETUP_PAHSE_LANGUAGE);
+        GuiSetSetupPhase(SETUP_PHASE_LANGUAGE);
         if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_LANGUAGE)) {
+            if (!GuiJudgeCurrentPahse(SETUP_PHASE_LANGUAGE)) {
                 GuiWebAuthSetEntry(WEB_AUTH_ENTRY_SETUP);
                 GuiFrameOpenView(&g_webAuthView);
             } else {
@@ -263,9 +263,9 @@ void GuiSetupAreaRefresh(void)
         if (g_reboot) {
             lastShutDownPage = GetSetupStep();
         }
-        GuiSetSetupPhase(SETUP_PAHSE_WELCOME);
+        GuiSetSetupPhase(SETUP_PHASE_WELCOME);
         if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_WELCOME) && !GuiJudgeCurrentPahse(SETUP_PAHSE_LANGUAGE)) {
+            if (!GuiJudgeCurrentPahse(SETUP_PHASE_WELCOME) && !GuiJudgeCurrentPahse(SETUP_PHASE_LANGUAGE)) {
                 GuiEmitSignal(SIG_SETUP_VIEW_TILE_NEXT, NULL, 0);
             } else {
                 g_reboot = false;
@@ -273,7 +273,7 @@ void GuiSetupAreaRefresh(void)
         }
     } else {
         lv_obj_clear_flag(g_selectLanguageCont, LV_OBJ_FLAG_HIDDEN);
-        GuiSetSetupPhase(SETUP_PAHSE_LANGUAGE);
+        GuiSetSetupPhase(SETUP_PHASE_LANGUAGE);
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
     }
 }

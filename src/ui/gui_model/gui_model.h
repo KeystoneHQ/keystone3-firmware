@@ -76,6 +76,7 @@ void GuiModeGetAccount(void);
 void GuiModeControlQrDecode(bool en);
 void GuiModelSlip39WriteSe(uint8_t wordCnt);
 void GuiModelBip39ForgetPassword(uint8_t wordsCnt);
+void GuiModelResetForgetAuthorization(void);
 
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39);
 void GuiModelWriteLastLockDeviceTime(uint32_t time);

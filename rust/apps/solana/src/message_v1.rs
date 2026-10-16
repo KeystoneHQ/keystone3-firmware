@@ -11,6 +11,7 @@ use crate::parser::detail::{
 
 #[derive(Clone, Debug)]
 pub struct TransactionConfig {
+    pub mask: u32,
     pub priority_fee_lamports: u64,
     pub compute_unit_limit: u32,
     pub loaded_accounts_data_size_limit: u32,
@@ -108,6 +109,7 @@ impl Message {
             0
         };
         let config = TransactionConfig {
+            mask,
             priority_fee_lamports,
             compute_unit_limit: if mask & 4 != 0 { cursor.u32()? } else { 0 },
             loaded_accounts_data_size_limit: if mask & 8 != 0 { cursor.u32()? } else { 0 },
@@ -159,7 +161,7 @@ impl Message {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::{classify_payload, parse, parse_for_signer, read::Read, SolanaPayloadType};
+    use crate::{classify_payload, parse, parse_for_signer, SolanaPayloadType};
     use alloc::vec;
 
     fn encode(
@@ -205,18 +207,125 @@ mod tests {
     }
 
     #[test]
+    fn raw_squads_review_preserves_message_config() {
+        use crate::parser::overview::SolanaOverview;
+        let squads: [u8; 32] =
+            bitcoin::base58::decode("SQDS4ep65T869zMMBKyuUq6aD6EgTu8psMjkvj52pCf")
+                .unwrap()
+                .try_into()
+                .unwrap();
+        let activate = Instruction {
+            program_index: 3,
+            account_indexes: vec![],
+            data: hex::decode("0b225cf89a1b336a").unwrap(),
+        };
+        for mask in [0u32, 31] {
+            let mut config = Vec::new();
+            if mask != 0 {
+                config.extend(123456789u64.to_le_bytes());
+                config.extend(200000u32.to_le_bytes());
+                config.extend(65536u32.to_le_bytes());
+                config.extend(65536u32.to_le_bytes());
+            }
+            let instructions = [activate.clone(), transfer()];
+            let raw = encode(
+                mask,
+                &config,
+                &[[1; 32], [2; 32], [0; 32], squads],
+                &instructions,
+            );
+            let parsed = parse(&raw).unwrap();
+            let SolanaOverview::Instructions(overview) = &parsed.overview else {
+                panic!("Squads with a transfer must retain raw review");
+            };
+            assert_eq!(overview.overview_instructions.len(), instructions.len());
+            for (shown, original) in overview.overview_instructions.iter().zip(&instructions) {
+                assert_eq!(shown.data, bitcoin::base58::encode(&original.data));
+            }
+            assert!(parsed.overview_order.is_empty());
+            assert_eq!(parsed.additional_overviews.len(), 1);
+            let metadata = &parsed.additional_overviews[0];
+            assert_eq!(metadata.program, "TransactionConfig");
+            assert_eq!(metadata.instruction_index, 0);
+            let expected = if mask == 0 {
+                "Priority Fee: 0 lamports"
+            } else {
+                "Priority Fee: 123456789 lamports"
+            };
+            assert!(metadata.memo.contains(expected));
+            if mask != 0 {
+                assert!(metadata.memo.contains("200000"));
+                assert!(metadata.memo.contains("65536"));
+            }
+            crate::message_json::tests::assert_json_roundtrip(&raw, &parsed.detail);
+        }
+    }
+
+    #[test]
     fn transfer_and_defaults_are_reviewed() {
         let raw = sample();
         assert_eq!(classify_payload(&raw), SolanaPayloadType::Transaction);
         let parsed = parse_for_signer(&raw, &[1; 32]).unwrap();
         assert_eq!(parsed.display_type.to_string(), "Transfer");
-        assert!(parsed.detail.contains("0.123456789 SOL"));
+        assert!(!parsed.detail.contains("0.123456789 SOL"));
+        crate::message_json::tests::assert_json_roundtrip(&raw, &parsed.detail);
         let config = &parsed.additional_overviews[0];
         assert_eq!(config.instruction_index, 0);
         assert!(config.memo.contains("Priority Fee: 0 lamports"));
         assert!(config.memo.contains("Heap Size: 32768 bytes"));
         assert!(parse_for_signer(&raw, &[2; 32]).is_err());
         assert!(parse_for_signer(&raw, &[9; 32]).is_err());
+    }
+
+    #[test]
+    fn security_review_preserves_v1_instruction_order_and_metadata() {
+        use crate::parser::structs::OverviewAction;
+        let unknown = Instruction {
+            program_index: 3,
+            account_indexes: vec![0],
+            data: vec![42],
+        };
+        for unknown_first in [true, false] {
+            let instructions = if unknown_first {
+                vec![unknown.clone(), transfer()]
+            } else {
+                vec![transfer(), unknown.clone()]
+            };
+            let raw = encode(
+                3,
+                &5000u64.to_le_bytes(),
+                &[[1; 32], [2; 32], [0; 32], [3; 32]],
+                &instructions,
+            );
+            let parsed = parse_for_signer(&raw, &[1; 32]).unwrap();
+            let expected = if unknown_first {
+                vec![
+                    (1, OverviewAction::Unknown(0)),
+                    (2, OverviewAction::Primary),
+                    (0, OverviewAction::General(0)),
+                ]
+            } else {
+                vec![
+                    (1, OverviewAction::Primary),
+                    (2, OverviewAction::Unknown(0)),
+                    (0, OverviewAction::General(0)),
+                ]
+            };
+            assert_eq!(parsed.overview_order, expected);
+            assert!(parsed.additional_overviews[0]
+                .memo
+                .contains("5000 lamports"));
+            assert_eq!(parsed.unknown_programs.len(), 1);
+        }
+    }
+
+    #[test]
+    fn security_parser_rejects_v1_known_instruction_trailing_data() {
+        let mut malformed = transfer();
+        malformed.data.push(0);
+        let raw = encode(0, &[], &[[1; 32], [2; 32], [0; 32]], &[malformed]);
+        assert!(Message::read_exact(&mut raw.clone()).is_ok());
+        assert!(parse_for_signer(&raw, &[1; 32]).is_err());
     }
 
     #[test]
@@ -239,7 +348,12 @@ mod tests {
                 values.extend(65536u32.to_le_bytes());
             }
             let mut raw = encode(mask, &values, &[[1; 32], [2; 32], [0; 32]], &[transfer()]);
+            let original = raw.clone();
             let message = Message::read_exact(&mut raw).unwrap();
+            crate::message_json::tests::assert_json_roundtrip(
+                &original,
+                &message.to_message_json().unwrap(),
+            );
             let config = message.transaction_config.unwrap();
             assert_eq!(
                 config.priority_fee_lamports,
@@ -287,9 +401,11 @@ mod tests {
                 ],
             );
             let parsed = parse(&raw).unwrap();
-            assert!(parsed.detail.contains("IgnoredInV1"));
+            assert!(!parsed.detail.contains("IgnoredInV1"));
+            crate::message_json::tests::assert_json_roundtrip(&raw, &parsed.detail);
             assert!(!parsed.detail.contains("compute_unit_price_micro_lamports"));
-            assert!(parsed.detail.contains("\"priority_fee_lamports\":\"42\""));
+            let detail: serde_json::Value = serde_json::from_str(&parsed.detail).unwrap();
+            assert_eq!(detail["config_values"], serde_json::json!([42, 0]));
             let message = Message::read_exact(&mut raw.clone()).unwrap();
             assert_eq!(message.instructions[0].data, message.instructions[2].data);
         }
@@ -363,6 +479,9 @@ mod tests {
             assert_eq!(Message::read_exact(&mut raw.clone()).is_ok(), valid);
             if !valid {
                 rejected(&raw);
+            } else {
+                let parsed = parse(&raw).unwrap();
+                crate::message_json::tests::assert_json_roundtrip(&raw, &parsed.detail);
             }
         }
     }

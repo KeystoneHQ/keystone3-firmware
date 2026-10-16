@@ -239,7 +239,7 @@ impl Message {
                 // parse instruction data
                 match instruction.parse(&program_account, instruction_accounts.clone()) {
                     Ok(value) => Ok(value),
-                    Err(_) => Ok(SolanaDetail {
+                    Err(SolanaError::UnsupportedProgram(_)) => Ok(SolanaDetail {
                         common: CommonDetail {
                             program: "Unknown".to_string(),
                             method: "".to_string(),
@@ -250,6 +250,7 @@ impl Message {
                             program_account,
                         }),
                     }),
+                    Err(error) => Err(error),
                 }
             })
             .collect::<Result<Vec<SolanaDetail>>>()?;
@@ -257,6 +258,37 @@ impl Message {
             details.push(config.to_detail());
         }
         Ok(details)
+    }
+
+    pub fn to_raw_program_details(&self) -> Result<Vec<SolanaDetail>> {
+        let accounts = self.prepare_accounts();
+        self.instructions
+            .iter()
+            .map(|instruction| {
+                let account_at = |index: u8| {
+                    accounts.get(index as usize).cloned().ok_or_else(|| {
+                        SolanaError::InvalidData(
+                            "instruction account index exceeds account list".to_string(),
+                        )
+                    })
+                };
+                Ok(SolanaDetail {
+                    common: CommonDetail {
+                        program: "Unknown".to_string(),
+                        method: String::new(),
+                    },
+                    kind: ProgramDetail::Instruction(ProgramDetailInstruction {
+                        data: base58::encode(&instruction.data),
+                        accounts: instruction
+                            .account_indexes
+                            .iter()
+                            .map(|index| account_at(*index))
+                            .collect::<Result<Vec<_>>>()?,
+                        program_account: account_at(instruction.program_index)?,
+                    }),
+                })
+            })
+            .collect()
     }
 
     pub fn validate(raw: &mut Vec<u8>) -> bool {
@@ -358,7 +390,11 @@ mod tests {
     use alloc::vec;
     use alloc::vec::Vec;
 
-    use super::Message;
+    use crate::errors::SolanaError;
+    use crate::instruction::Instruction;
+    use crate::parser::detail::ProgramDetail;
+
+    use super::{Account, BlockHash, Message, MessageHeader};
 
     fn minimal_legacy_message() -> Vec<u8> {
         let mut message = vec![1, 0, 0, 1];
@@ -382,6 +418,30 @@ mod tests {
             0, 202, 154, 59, 0, 0, 0, 0, // 1 SOL
         ]);
         message
+    }
+
+    fn single_instruction_message(program_id: &str, data: Vec<u8>) -> Message {
+        Message {
+            transaction_config: None,
+            is_versioned: false,
+            header: MessageHeader {
+                num_required_signatures: 0,
+                num_readonly_signed_accounts: 0,
+                num_readonly_unsigned_accounts: 1,
+            },
+            accounts: vec![Account {
+                value: bitcoin::base58::decode(program_id).unwrap(),
+            }],
+            block_hash: BlockHash {
+                value: vec![0u8; 32],
+            },
+            instructions: vec![Instruction {
+                program_index: 0,
+                account_indexes: vec![],
+                data,
+            }],
+            address_table_lookups: None,
+        }
     }
 
     #[test]
@@ -414,5 +474,45 @@ mod tests {
         assert_eq!(details.len(), 1);
         assert_eq!(details[0].common.program, "System");
         assert_eq!(details[0].common.method, "Transfer");
+    }
+
+    #[test]
+    fn rejects_malformed_known_programs_but_preserves_unknown_programs() {
+        let malformed_jupiter =
+            single_instruction_message("JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4", vec![0u8; 7]);
+        assert!(matches!(
+            malformed_jupiter.to_program_details(),
+            Err(SolanaError::InvalidData(_))
+        ));
+
+        let malformed_token =
+            single_instruction_message("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA", vec![0xff]);
+        assert!(malformed_token.to_program_details().is_err());
+
+        let unknown =
+            single_instruction_message("11111111111111111111111111111112", vec![0xaa, 0xbb]);
+        let details = unknown.to_program_details().unwrap();
+        assert!(matches!(details[0].kind, ProgramDetail::Instruction(_)));
+        assert_eq!(details[0].common.program, "Unknown");
+    }
+
+    #[test]
+    fn rejects_malformed_supported_instructions_but_keeps_unknown_programs() {
+        let mut malformed_token = system_transfer_message();
+        let token_program =
+            bitcoin::base58::decode("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA").unwrap();
+        malformed_token[68..100].copy_from_slice(&token_program);
+        malformed_token[137] = 1;
+        malformed_token[138] = 12;
+        malformed_token.truncate(139);
+        let message = Message::read_exact(&mut malformed_token).unwrap();
+        assert!(message.to_program_details().is_err());
+
+        let mut unknown_program = system_transfer_message();
+        unknown_program[68..100].copy_from_slice(&[0x33; 32]);
+        let message = Message::read_exact(&mut unknown_program).unwrap();
+        let details = message.to_program_details().unwrap();
+        assert_eq!(details.len(), 1);
+        assert_eq!(details[0].common.program, "Unknown");
     }
 }

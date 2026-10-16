@@ -23,6 +23,7 @@ bool g_reboot = false;
 bool g_otpProtect = false;
 
 // Comment out this macro if you need to retrieve data from the file
+#define GET_QR_DATA_FROM_SCREEN
 void ReadOtpData(uint32_t addr, uint8_t *data, uint32_t len)
 {
 
@@ -129,6 +130,10 @@ void SetLcdBright(uint32_t bright)
 }
 
 void SetShowPowerOffPage(bool isShow)
+{
+}
+
+void FpClearManageInfo(void)
 {
 }
 
@@ -240,9 +245,15 @@ uint8_t *GuiGetFpVersion(char *version, uint32_t maxLen)
     return version;
 }
 
-void ShowAssert(const char *file, uint32_t len)
+void ShowAssert(const char *file, uint32_t line)
 {
-    printf("assert,file=%s\r\nline=%d\r\n", file, len);
+#ifdef BUILD_PRODUCTION
+    (void)file;
+    (void)line;
+    printf("assert\r\n");
+#else
+    printf("assert,file=%s\r\nline=%u\r\n", file, (unsigned int)line);
+#endif
     while (1)
         ;
 }
@@ -426,6 +437,7 @@ bool GetDBContract(const char *address, const char *selector, const uint32_t cha
 
 void SystemReboot(void)
 {
+    g_reboot = true;
 }
 
 void SetPageLockScreen(bool enable)

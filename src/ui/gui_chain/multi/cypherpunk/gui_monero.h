@@ -19,6 +19,8 @@ PtrT_TransactionCheckResult GuiGetMoneroUnsignedTxCheckResult(void);
 void *GuiGetMoneroOutputData(void);
 void *GuiGetMoneroUnsignedTxData(void);
 void FreeMoneroMemory(void);
+void GuiClearMoneroSensitiveState(void);
+void monero_clear_transaction_state(void);
 void GuiSetMoneroUrData(URParseResult *urResult, URParseMultiResult *urMultiResult, bool multi);
 UREncodeResult *GuiGetMoneroKeyimagesQrCodeData(void);
 UREncodeResult *GuiGetMoneroSignedTransactionQrCodeData(void);

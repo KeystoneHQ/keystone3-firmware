@@ -1538,3 +1538,53 @@ mod tests {
         unsafe { free_zcash_checked_pczt(checked_ptr) };
     }
 }
+
+#[cfg(feature = "cypherpunk")]
+#[repr(C)]
+pub enum ZcashAddressVerification {
+    ZcashAddressOwned,
+    ZcashAddressNotOwned,
+    ZcashAddressInvalid,
+    ZcashAddressUnsupported,
+    ZcashAddressKeyUnavailable,
+}
+
+#[cfg(feature = "cypherpunk")]
+#[no_mangle]
+pub unsafe extern "C" fn zcash_address_qr_text(data: PtrUR) -> *const c_char {
+    if data.is_null() {
+        return core::ptr::null();
+    }
+    (&*(data as *const cstr_core::CString)).as_ptr()
+}
+
+#[cfg(feature = "cypherpunk")]
+#[no_mangle]
+pub unsafe extern "C" fn verify_zcash_address(
+    ufvk: PtrString,
+    address: PtrString,
+) -> ZcashAddressVerification {
+    use app_zcash::address_verification::VerificationResult;
+    use ZcashAddressVerification::*;
+    if ufvk.is_null() {
+        return ZcashAddressKeyUnavailable;
+    }
+    if address.is_null() {
+        return ZcashAddressInvalid;
+    }
+    let (key_ok, key) = crate::common::utils::check_recover_c_char_lossy(ufvk);
+    let (address_ok, text) = crate::common::utils::check_recover_c_char_lossy(address);
+    if !key_ok {
+        return ZcashAddressKeyUnavailable;
+    }
+    if !address_ok {
+        return ZcashAddressInvalid;
+    }
+    match app_zcash::address_verification::verify(&MainNetwork, &key, &text) {
+        VerificationResult::Owned => ZcashAddressOwned,
+        VerificationResult::NotOwned => ZcashAddressNotOwned,
+        VerificationResult::InvalidAddress => ZcashAddressInvalid,
+        VerificationResult::UnsupportedReceiver => ZcashAddressUnsupported,
+        VerificationResult::KeyUnavailable => ZcashAddressKeyUnavailable,
+    }
+}

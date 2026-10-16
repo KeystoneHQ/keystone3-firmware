@@ -1,6 +1,8 @@
 #![no_std]
 extern crate alloc;
 
+#[cfg(feature = "cypherpunk")]
+pub mod address_verification;
 pub mod errors;
 pub mod pczt;
 pub mod version;

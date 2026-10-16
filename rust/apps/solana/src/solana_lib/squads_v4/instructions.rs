@@ -80,8 +80,94 @@ pub struct ProposalVoteArgs {
     pub memo: Option<String>,
 }
 
+#[derive(BorshDeserialize, Serialize, Debug, Clone)]
+pub struct ConfigTransactionCreateArgs {
+    pub actions: Vec<ConfigAction>,
+    pub memo: Option<String>,
+}
+
+fn serialize_pubkey<S: serde::Serializer>(
+    key: &Pubkey,
+    serializer: S,
+) -> core::result::Result<S::Ok, S::Error> {
+    serializer.collect_str(key)
+}
+
+fn serialize_pubkeys<S: serde::Serializer>(
+    keys: &[Pubkey],
+    serializer: S,
+) -> core::result::Result<S::Ok, S::Error> {
+    use alloc::string::ToString;
+    serde::Serialize::serialize(
+        &keys.iter().map(ToString::to_string).collect::<Vec<_>>(),
+        serializer,
+    )
+}
+
+fn serialize_optional_pubkey<S: serde::Serializer>(
+    key: &Option<Pubkey>,
+    serializer: S,
+) -> core::result::Result<S::Ok, S::Error> {
+    use alloc::string::ToString;
+    serde::Serialize::serialize(&key.as_ref().map(ToString::to_string), serializer)
+}
+
+#[derive(BorshDeserialize, Serialize, Debug, Clone)]
+pub struct ConfigMember {
+    #[serde(serialize_with = "serialize_pubkey")]
+    pub key: Pubkey,
+    pub permissions: Permissions,
+}
+
+#[derive(BorshDeserialize, Serialize, Debug, Clone)]
+pub enum ConfigAction {
+    AddMember {
+        new_member: ConfigMember,
+    },
+    RemoveMember {
+        #[serde(serialize_with = "serialize_pubkey")]
+        old_member: Pubkey,
+    },
+    ChangeThreshold {
+        new_threshold: u16,
+    },
+    SetTimeLock {
+        new_time_lock: u32,
+    },
+    AddSpendingLimit {
+        #[serde(serialize_with = "serialize_pubkey")]
+        create_key: Pubkey,
+        vault_index: u8,
+        #[serde(serialize_with = "serialize_pubkey")]
+        mint: Pubkey,
+        amount: u64,
+        period: SpendingLimitPeriod,
+        #[serde(serialize_with = "serialize_pubkeys")]
+        members: Vec<Pubkey>,
+        #[serde(serialize_with = "serialize_pubkeys")]
+        destinations: Vec<Pubkey>,
+    },
+    RemoveSpendingLimit {
+        #[serde(serialize_with = "serialize_pubkey")]
+        spending_limit: Pubkey,
+    },
+    SetRentCollector {
+        #[serde(serialize_with = "serialize_optional_pubkey")]
+        new_rent_collector: Option<Pubkey>,
+    },
+}
+
+#[derive(BorshDeserialize, Serialize, Debug, Clone)]
+pub enum SpendingLimitPeriod {
+    OneTime,
+    Day,
+    Week,
+    Month,
+}
+
 #[derive(Debug)]
 pub enum SquadsInstructions {
+    ConfigTransactionCreate(ConfigTransactionCreateArgs),
     MultisigCreate(MultisigCreateArgs),
     MultisigCreateV2(MultisigCreateArgsV2),
     ProposalActivate,
@@ -102,6 +188,21 @@ impl Dispatch for SquadsInstructions {
         let ix_type = &data[..8];
         let ix_data = &data[8..];
         match hex::encode(ix_type).as_str() {
+            "9bec57e4894b5127" => {
+                let args = from_slice::<ConfigTransactionCreateArgs>(ix_data)
+                    .map_err(|_| SquadsV4Error::InvalidInstruction)?;
+                if args.actions.is_empty()
+                    || args
+                        .actions
+                        .iter()
+                        .filter(|action| matches!(action, ConfigAction::ChangeThreshold { .. }))
+                        .count()
+                        > 1
+                {
+                    return Err(SquadsV4Error::InvalidInstruction.into());
+                }
+                Ok(SquadsInstructions::ConfigTransactionCreate(args))
+            }
             "7a4d509f54585ac5" => {
                 // sighash(SIGHASH_GLOBAL_NAMESPACE, "multisig_create")
                 Ok(SquadsInstructions::MultisigCreate(
@@ -125,6 +226,9 @@ impl Dispatch for SquadsInstructions {
             }
             "0b225cf89a1b336a" => {
                 // sighash(SIGHASH_GLOBAL_NAMESPACE, "proposal_activate")
+                if !ix_data.is_empty() {
+                    return Err(SquadsV4Error::InvalidInstruction.into());
+                }
                 Ok(SquadsInstructions::ProposalActivate)
             }
             "9025a488bcd82af8" => {
@@ -158,6 +262,9 @@ impl Dispatch for SquadsInstructions {
             }
             "c208a15799a419ab" => {
                 // sighash(SIGHASH_GLOBAL_NAMESPACE,VaultTransactionExecute)
+                if !ix_data.is_empty() {
+                    return Err(SquadsV4Error::InvalidInstruction.into());
+                }
                 Ok(SquadsInstructions::VaultTransactionExecute)
             }
             _ => Err(SquadsV4Error::UnknownSquadV4Instruction.into()),
@@ -171,6 +278,114 @@ mod tests {
     use crate::solana_lib::utils::{sighash, SIGHASH_GLOBAL_NAMESPACE};
 
     use super::*;
+
+    #[test]
+    fn rejects_repeated_threshold_changes_even_when_equal_or_separated() {
+        for actions in [
+            vec![2, 3, 0, 2, 1, 0],
+            vec![2, 3, 0, 2, 3, 0],
+            vec![2, 3, 0, 3, 60, 0, 0, 0, 2, 1, 0],
+        ] {
+            let count = if actions.len() == 6 { 2u32 } else { 3u32 };
+            let mut data = hex::decode("9bec57e4894b5127").unwrap();
+            data.extend_from_slice(&count.to_le_bytes());
+            data.extend_from_slice(&actions);
+            data.push(0);
+            assert!(SquadsInstructions::dispatch(&data).is_err());
+        }
+        let data = hex::decode("9bec57e4894b512702000000020300033c00000000").unwrap();
+        assert!(SquadsInstructions::dispatch(&data).is_ok());
+    }
+
+    #[test]
+    fn parses_config_transaction_create_and_rejects_malformed_fields() {
+        let data = hex::decode("9bec57e4894b51270100000001902cce4c0210897aa154b0529cdf3759e940e07449f7176e4656ca468ace8fbf010400000074657374").unwrap();
+        let SquadsInstructions::ConfigTransactionCreate(args) =
+            SquadsInstructions::dispatch(&data).unwrap()
+        else {
+            panic!("wrong instruction");
+        };
+        assert_eq!(args.memo.as_deref(), Some("test"));
+        assert_eq!(args.actions.len(), 1);
+        assert!(matches!(args.actions[0], ConfigAction::RemoveMember { .. }));
+        let json = serde_json::to_value(&args).unwrap();
+        assert!(json["actions"][0]["RemoveMember"]["old_member"].is_string());
+        for length in 0..data.len() {
+            assert!(SquadsInstructions::dispatch(&data[..length]).is_err());
+        }
+        let mut padded = data.clone();
+        padded.push(0);
+        assert!(SquadsInstructions::dispatch(&padded).is_err());
+        for action in [7u8, 255] {
+            let mut malformed = data.clone();
+            malformed[12] = action;
+            assert!(SquadsInstructions::dispatch(&malformed).is_err());
+        }
+        let mut empty = data[..8].to_vec();
+        empty.extend_from_slice(&[0, 0, 0, 0, 0]);
+        assert!(SquadsInstructions::dispatch(&empty).is_err());
+    }
+
+    #[test]
+    fn decodes_all_config_action_wire_variants() {
+        let key = [42u8; 32];
+        let mut add_member = vec![0];
+        add_member.extend_from_slice(&key);
+        add_member.push(7);
+        let mut remove_member = vec![1];
+        remove_member.extend_from_slice(&key);
+        let mut spending = vec![4];
+        spending.extend_from_slice(&key);
+        spending.push(0);
+        spending.extend_from_slice(&key);
+        spending.extend_from_slice(&100u64.to_le_bytes());
+        spending.push(1);
+        spending.extend_from_slice(&1u32.to_le_bytes());
+        spending.extend_from_slice(&key);
+        spending.extend_from_slice(&0u32.to_le_bytes());
+        let mut remove_spending = vec![5];
+        remove_spending.extend_from_slice(&key);
+        let mut rent = vec![6, 1];
+        rent.extend_from_slice(&key);
+        for (action, name) in [
+            (add_member, "AddMember"),
+            (remove_member, "RemoveMember"),
+            (vec![2, 2, 0], "ChangeThreshold"),
+            (vec![3, 60, 0, 0, 0], "SetTimeLock"),
+            (spending, "AddSpendingLimit"),
+            (remove_spending, "RemoveSpendingLimit"),
+            (rent, "SetRentCollector"),
+            (vec![6, 0], "SetRentCollector"),
+        ] {
+            let mut data = hex::decode("9bec57e4894b5127").unwrap();
+            data.extend_from_slice(&1u32.to_le_bytes());
+            data.extend_from_slice(&action);
+            data.push(0);
+            let SquadsInstructions::ConfigTransactionCreate(args) =
+                SquadsInstructions::dispatch(&data).unwrap()
+            else {
+                panic!("wrong instruction");
+            };
+            let json = serde_json::to_value(&args).unwrap();
+            assert!(json["actions"][0].get(name).is_some());
+        }
+    }
+
+    #[test]
+    fn no_argument_instructions_reject_trailing_bytes() {
+        for discriminator in ["0b225cf89a1b336a", "c208a15799a419ab"] {
+            let data = hex::decode(discriminator).unwrap();
+            assert!(SquadsInstructions::dispatch(&data).is_ok());
+            for length in 0..8 {
+                assert!(SquadsInstructions::dispatch(&data[..length]).is_err());
+            }
+            for suffix in [&[0][..], &[1, 2, 3][..]] {
+                let mut malformed = data.clone();
+                malformed.extend(suffix);
+                assert!(SquadsInstructions::dispatch(&malformed).is_err());
+            }
+        }
+    }
 
     #[test]
     fn test_parse_instruction_data() {

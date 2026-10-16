@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #define MPU_SANDBOX_RESOLVE_UR_COMMAND 0x0002U
 
@@ -31,6 +32,8 @@ typedef enum {
 
 uint32_t mpu_sandbox_validate_ur(const uint8_t *input, size_t input_len);
 uint32_t mpu_sandbox_validate_cbor(const uint8_t *input, size_t input_len);
+uint32_t mpu_sandbox_cbor_stream_push(uint8_t *storage, size_t capacity,
+                                      const uint8_t *input, size_t input_len, bool last);
 uint32_t mpu_sandbox_validate_eip712_json(uint8_t *input, size_t input_len);
 
 #endif

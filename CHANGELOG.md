@@ -1,3 +1,31 @@
+## 3.1.4(2026-10-15)
+
+**Web3:**
+
+### Improvements
+
+1. Optimized SOL transaction parsing
+2. Optimized TRON transaction parsing
+3. Updated Keeper wallet icon and name
+4. Improved the wallet setup flow
+
+**Cypherpunk:**
+
+### What’s New
+
+1. Added Zcash shielded address verification
+
+### Improvements
+
+1. Improved the wallet setup flow
+
+**BTC Only:**
+
+### Improvements
+
+1. Improved the wallet setup flow
+
+
 ## 3.1.2 (2026-10-9)
 
 **Web3:**

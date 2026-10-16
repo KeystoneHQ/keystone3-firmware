@@ -95,7 +95,11 @@
 
 #define ATCA_PRINTF
 #ifdef ATCA_PRINTF
+#ifdef BUILD_PRODUCTION
+#define ATCA_TRACE(s, m)         atca_trace_msg(s, "%x:" m "\n")
+#else
 #define ATCA_TRACE(s, m)         atca_trace_msg(s, __FILE__ ":" ATCA_TOSTRING(__LINE__) ":%x:" m "\n")
+#endif
 #else
 #define ATCA_TRACE(s, m)         atca_trace(s)
 #endif

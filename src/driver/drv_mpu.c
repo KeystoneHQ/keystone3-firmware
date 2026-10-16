@@ -1,4 +1,5 @@
 #include "drv_mpu.h"
+#include "FreeRTOS.h"
 
 extern uint32_t _sbss;
 extern uint32_t _ebss;
@@ -122,4 +123,12 @@ void ConfigureMPUForBSS(void)
 void MpuInit(void)
 {
     ConfigureMPUForSramNoExec();
+    MpuSetProtection(MHSCPU_PSRAM_BASE,
+                     MHSCPU_PSRAM_END - MHSCPU_PSRAM_BASE + 1UL,
+                     portPSRAM_REGION,
+                     MPU_INSTRUCTION_ACCESS_DISABLE,
+                     MPU_REGION_PRIV_RW,
+                     MPU_ACCESS_NOT_SHAREABLE,
+                     MPU_ACCESS_CACHEABLE,
+                     MPU_ACCESS_NOT_BUFFERABLE);
 }

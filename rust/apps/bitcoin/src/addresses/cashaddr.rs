@@ -9,7 +9,7 @@ use alloc::format;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 use bitcoin::address::AddressData as Payload;
-use bitcoin::PubkeyHash;
+use bitcoin::{PubkeyHash, ScriptHash};
 use bitcoin_hashes::Hash;
 use core::{fmt, str};
 
@@ -216,8 +216,15 @@ impl CashAddrCodec {
     }
 
     pub fn encode(raw: Vec<u8>) -> Result<String> {
+        Self::encode_with_type(raw, version_byte_flags::TYPE_P2PKH)
+    }
+
+    pub fn encode_p2sh(raw: Vec<u8>) -> Result<String> {
+        Self::encode_with_type(raw, version_byte_flags::TYPE_P2SH)
+    }
+
+    fn encode_with_type(raw: Vec<u8>, hash_flag: u8) -> Result<String> {
         // Calculate version byte
-        let hash_flag = version_byte_flags::TYPE_P2PKH;
         let length = raw.len();
         let version_byte = match length {
             20 => version_byte_flags::SIZE_160,
@@ -327,17 +334,24 @@ impl CashAddrCodec {
 
         // Extract the hash type and return
         let version_type = version & version_byte_flags::TYPE_MASK;
-        if version_type != version_byte_flags::TYPE_P2PKH {
-            return Err(BitcoinError::AddressError(format!(
-                "invalid version {version_type:?}"
-            )));
-        };
-        let publickey_hash = PubkeyHash::from_slice(body)
-            .map_err(|_| BitcoinError::AddressError("invalid public key hash".to_string()))?;
-        Ok(Address {
-            payload: Payload::P2pkh {
-                pubkey_hash: publickey_hash,
+        let payload = match version_type {
+            version_byte_flags::TYPE_P2PKH => Payload::P2pkh {
+                pubkey_hash: PubkeyHash::from_slice(body).map_err(|_| {
+                    BitcoinError::AddressError("invalid public key hash".to_string())
+                })?,
             },
+            version_byte_flags::TYPE_P2SH => Payload::P2sh {
+                script_hash: ScriptHash::from_slice(body)
+                    .map_err(|_| BitcoinError::AddressError("invalid script hash".to_string()))?,
+            },
+            _ => {
+                return Err(BitcoinError::AddressError(format!(
+                    "invalid version {version_type:?}"
+                )))
+            }
+        };
+        Ok(Address {
+            payload,
             network: Network::BitcoinCash,
         })
     }

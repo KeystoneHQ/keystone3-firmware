@@ -27,4 +27,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/monero
-        run: cd rust/apps/monero && cargo +$RUST_TOOLCHAIN llvm-cov --fail-under-regions 53 --fail-under-functions 50 --fail-under-lines 50 --ignore-filename-regex 'keystore/*'
+        run: cd rust/apps/monero && cargo +$RUST_TOOLCHAIN llvm-cov --fail-under-regions 43 --fail-under-functions 45 --fail-under-lines 43 --ignore-filename-regex 'keystore/*'

@@ -19,7 +19,7 @@ pub mod structs;
 mod transaction;
 mod utils;
 
-pub use crate::address::get_address;
+pub use crate::address::{get_address, get_public_key, validate_derivation_path};
 use crate::structs::PersonalMessage;
 pub use crate::transaction::parser::{DetailTx, OverviewTx, ParsedTx, TxParser};
 use crate::transaction::wrapped_tron::WrappedTron;
@@ -30,12 +30,24 @@ use bitcoin::secp256k1::PublicKey;
 use transaction::checker::TxChecker;
 use transaction::signer::Signer;
 
+pub const MAX_SIGN_DATA_LEN: usize = 16 * 1024;
+
+pub fn validate_sign_data_len(len: usize) -> Result<()> {
+    if len > MAX_SIGN_DATA_LEN {
+        return Err(TronError::InvalidRawTxCryptoBytes(
+            "TRON request exceeds 16 KiB".into(),
+        ));
+    }
+    Ok(())
+}
+
 pub fn sign_raw_tx(
     raw_tx: protoc::Payload,
     context: keystone::ParseContext,
     seed: &[u8],
 ) -> Result<(String, String)> {
     let tx = WrappedTron::from_payload(raw_tx, &context)?;
+    tx.check(&context)?;
     tx.sign(seed)
 }
 
@@ -54,8 +66,14 @@ fn decode_to_wrapped(sign_data: &[u8], path: String) -> Result<WrappedTron> {
     use crate::pb::protocol::Transaction;
     use prost::Message;
 
+    validate_sign_data_len(sign_data.len())?;
     let raw_content = RawData::decode(sign_data)
         .map_err(|_| TronError::InvalidRawTxCryptoBytes("RawData decode failed".to_string()))?;
+    if raw_content.encode_to_vec() != sign_data {
+        return Err(TronError::InvalidRawTxCryptoBytes(
+            "non-canonical RawData encoding".to_string(),
+        ));
+    }
 
     let raw_tx = Transaction {
         raw_data: Some(raw_content),
@@ -93,6 +111,8 @@ pub fn sign_personal_message(
     path: &String,
     seed: &[u8],
 ) -> errors::Result<String> {
+    validate_derivation_path(path)?;
+    validate_sign_data_len(sign_data.len())?;
     let prefix = b"\x19TRON Signed Message:\n";
     let len_str = sign_data.len().to_string();
 
@@ -120,6 +140,7 @@ pub fn parse_personal_message(
     tx_hex: &[u8],
     from_key: Option<PublicKey>,
 ) -> Result<PersonalMessage> {
+    validate_sign_data_len(tx_hex.len())?;
     let raw_message = hex::encode(tx_hex);
     let utf8_message = match String::from_utf8(tx_hex.to_vec()) {
         Ok(utf8_message) => {
@@ -156,10 +177,31 @@ mod test {
     }
 
     #[test]
+    fn rejects_oversized_sign_data_before_decoding_or_signing() {
+        assert!(validate_sign_data_len(MAX_SIGN_DATA_LEN).is_ok());
+        let data = vec![0xff; MAX_SIGN_DATA_LEN + 1];
+        let path = "m/44'/195'/0'/0/0".to_string();
+        assert!(parse_tx_request(&data, &path)
+            .unwrap_err()
+            .to_string()
+            .contains("request exceeds"));
+        assert!(parse_personal_message(&data, None)
+            .unwrap_err()
+            .to_string()
+            .contains("request exceeds"));
+        assert!(sign_personal_message(&data, &path, &[0; 64])
+            .unwrap_err()
+            .to_string()
+            .contains("request exceeds"));
+        assert!(parse_personal_message(&data[..MAX_SIGN_DATA_LEN], None).is_ok());
+    }
+
+    #[test]
     fn test_sign_raw_tx() {
-        let hex = "1f8b08000000000000030dcebb4ac3501c807153444a17b553e95482501142ce39f99f4b8b83362d74696cd38897eddca205db60ac22d95db49b4fe0e6e8e4e65bf80a6e3e80a083816ffb965fb552df9ce461666c6b9c67cb4c6757cd5fa75aa95739e283419f85eeb7535b4fe2a3a8bea3710a42748cc729621e60a43cc1c17801a2c03166444bd4dc1ef9006d1f7768db47653e6aad5e578f7f6877a3f7e234dd2499f2331adc4c212ff27eb83c97b3dbb8b8be3798c96568c971ecbac99416e32c84d3416f3ebceb47878bc509b91806a3c9a58e23368be77b6bc4c1dda8760046714cb148b154982949b400ad4a8f92960bc23ae5e20a510bda12c9d2006b0bd2d8148ca582045b0f9fcf8dc6cfd753291cbebdefb73ec6ff42b912d514010000";
-        let pubkey_str = "xpub6C3ndD75jvoARyqUBTvrsMZaprs2ZRF84kRTt5r9oxKQXn5oFChRRgrP2J8QhykhKACBLF2HxwAh4wccFqFsuJUBBcwyvkyqfzJU5gfn5pY";
-        let payload = prepare_payload(hex);
+        let hex = "1f8b08000000000000030dcfbd4ac34000c071220ea58bdaa9742a41a84bc87d27270e9ab61890c4268d54bb5dee2e26607b508b4a9fa26fe01bf8b128f812be82b383b8161703ffe9bffd1a5bad9d64d1374a77470bb334d2dc7436567d1b1e96540920ec6fabb99da5e7716b5f4a4e58ae91e36b221d8272ed088ca04399a058f8b2a09075f62297909e0b39edb9a0ce05dde79faf8f0d3868048f56c7ce2e86d3b13abb35833089f4f4be2a97ca04554cd8eaa13c9d5ca9d0b6b3315d8d4c9f5c0e83597837884fe6f309ba0e719494328d5995ce90050fe3e671c17c0ab9d2bc904011a031a502f202e414032e19c60c78be209e409aab1cfa9041e603c204821ad588ddd7f5baddfefd7c7aff03e1cbdbd13f2aab0f710f010000";
+        let pubkey_str = "xpub6D1AabNHCupeiLM65ZR9UStMhJ1vCpyV4XbZdyhMZBiJXALQtmn9p42VTQckoHVn8WNqS7dqnJokZHAHcHGoaQgmv8D45oNUKx6DZMNZBCd";
+        let mut payload = prepare_payload(hex);
+        payload.xfp = "73c5da0a".to_string();
         let context = prepare_parse_context(pubkey_str);
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
         let result = sign_raw_tx(payload, context, &seed);
@@ -208,9 +250,34 @@ mod test {
 
     #[test]
     fn test_sign_tx_request() {
+        use crate::pb::protocol::{transaction, TransferContract};
+        use prost::Message;
+        use prost_types::Any;
+
         let path = "m/44'/195'/0'/0/0".to_string();
-        let mock_pb_hex = "0a0207902208e1b9de559665c6714080c49789bb2c5aae01081f12a9010a31747970652e676f6f676c65617069732e636f6d2f70726f746f636f6c2e54726967676572536d617274436f6e747261637412740a1541ad8593979840130d222238380b080808080808081215410d292c98a5eca06c2085fff993996423cf66c93b2244a9059cbb0000000000000000000000009bbce520d984c3b95ad10cb4e32a9294e6338da300000000000000000000000000000000000000000000000000000000000f424070c0b6e087bb2c90018094ebdc03";
-        let sign_data = hex::decode(mock_pb_hex).unwrap();
+        let transfer = TransferContract {
+            owner_address: bitcoin::base58::decode_check("TUEZSdKsoDHQMeZwihtdoBiN46zxhGWYdH")
+                .unwrap(),
+            to_address: bitcoin::base58::decode_check("TSeJkUh4Qv67VNFwY8LaAxERygNdy6NQZK")
+                .unwrap(),
+            amount: 1,
+        };
+        let raw = transaction::Raw {
+            ref_block_bytes: vec![0, 1],
+            ref_block_hash: vec![2; 8],
+            expiration: 2_000,
+            contract: vec![transaction::Contract {
+                r#type: transaction::contract::ContractType::TransferContract as i32,
+                parameter: Some(Any {
+                    type_url: "type.googleapis.com/protocol.TransferContract".to_string(),
+                    value: transfer.encode_to_vec(),
+                }),
+                ..Default::default()
+            }],
+            timestamp: 1_000,
+            ..Default::default()
+        };
+        let sign_data = raw.encode_to_vec();
         let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
 
         let result = sign_tx_request(&sign_data, &path, &seed);
@@ -218,6 +285,10 @@ mod test {
         let sig = result.unwrap();
         assert!(!sig.is_empty());
         assert_eq!(sig.len(), 130); // 65 bytes in hex = 130 chars
+
+        let mut non_canonical = sign_data.clone();
+        non_canonical.extend_from_slice(&[0xf8, 0x07, 0x01]);
+        assert!(decode_to_wrapped(&non_canonical, path).is_err());
     }
 
     #[test]
@@ -242,6 +313,67 @@ mod test {
         let result = check_tx_request(&sign_data, &path, xpub);
         assert!(result.is_err());
         assert!(matches!(result.unwrap_err(), TronError::NoMyInputs));
+    }
+
+    #[test]
+    fn personal_message_rejects_invalid_derivation_paths() {
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        for path in [
+            "m/44'/194'/0'/0/0",
+            "m/44'/60'/0'/0/0",
+            "m/44'/195'/1'/0/0",
+            "m/44'/195'/0'/1/0",
+            "m/44'/195'/0'/0",
+            "m/44'/195'/0'/0/0/0",
+            "m/44'/195'/0'/0/0'",
+            "m/44'/195'/0'/0/2147483648",
+        ] {
+            assert!(
+                matches!(
+                    sign_personal_message(b"Hello TRON", &path.to_string(), &seed),
+                    Err(TronError::InvalidHDPath(_))
+                ),
+                "accepted {path}"
+            );
+        }
+    }
+
+    #[test]
+    fn personal_message_display_matches_recovered_signer() {
+        use bitcoin::bip32::{DerivationPath, Xpriv, Xpub};
+        use bitcoin::secp256k1::{
+            ecdsa::{RecoverableSignature, RecoveryId},
+            Message, Secp256k1,
+        };
+
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let secp = Secp256k1::new();
+        let account = Xpriv::new_master(bitcoin::Network::Bitcoin, &seed)
+            .unwrap()
+            .derive_priv(&secp, &DerivationPath::from_str("m/44'/195'/0'").unwrap())
+            .unwrap();
+        let xpub = Xpub::from_priv(&secp, &account).to_string();
+        for index in [0, 1, 2147483647] {
+            let path = alloc::format!("m/44'/195'/0'/0/{index}");
+            let displayed_key = get_public_key(&path, &xpub).unwrap();
+            let parsed = parse_personal_message(b"Hello TRON", Some(displayed_key)).unwrap();
+            let signature =
+                hex::decode(sign_personal_message(b"Hello TRON", &path, &seed).unwrap()).unwrap();
+            let signature = RecoverableSignature::from_compact(
+                &signature[..64],
+                RecoveryId::from_i32((signature[64] - 27) as i32).unwrap(),
+            )
+            .unwrap();
+            let digest = hashing::keccak256(b"\x19TRON Signed Message:\n10Hello TRON");
+            let recovered = secp
+                .recover_ecdsa(&Message::from_digest_slice(&digest).unwrap(), &signature)
+                .unwrap();
+            assert_eq!(displayed_key, recovered);
+            assert_eq!(
+                parsed.from,
+                Some(crate::address::public_key_to_address(&recovered))
+            );
+        }
     }
 
     #[test]
@@ -455,6 +587,6 @@ mod test {
         let path = "m/44'/195'/0'/0/0".to_string();
 
         let result = decode_to_wrapped(&encoded, path);
-        assert!(result.is_ok());
+        assert!(result.is_err());
     }
 }

@@ -1,0 +1,12 @@
+#ifndef DIAGNOSTIC_LOCATION_H
+#define DIAGNOSTIC_LOCATION_H
+
+#ifdef BUILD_PRODUCTION
+#define DIAGNOSTIC_FILE ""
+#define DIAGNOSTIC_LINE 0
+#else
+#define DIAGNOSTIC_FILE __FILE__
+#define DIAGNOSTIC_LINE __LINE__
+#endif
+
+#endif

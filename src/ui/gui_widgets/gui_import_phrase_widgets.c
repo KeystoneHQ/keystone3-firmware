@@ -45,6 +45,31 @@ static lv_obj_t *g_noticeWindow = NULL;
 static BackupConfirmationHintBox_t g_backupConfirmation;
 static bool g_backupConfirmationAccepted = false;
 
+#ifdef CYPHERPUNK_VERSION
+static lv_obj_t *g_zcashSeedWarning = NULL;
+static bool g_zcashSeedWarningAccepted = false;
+
+static void ZcashSeedWarningBackHandler(lv_event_t *e)
+{
+    GUI_DEL_OBJ(g_zcashSeedWarning)
+    GuiCloseCurrentWorkingView();
+}
+
+static void ZcashSeedWarningContinueHandler(lv_event_t *e)
+{
+    g_zcashSeedWarningAccepted = true;
+    GUI_DEL_OBJ(g_zcashSeedWarning)
+}
+
+static void ShowZcashSeedWarning(void)
+{
+    if ((g_inputWordsCnt == 12 || g_inputWordsCnt == 18)  && !g_zcashSeedWarningAccepted && g_zcashSeedWarning == NULL) {
+        g_zcashSeedWarning = GuiCreateZcashSeedWarning(ZcashSeedWarningBackHandler,
+                             ZcashSeedWarningContinueHandler);
+    }
+}
+#endif
+
 static void BackupConfirmationHandler(lv_event_t *e)
 {
     g_backupConfirmationAccepted = true;
@@ -139,6 +164,9 @@ static void GuiPassphraseWidget(lv_obj_t *parent)
 
 void GuiImportPhraseInit(uint8_t num)
 {
+#ifdef CYPHERPUNK_VERSION
+    g_zcashSeedWarningAccepted = false;
+#endif
     g_inputWordsCnt = num;
     g_pageWidget = CreatePageWidget();
     lv_obj_t *cont = g_pageWidget->contentZone;
@@ -160,6 +188,9 @@ void GuiImportPhraseInit(uint8_t num)
     g_importSinglePhraseTileView.cont = cont;
 
     lv_obj_set_tile_id(g_importSinglePhraseTileView.tileView, g_importSinglePhraseTileView.currentTile, 0, LV_ANIM_OFF);
+#ifdef CYPHERPUNK_VERSION
+    ShowZcashSeedWarning();
+#endif
 }
 
 int8_t GuiImportPhraseNextTile(const char *passphrase)
@@ -173,6 +204,12 @@ int8_t GuiImportPhraseNextTile(const char *passphrase)
     }
     switch (g_importSinglePhraseTileView.currentTile) {
     case SINGLE_PHRASE_INPUT_PHRASE:
+#ifdef CYPHERPUNK_VERSION
+        if (g_inputWordsCnt == 12 && !g_zcashSeedWarningAccepted) {
+            ShowZcashSeedWarning();
+            return SUCCESS_CODE;
+        }
+#endif
         if (g_buttonCont != NULL) lv_obj_add_flag(g_buttonCont, LV_OBJ_FLAG_HIDDEN);
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
         if (GuiCreateWalletNeedPassphrase()) {
@@ -262,6 +299,10 @@ void GuiImportPhraseRefresh(void)
 
 void GuiImportPhraseDeInit(void)
 {
+#ifdef CYPHERPUNK_VERSION
+    GUI_DEL_OBJ(g_zcashSeedWarning)
+    g_zcashSeedWarningAccepted = false;
+#endif
     GuiMnemonicHintboxClear();
     GuiClearKeyBoard(g_importPhraseKb);
     GuiClearMnemonicKeyBoard(g_importMkb);

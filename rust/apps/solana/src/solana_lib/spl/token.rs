@@ -440,121 +440,111 @@ pub mod instruction {
             use TokenError::InvalidInstruction;
 
             let (&tag, rest) = input.split_first().ok_or(InvalidInstruction)?;
-            Ok(match tag {
+            let (instruction, remaining) = match tag {
                 0 => {
                     let (&decimals, rest) = rest.split_first().ok_or(InvalidInstruction)?;
                     let (mint_authority, rest) = Self::unpack_pubkey(rest)?;
-                    let (freeze_authority, _rest) = Self::unpack_pubkey_option(rest)?;
-                    Self::InitializeMint {
-                        mint_authority,
-                        freeze_authority,
-                        decimals,
-                    }
+                    let (freeze_authority, remaining) = Self::unpack_pubkey_option(rest)?;
+                    (
+                        Self::InitializeMint {
+                            mint_authority,
+                            freeze_authority,
+                            decimals,
+                        },
+                        remaining,
+                    )
                 }
-                1 => Self::InitializeAccount,
+                1 => (Self::InitializeAccount, rest),
                 2 => {
-                    let &m = rest.get(0).ok_or(InvalidInstruction)?;
-                    Self::InitializeMultisig { m }
+                    let (&m, remaining) = rest.split_first().ok_or(InvalidInstruction)?;
+                    (Self::InitializeMultisig { m }, remaining)
                 }
                 3 | 4 | 7 | 8 => {
-                    let amount = rest
-                        .get(..8)
-                        .and_then(|slice| slice.try_into().ok())
+                    let amount_bytes = rest.get(..8).ok_or(InvalidInstruction)?;
+                    let amount = amount_bytes
+                        .try_into()
+                        .ok()
                         .map(u64::from_le_bytes)
                         .ok_or(InvalidInstruction)?;
-                    match tag {
+                    let remaining = rest.get(8..).ok_or(InvalidInstruction)?;
+                    let instruction = match tag {
                         3 => Self::Transfer { amount },
                         4 => Self::Approve { amount },
                         7 => Self::MintTo { amount },
                         8 => Self::Burn { amount },
                         _ => unreachable!(),
-                    }
+                    };
+                    (instruction, remaining)
                 }
-                5 => Self::Revoke,
+                5 => (Self::Revoke, rest),
                 6 => {
                     let (authority_type, rest) = rest
                         .split_first()
                         .ok_or_else(|| ProgramError::from(InvalidInstruction))
                         .and_then(|(&t, rest)| Ok((AuthorityType::from(t)?, rest)))?;
-                    let (new_authority, _rest) = Self::unpack_pubkey_option(rest)?;
-
-                    Self::SetAuthority {
-                        authority_type,
-                        new_authority,
-                    }
+                    let (new_authority, remaining) = Self::unpack_pubkey_option(rest)?;
+                    (
+                        Self::SetAuthority {
+                            authority_type,
+                            new_authority,
+                        },
+                        remaining,
+                    )
                 }
-                9 => Self::CloseAccount,
-                10 => Self::FreezeAccount,
-                11 => Self::ThawAccount,
-                12 => {
-                    let (amount, rest) = rest.split_at(8);
-                    let amount = amount
+                9 => (Self::CloseAccount, rest),
+                10 => (Self::FreezeAccount, rest),
+                11 => (Self::ThawAccount, rest),
+                12 | 13 | 14 | 15 => {
+                    let amount_bytes = rest.get(..8).ok_or(InvalidInstruction)?;
+                    let amount = amount_bytes
                         .try_into()
                         .ok()
                         .map(u64::from_le_bytes)
                         .ok_or(InvalidInstruction)?;
-                    let (&decimals, _rest) = rest.split_first().ok_or(InvalidInstruction)?;
-
-                    Self::TransferChecked { amount, decimals }
-                }
-                13 => {
-                    let (amount, rest) = rest.split_at(8);
-                    let amount = amount
-                        .try_into()
-                        .ok()
-                        .map(u64::from_le_bytes)
-                        .ok_or(InvalidInstruction)?;
-                    let (&decimals, _rest) = rest.split_first().ok_or(InvalidInstruction)?;
-
-                    Self::ApproveChecked { amount, decimals }
-                }
-                14 => {
-                    let (amount, rest) = rest.split_at(8);
-                    let amount = amount
-                        .try_into()
-                        .ok()
-                        .map(u64::from_le_bytes)
-                        .ok_or(InvalidInstruction)?;
-                    let (&decimals, _rest) = rest.split_first().ok_or(InvalidInstruction)?;
-
-                    Self::MintToChecked { amount, decimals }
-                }
-                15 => {
-                    let (amount, rest) = rest.split_at(8);
-                    let amount = amount
-                        .try_into()
-                        .ok()
-                        .map(u64::from_le_bytes)
-                        .ok_or(InvalidInstruction)?;
-                    let (&decimals, _rest) = rest.split_first().ok_or(InvalidInstruction)?;
-
-                    Self::BurnChecked { amount, decimals }
+                    let rest = rest.get(8..).ok_or(InvalidInstruction)?;
+                    let (&decimals, remaining) = rest.split_first().ok_or(InvalidInstruction)?;
+                    let instruction = match tag {
+                        12 => Self::TransferChecked { amount, decimals },
+                        13 => Self::ApproveChecked { amount, decimals },
+                        14 => Self::MintToChecked { amount, decimals },
+                        15 => Self::BurnChecked { amount, decimals },
+                        _ => unreachable!(),
+                    };
+                    (instruction, remaining)
                 }
                 16 => {
-                    let (owner, _rest) = Self::unpack_pubkey(rest)?;
-                    Self::InitializeAccount2 { owner }
+                    let (owner, remaining) = Self::unpack_pubkey(rest)?;
+                    (Self::InitializeAccount2 { owner }, remaining)
                 }
-                17 => Self::SyncNative,
+                17 => (Self::SyncNative, rest),
                 18 => {
-                    let (owner, _rest) = Self::unpack_pubkey(rest)?;
-                    Self::InitializeAccount3 { owner }
+                    let (owner, remaining) = Self::unpack_pubkey(rest)?;
+                    (Self::InitializeAccount3 { owner }, remaining)
                 }
                 19 => {
-                    let &m = rest.get(0).ok_or(InvalidInstruction)?;
-                    Self::InitializeMultisig2 { m }
+                    let (&m, remaining) = rest.split_first().ok_or(InvalidInstruction)?;
+                    (Self::InitializeMultisig2 { m }, remaining)
                 }
                 20 => {
                     let (&decimals, rest) = rest.split_first().ok_or(InvalidInstruction)?;
                     let (mint_authority, rest) = Self::unpack_pubkey(rest)?;
-                    let (freeze_authority, _rest) = Self::unpack_pubkey_option(rest)?;
-                    Self::InitializeMint2 {
-                        mint_authority,
-                        freeze_authority,
-                        decimals,
-                    }
+                    let (freeze_authority, remaining) = Self::unpack_pubkey_option(rest)?;
+                    (
+                        Self::InitializeMint2 {
+                            mint_authority,
+                            freeze_authority,
+                            decimals,
+                        },
+                        remaining,
+                    )
                 }
                 _ => return Err(TokenError::InvalidInstruction.into()),
-            })
+            };
+
+            if !remaining.is_empty() {
+                return Err(InvalidInstruction.into());
+            }
+            Ok(instruction)
         }
 
         fn unpack_pubkey(input: &[u8]) -> Result<(Pubkey, &[u8]), ProgramError> {
@@ -576,6 +566,44 @@ pub mod instruction {
                     Ok((COption::Some(pk), rest))
                 }
                 _ => Err(TokenError::InvalidInstruction.into()),
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::TokenInstruction;
+
+        #[test]
+        fn checked_amount_instructions_reject_short_and_trailing_data() {
+            for tag in 12u8..=15 {
+                for payload_len in 0..8 {
+                    let mut data = vec![tag];
+                    data.extend(core::iter::repeat(0x11).take(payload_len));
+                    assert!(
+                        TokenInstruction::unpack(&data).is_err(),
+                        "tag={tag}, len={payload_len}"
+                    );
+                }
+
+                let mut valid = vec![tag];
+                valid.extend_from_slice(&1u64.to_le_bytes());
+                valid.push(6);
+                assert!(TokenInstruction::unpack(&valid).is_ok(), "tag={tag}");
+
+                valid.push(0xaa);
+                assert!(
+                    TokenInstruction::unpack(&valid).is_err(),
+                    "tag={tag} accepted trailing data"
+                );
+            }
+        }
+
+        #[test]
+        fn fixed_length_instructions_reject_trailing_data() {
+            for tag in [1u8, 5, 9, 10, 11, 17] {
+                assert!(TokenInstruction::unpack(&[tag]).is_ok(), "tag={tag}");
+                assert!(TokenInstruction::unpack(&[tag, 0xaa]).is_err(), "tag={tag}");
             }
         }
     }

@@ -6,6 +6,7 @@
 #include "gui_enter_passcode.h"
 #include "gui_lock_widgets.h"
 #include "gui_qr_code.h"
+#include <string.h>
 
 int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -99,12 +100,15 @@ int32_t GuiSettingViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case SIG_SETTING_CHANGE_PASSWORD_PASS:
         GuiChangePassWord(true);
         break;
-    case SIG_SETTING_CHANGE_PASSWORD_FAIL:
-        GuiChangePassWord(false);
-        if (param != NULL) {
-            GuiVerifyCurrentPasswordErrorCount(param);
+    case SIG_SETTING_CHANGE_PASSWORD_FAIL: {
+        if (param == NULL || usLen != sizeof(int32_t)) {
+            return ERR_GUI_ERROR;
         }
+        int32_t error;
+        memcpy_s(&error, sizeof(error), param, sizeof(error));
+        GuiChangePasswordFailed(error);
         break;
+    }
     case SIG_SETTING_ADD_WALLET_AMOUNT_LIMIT:
         GuiAddWalletAmountLimit();
         break;
@@ -156,4 +160,3 @@ GUI_VIEW g_settingView = {
     .optimization = false,
     .pEvtHandler = GuiSettingViewEventProcess,
 };
-

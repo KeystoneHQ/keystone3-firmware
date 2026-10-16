@@ -1309,7 +1309,7 @@ UREncodeResult *GuiGetCosmosSignQrCodeData(void)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);
-    UREncodeResult *encodeResult;
+    UREncodeResult *encodeResult = NULL;
     uint8_t seed[SEED_LEN];
     do {
         int ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());

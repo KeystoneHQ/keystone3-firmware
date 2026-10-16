@@ -73,23 +73,9 @@ static void GuiWriteSDCardHandler(lv_event_t *e)
     return;
 }
 
-static void GuiShowSDCardNotDetected()
+static void GuiShowSDCardNotDetected(void)
 {
-    g_noticeWindow = GuiCreateHintBox(356);
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
-
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("firmware_update_sd_failed_access_title"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
-
-    label = GuiCreateIllustrateLabel(g_noticeWindow, _("firmware_update_sd_failed_access_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
-
-    lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("OK"));
-    lv_obj_set_style_bg_color(btn, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_bg_opa(btn, LV_OPA_20, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
-    lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
+    g_noticeWindow = GuiCreateSdCardErrorHintBox(true, GuiCloseHintBoxHandler);
 }
 
 static void GuiShowSDCardExport()
@@ -140,22 +126,9 @@ static void GuiShowSDCardExportSuccess()
     lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
 }
 
-static void GuiShowSDCardExportFailed()
+static void GuiShowSDCardExportFailed(void)
 {
-    g_noticeWindow = GuiCreateHintBox(356);
-    lv_obj_t *img = GuiCreateImg(g_noticeWindow, &imgFailed);
-    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
-
-    lv_obj_t *label = GuiCreateLittleTitleLabel(g_noticeWindow, _("multisig_export_to_sdcard_failed"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
-
-    label = GuiCreateIllustrateLabel(g_noticeWindow, _("multisig_export_to_sdcard_failed_desc"));
-    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
-
-    lv_obj_t *btn = GuiCreateTextBtn(g_noticeWindow, _("OK"));
-    lv_obj_set_style_bg_color(btn, ORANGE_COLOR, LV_PART_MAIN);
-    lv_obj_align(btn, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
-    lv_obj_add_event_cb(btn, GuiCloseHintBoxHandler, LV_EVENT_CLICKED, NULL);
+    g_noticeWindow = GuiCreateSdCardErrorHintBox(false, GuiCloseHintBoxHandler);
 }
 
 void GuiMultisigWalletExportWidgetsInit(char *verifyCode, uint16_t len)
@@ -300,18 +273,29 @@ static void ModelGenerateAddress(char *address, uint32_t maxLen)
     strncpy_s(address, maxLen, result->data, strnlen_s(result->data, maxLen));
 }
 
-void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index)
+bool ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index)
 {
-    uint8_t mfp[4];
+    if (address == NULL || maxLen == 0) {
+        return false;
+    }
+    address[0] = '\0';
+    if (walletConfig == NULL) {
+        return false;
+    }
+    uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
     SimpleResponse_c_char *result = generate_address_for_multisig_wallet_config(walletConfig, 0, index, mfp, 4);
-    if (result->error_code != 0) {
-        printf("errorMessage: %s\r\n", result->error_message);
-        GuiCloseCurrentWorkingView();
-        return;
+    bool valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0' &&
+                 strnlen_s(result->data, maxLen) < maxLen;
+    if (valid) {
+        strcpy_s(address, maxLen, result->data);
+    } else if (result != NULL) {
+        printf("multisig address error: %s\r\n", result->error_message != NULL ? result->error_message : "unknown");
     }
-    strncpy_s(address, maxLen, result->data, strnlen_s(result->data, maxLen));
-    address[strnlen_s(result->data, maxLen)] = '\0';
+    if (result != NULL) {
+        free_simple_response_c_char(result);
+    }
+    return valid;
 }
 
 static void ImportMultisigGoToHomeViewHandler(lv_event_t *e)

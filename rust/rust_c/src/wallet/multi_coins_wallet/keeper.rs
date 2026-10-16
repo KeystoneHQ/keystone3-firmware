@@ -5,14 +5,14 @@ use crate::common::{
 };
 use crate::extract_array;
 use alloc::string::ToString;
-use app_wallets::tonkeeper::{generate_sync_ur, PathInfo};
+use app_wallets::keeper::{generate_sync_ur, PathInfo};
 use {
     hex,
     ur_registry::{crypto_hd_key::CryptoHDKey, error::URError, traits::RegistryItem},
 };
 
 #[no_mangle]
-pub unsafe extern "C" fn get_tonkeeper_wallet_ur(
+pub unsafe extern "C" fn get_keeper_wallet_ur(
     public_key: PtrString,
     wallet_name: PtrString,
 

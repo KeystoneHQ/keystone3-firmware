@@ -4,6 +4,7 @@
 #include "stdint.h"
 #include "stdbool.h"
 #include "stdlib.h"
+#include "diagnostic_location.h"
 
 typedef enum {
     SUCCESS_CODE = 0,
@@ -103,11 +104,10 @@ typedef struct  {
 
 const char *GetErrorMessage(Error_Code errCode);
 
-#define CHECK_ERRCODE_BREAK(content, ret)       {if (ret != SUCCESS_CODE) {printf("%s err,0x%X,line=%d\r\n", content, (unsigned int)ret, __LINE__); break; }}
-#define CHECK_ERRCODE_RETURN(ret)               {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return; }}
-#define CHECK_ERRCODE_RETURN_NULL(ret)          {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return NULL; }}
-#define CHECK_ERRCODE_RETURN_INT(ret)           {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); return ret; }}
-#define PRINT_ERRCODE(ret)                      {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), __LINE__); }}
+#define CHECK_ERRCODE_BREAK(content, ret)       {if (ret != SUCCESS_CODE) {printf("%s err,0x%X,line=%d\r\n", content, (unsigned int)ret, DIAGNOSTIC_LINE); break; }}
+#define CHECK_ERRCODE_RETURN(ret)               {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), DIAGNOSTIC_LINE); return; }}
+#define CHECK_ERRCODE_RETURN_NULL(ret)          {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), DIAGNOSTIC_LINE); return NULL; }}
+#define CHECK_ERRCODE_RETURN_INT(ret)           {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), DIAGNOSTIC_LINE); return ret; }}
+#define PRINT_ERRCODE(ret)                      {if (ret != SUCCESS_CODE) {printf("%s err,%s,line=%d\r\n", __func__, GetErrorMessage(ret), DIAGNOSTIC_LINE); }}
 
 #endif
-

@@ -74,29 +74,8 @@ void GuiSetStellarUrData(URParseResult *urResult, URParseMultiResult *urMultiRes
 
 UREncodeResult *GuiGetStellarSignQrCodeData(void)
 {
-    bool enable = IsPreviousLockScreenEnable();
-    SetLockScreen(false);
-    UREncodeResult *encodeResult = NULL;
-    uint8_t seed[64] = {0};
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    int ret = SUCCESS_CODE;
-    do {
-        ret = GetAccountSeed(GetCurrentAccountIndex(), seed, SecretCacheGetPassword());
-        if (ret != SUCCESS_CODE) {
-            break;
-        }
-        int len = GetMnemonicType() == MNEMONIC_TYPE_BIP39 ? sizeof(seed) : GetCurrentAccountEntropyLen();
-        encodeResult = stellar_sign(data, seed, len);
-        if (encodeResult == NULL) {
-            break;
-        }
-        CHECK_CHAIN_BREAK(encodeResult);
-    } while (0);
-    memset_s(seed, sizeof(seed), 0, sizeof(seed));
-    ClearSecretCache();
-    SetLockScreen(enable);
-    ASSERT(ret == SUCCESS_CODE);
-    return encodeResult;
+    return SignInternal(stellar_sign, data);
 }
 
 static void CreateStellarNoticeCOntainer(lv_obj_t *parent, const char *title, const char *context, lv_coord_t w, lv_coord_t h)

@@ -48,6 +48,9 @@ void PrintHeapInfo(void);
 #ifndef strcmp_s
 #define strcmp_s(s, slen, dest, result_p)   (*(result_p) = strcmp((s), (dest)), EOK)
 #endif
+#ifndef timingsafe_bcmp
+#define timingsafe_bcmp(p1, p2, n)          memcmp(p1, p2, n)
+#endif
 
 #ifndef EOK
 #define EOK                                 (0)
@@ -60,17 +63,18 @@ void PrintHeapInfo(void);
 #include "safe_str_lib.h"
 #include "safe_mem_lib.h"
 #include "safe_lib_errno.h"
-#define SRAM_MALLOC(size)           SramMallocTrack(size, __FILE__, __LINE__, __func__)
-#define SRAM_FREE(p)                SramFreeTrack(p, __FILE__, __LINE__, __func__)
-#define SRAM_REALLOC(p, size)       SramReallocTrack(p, size, __FILE__, __LINE__, __func__)
+#include "diagnostic_location.h"
+#define SRAM_MALLOC(size)           SramMallocTrack(size, DIAGNOSTIC_FILE, DIAGNOSTIC_LINE, __func__)
+#define SRAM_FREE(p)                SramFreeTrack(p, DIAGNOSTIC_FILE, DIAGNOSTIC_LINE, __func__)
+#define SRAM_REALLOC(p, size)       SramReallocTrack(p, size, DIAGNOSTIC_FILE, DIAGNOSTIC_LINE, __func__)
 #endif
 
 #ifdef COMPILE_SIMULATOR
 #define EXT_MALLOC(size)            malloc(size)
 #define EXT_FREE(p)                 free(p)
 #else
-#define EXT_MALLOC(size)            ExtMallocTrack(size, __FILE__, __LINE__, __func__)
-#define EXT_FREE(p)                 ExtFreeTrack(p, __FILE__, __LINE__, __func__)
+#define EXT_MALLOC(size)            ExtMallocTrack(size, DIAGNOSTIC_FILE, DIAGNOSTIC_LINE, __func__)
+#define EXT_FREE(p)                 ExtFreeTrack(p, DIAGNOSTIC_FILE, DIAGNOSTIC_LINE, __func__)
 #endif
 
 #endif

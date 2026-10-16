@@ -240,7 +240,12 @@ static void PassphraseQuickAccessHandler(lv_event_t *e)
     lv_obj_t *switchBox = g_passphraseQuickAccessSwitch;
     bool en = lv_obj_has_state(switchBox, LV_STATE_CHECKED);
     UpdatePassphraseQuickAccess(e);
-    SetPassphraseQuickAccess(!en);
+    int32_t ret = SetPassphraseQuickAccess(!en);
+    if (ret != SUCCESS_CODE) {
+        UpdatePassphraseQuickAccess(e);
+        ClearSecretCache();
+        ASSERT(false);
+    }
 }
 
 bool GuiPassphraseQuickAccess(void)

@@ -11,7 +11,8 @@ import tempfile
 
 from pathlib import Path
 
-g_font_size = 0
+SCRIPT_DIR = Path(__file__).resolve().parent
+FONT_DIR = SCRIPT_DIR.parent / "gui_assets" / "font"
 
 def update_font_properties(file_path, font_size, output_path=None):
     font_properties = {
@@ -74,29 +75,24 @@ def build_lv_font_conv_command(bpp, size, font, symbols, output_file):
     ]
 
 def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf --symbols ABCD --format xyz", font_size=None, language=None, unique_characters=None, label=None):
-    symbols = re.search(r"--symbols (.+?) --format", command_line).group(1)
-    options = {
-        'bpp': re.search(r"--bpp (\d+)", command_line).group(1),
-        'size': int(re.search(r"--size (\d+)", command_line).group(1)),
-        'font': re.search(r"--font ([\w-]+\.ttf)", command_line).group(1),
-        # Older generated files contain an unmatched quote plus padding spaces
-        # because the command used to be assembled through zsh.
-        'symbols': symbols.strip().strip('"')
-    }
+    match = re.search(r"--symbols (.*?) --format", command_line)
+    options = {'symbols': match.group(1).strip().strip('"') if match else None}
     
     if font_size in [20, 24]:
         bpp = 2
     elif font_size in [28, 36]:
         bpp = 1
 
-    output_file = (Path("../gui_assets/font") / language / label).resolve()
+    output_file = FONT_DIR / language / label
+    required_chars = set(unique_characters + " ")
     try:
         with open(output_file, 'r', encoding='utf-8') as generated_font:
-            has_space_glyph = '/* U+0020 " " */' in generated_font.read()
+            content = generated_font.read()
+            glyphs = {chr(int(code, 16)) for code in re.findall(r"/\* U\+([0-9A-Fa-f]+)", content)}
     except FileNotFoundError:
-        has_space_glyph = False
+        glyphs = set()
 
-    if options['symbols'] != unique_characters or not has_space_glyph:
+    if options['symbols'] != unique_characters or not required_chars.issubset(glyphs):
         font_mapping = {
             'cn': 'NotoSansSC-Regular.ttf',
             'ko': 'NotoSansKR-Regular.ttf',
@@ -116,7 +112,7 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
             build_command = build_lv_font_conv_command(
                 bpp,
                 font_size,
-                font_mapping[language],
+                str(SCRIPT_DIR / font_mapping[language]),
                 symbols_for_generation,
                 temp_output,
             )
@@ -125,6 +121,14 @@ def parse_command_line(command_line="cmd_tool --bpp 8 --size 12 --font Arial.ttf
                 raise RuntimeError(
                     f"lv_font_conv failed with exit code {cmd_result.returncode}"
                 )
+            generated = temp_output.read_text(encoding="utf-8")
+            generated_glyphs = {chr(int(code, 16)) for code in re.findall(r"/\* U\+([0-9A-Fa-f]+)", generated)}
+            missing = sorted(required_chars - generated_glyphs)
+            if missing:
+                codes = ", ".join(f"U+{ord(char):04X} {char!r}" for char in missing)
+                raise RuntimeError(f"{language} {font_size}px: source font lacks glyphs: {codes}")
+            generated = generated.replace(str(SCRIPT_DIR / font_mapping[language]), font_mapping[language])
+            temp_output.write_text(generated, encoding="utf-8")
             stable_output = f"../gui_assets/font/{language}/{label}"
             update_font_properties(temp_output, font_size, stable_output)
             shutil.copyfile(temp_output, output_file)
@@ -156,8 +160,9 @@ def extract_unique_characters(df, font_size, column):
 
 def main():
     for language in ['cn', 'ko', 'ru', 'es', 'de', 'ja']:
+        g_font_size = 0
         try:
-            with open('data.csv', newline='', encoding='utf-8') as csv_file:
+            with open(SCRIPT_DIR / 'data.csv', newline='', encoding='utf-8-sig') as csv_file:
                 df = list(csv.DictReader(csv_file))
             font_labels = {
                 20: f"{language}Illustrate",
@@ -169,7 +174,7 @@ def main():
                 g_font_size = font_size
                 unique_characters = extract_unique_characters(df, font_size, language)
                 label = font_labels.get(font_size, f"Unknown Font Size {font_size}")
-                source_file_path = Path("../gui_assets/font") / language / f"{label}.c"
+                source_file_path = FONT_DIR / language / f"{label}.c"
                 try:
                     with open(source_file_path, 'r', encoding='utf-8') as file:
                         lines = file.readlines()

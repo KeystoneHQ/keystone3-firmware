@@ -140,9 +140,9 @@ void GuiWebAuthAreaRefresh()
 {
     GuiWebAuthInitNVSBar();
     if (g_webAuthEntry == WEB_AUTH_ENTRY_SETUP) {
-        GuiSetSetupPhase(SETUP_PAHSE_WEB_AUTH);
+        GuiSetSetupPhase(SETUP_PHASE_WEB_AUTH);
         if (g_reboot) {
-            if (!GuiJudgeCurrentPahse(SETUP_PAHSE_WEB_AUTH)) {
+            if (!GuiJudgeCurrentPahse(SETUP_PHASE_WEB_AUTH)) {
                 GuiFrameOpenViewWithParam(&g_firmwareUpdateView, &g_firmwareWareEntry, sizeof(g_firmwareWareEntry));
             } else {
                 g_reboot = false;

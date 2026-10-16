@@ -503,7 +503,7 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
     imgArrow = GuiCreateImg(parent, &imgArrowRight);
     table[0].obj = label;
     table[1].obj = imgArrow;
-    button = GuiCreateButton(parent, 456, 84, table, 2, GuiShowKeyboardHandler, &walletSetting[1]);
+    button = GuiCreateButton(parent, 456, 84, table, 2, GuiChangePasswordNoticeHandler, &walletSetting[1]);
     if (GetIsTempAccount()) {
         lv_obj_add_flag(button, LV_OBJ_FLAG_HIDDEN);
         lv_obj_add_flag(line, LV_OBJ_FLAG_HIDDEN);

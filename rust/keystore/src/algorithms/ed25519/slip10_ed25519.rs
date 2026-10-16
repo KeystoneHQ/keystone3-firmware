@@ -6,14 +6,11 @@ use bitcoin::bip32::{ChildNumber, DerivationPath};
 use zeroize::Zeroize;
 
 use crate::algorithms::crypto::hmac_sha512;
-use crate::algorithms::utils::{is_all_zero_or_ff, normalize_path};
+use crate::algorithms::utils::{ensure_valid_seed, normalize_path};
 use crate::errors::{KeystoreError, Result};
 
 fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
-    if is_all_zero_or_ff(seed) {
-        return Err(KeystoreError::SeedError("invalid seed".to_string()));
-    }
-    Ok(())
+    ensure_valid_seed(seed)
 }
 
 /// Derives an Ed25519 private key from a seed using SLIP-10 derivation.

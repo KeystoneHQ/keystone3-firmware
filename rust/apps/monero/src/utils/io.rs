@@ -1,3 +1,4 @@
+use crate::errors::{MoneroError, Result};
 use crate::transfer::{
     AccountPublicAddress, OutputEntry, TxConstructionData, TxDestinationEntry, TxSourceEntry,
 };
@@ -6,70 +7,163 @@ use alloc::string::String;
 use alloc::vec;
 use alloc::vec::Vec;
 
-pub fn read_varinteger(data: &[u8], offset: &mut usize) -> u64 {
-    let mut value = 0u64;
-    *offset += decode_with_offset(data, *offset, &mut value);
+pub const MAX_REQUEST_BYTES: usize = 14 * 1024;
 
-    value
+pub const MAX_TXES: usize = 256;
+pub const MAX_SOURCES: usize = 4096;
+pub const MAX_RING_SIZE: usize = 4096;
+pub const MAX_DESTINATIONS: usize = 4096;
+pub const MAX_ADDITIONAL_KEYS: usize = 4096;
+pub const MAX_SELECTED_TRANSFERS: usize = 4096;
+pub const MAX_SUBADDR_INDICES: usize = 4096;
+pub const MAX_EXTRA_LEN: usize = MAX_REQUEST_BYTES;
+pub const MAX_ADDRESS_STRING: usize = 512;
+
+pub struct Reader<'a> {
+    data: &'a [u8],
+    offset: usize,
+}
+
+impl<'a> Reader<'a> {
+    pub fn new(data: &'a [u8]) -> Self {
+        Reader { data, offset: 0 }
+    }
+
+    pub fn offset(&self) -> usize {
+        self.offset
+    }
+
+    pub fn remaining(&self) -> usize {
+        self.data.len().saturating_sub(self.offset)
+    }
+
+    pub fn remaining_bytes(&self) -> &'a [u8] {
+        let start = self.offset.min(self.data.len());
+        &self.data[start..]
+    }
+
+    pub fn read_bytes(&mut self, len: usize) -> Result<&'a [u8]> {
+        let end = self
+            .offset
+            .checked_add(len)
+            .ok_or(MoneroError::FormatError)?;
+        if end > self.data.len() {
+            return Err(MoneroError::FormatError);
+        }
+        let out = &self.data[self.offset..end];
+        self.offset = end;
+        Ok(out)
+    }
+
+    pub fn read_u8(&mut self) -> Result<u8> {
+        Ok(self.read_bytes(1)?[0])
+    }
+
+    pub fn read_u32(&mut self) -> Result<u32> {
+        let bytes: [u8; 4] = self
+            .read_bytes(4)?
+            .try_into()
+            .map_err(|_| MoneroError::FormatError)?;
+        Ok(u32::from_le_bytes(bytes))
+    }
+
+    pub fn read_u64(&mut self) -> Result<u64> {
+        let bytes: [u8; 8] = self
+            .read_bytes(8)?
+            .try_into()
+            .map_err(|_| MoneroError::FormatError)?;
+        Ok(u64::from_le_bytes(bytes))
+    }
+
+    pub fn read_bool(&mut self) -> Result<bool> {
+        Ok(self.read_u8()? != 0)
+    }
+
+    pub fn read_array32(&mut self) -> Result<[u8; 32]> {
+        let bytes: [u8; 32] = self
+            .read_bytes(32)?
+            .try_into()
+            .map_err(|_| MoneroError::FormatError)?;
+        Ok(bytes)
+    }
+
+    pub fn read_varint(&mut self) -> Result<u64> {
+        let mut value = 0u64;
+        let mut shift = 0u32;
+
+        for _ in 0..10 {
+            let byte = self.read_u8()?;
+            let low = (byte & 0x7f) as u64;
+            if shift == 63 && low > 1 {
+                return Err(MoneroError::FormatError);
+            }
+            value |= low << shift;
+            if byte & 0x80 == 0 {
+                return Ok(value);
+            }
+            shift += 7;
+        }
+
+        Err(MoneroError::FormatError)
+    }
+
+    pub fn read_count(&mut self, max: usize) -> Result<usize> {
+        let value = self.read_varint()?;
+        if value > max as u64 {
+            return Err(MoneroError::FormatError);
+        }
+        let value = value as usize;
+        if value > self.remaining().saturating_add(1) {
+            return Err(MoneroError::FormatError);
+        }
+        Ok(value)
+    }
+
+    pub fn read_string(&mut self, max: usize) -> Result<String> {
+        let len = self.read_count(max)?;
+        let bytes = self.read_bytes(len)?;
+        String::from_utf8(bytes.to_vec()).map_err(|_| MoneroError::FormatError)
+    }
+
+    pub fn read_vec_u8(&mut self, max: usize) -> Result<Vec<u8>> {
+        let len = self.read_count(max)?;
+        Ok(self.read_bytes(len)?.to_vec())
+    }
+
+    pub fn read_vec_array32(&mut self, max: usize) -> Result<Vec<[u8; 32]>> {
+        let len = self.read_count(max)?;
+        let mut res = Vec::with_capacity(len.min(64));
+        for _ in 0..len {
+            res.push(self.read_array32()?);
+        }
+        Ok(res)
+    }
+
+    pub fn read_tx_destination_entry(&mut self) -> Result<TxDestinationEntry> {
+        let original = self.read_string(MAX_ADDRESS_STRING)?;
+        let amount = self.read_varint()?;
+        let spend_public_key = self.read_array32()?;
+        let view_public_key = self.read_array32()?;
+        let is_subaddress = self.read_bool()?;
+        let is_integrated = self.read_bool()?;
+
+        Ok(TxDestinationEntry {
+            original,
+            amount,
+            addr: AccountPublicAddress {
+                spend_public_key,
+                view_public_key,
+            },
+            is_subaddress,
+            is_integrated,
+        })
+    }
 }
 
 pub fn write_varinteger(value: u64) -> Vec<u8> {
     let mut buffer = vec![0u8; length(value)];
     encode_with_offset(value, &mut buffer, 0);
     buffer
-}
-
-pub fn read_next_u8(bytes: &[u8], offset: &mut usize) -> u8 {
-    let value = u8::from_le_bytes(bytes[*offset..*offset + 1].try_into().unwrap());
-    *offset += 1;
-    value
-}
-
-pub fn read_next_u32(bytes: &[u8], offset: &mut usize) -> u32 {
-    let value = u32::from_le_bytes(bytes[*offset..*offset + 4].try_into().unwrap());
-    *offset += 4;
-    value
-}
-
-pub fn read_next_u64(bytes: &[u8], offset: &mut usize) -> u64 {
-    let value = u64::from_le_bytes(bytes[*offset..*offset + 8].try_into().unwrap());
-    *offset += 8;
-    value
-}
-
-pub fn read_next_bool(bytes: &[u8], offset: &mut usize) -> bool {
-    read_next_u8(bytes, offset) != 0
-}
-
-pub fn read_next_vec_u8(bytes: &[u8], offset: &mut usize, len: usize) -> Vec<u8> {
-    let value = bytes[*offset..*offset + len].to_vec();
-    *offset += len;
-    value
-}
-
-pub fn read_next_tx_destination_entry(bytes: &[u8], offset: &mut usize) -> TxDestinationEntry {
-    let original_len = read_varinteger(bytes, offset) as usize;
-    let original = String::from_utf8(bytes[*offset..*offset + original_len].to_vec()).unwrap();
-    *offset += original_len;
-    let amount = read_varinteger(bytes, offset);
-    let mut spend_public_key = [0u8; 32];
-    spend_public_key.copy_from_slice(&bytes[*offset..*offset + 32]);
-    *offset += 32;
-    let mut view_public_key = [0u8; 32];
-    view_public_key.copy_from_slice(&bytes[*offset..*offset + 32]);
-    *offset += 32;
-    let is_subaddress = read_next_bool(bytes, offset);
-    let is_integrated = read_next_bool(bytes, offset);
-    TxDestinationEntry {
-        original,
-        amount,
-        addr: AccountPublicAddress {
-            spend_public_key,
-            view_public_key,
-        },
-        is_subaddress,
-        is_integrated,
-    }
 }
 
 pub fn write_tx_destination_entry(entry: &TxDestinationEntry) -> Vec<u8> {
@@ -165,54 +259,86 @@ pub fn read_next_u8_32(bytes: &[u8], offset: &mut usize) -> [u8; 32] {
 mod tests {
     use super::*;
 
+    fn encoded_destination() -> Vec<u8> {
+        let spend = [0x11u8; 32];
+        let view = [0x22u8; 32];
+        let mut bytes = write_varinteger(6);
+        bytes.extend_from_slice(b"48A1-t");
+        bytes.extend_from_slice(&write_varinteger(12_345));
+        bytes.extend_from_slice(&spend);
+        bytes.extend_from_slice(&view);
+        bytes.push(1);
+        bytes.push(0);
+        bytes
+    }
+
     #[test]
-    fn primitive_readers_advance_the_offset() {
+    fn primitives_read_and_advance_the_offset() {
         let mut bytes = vec![0x7F];
         bytes.extend_from_slice(&0x1234_5678u32.to_le_bytes());
         bytes.extend_from_slice(&0x0123_4567_89AB_CDEFu64.to_le_bytes());
         bytes.push(1);
-        bytes.extend_from_slice(&[9, 8, 7]);
         bytes.extend_from_slice(&[0xAA; 32]);
 
-        let mut offset = 0;
-        assert_eq!(read_next_u8(&bytes, &mut offset), 0x7F);
-        assert_eq!(read_next_u32(&bytes, &mut offset), 0x1234_5678);
-        assert_eq!(read_next_u64(&bytes, &mut offset), 0x0123_4567_89AB_CDEF);
-        assert!(read_next_bool(&bytes, &mut offset));
-        assert_eq!(read_next_vec_u8(&bytes, &mut offset, 3), vec![9, 8, 7]);
-        assert_eq!(read_next_u8_32(&bytes, &mut offset), [0xAA; 32]);
-        assert_eq!(offset, bytes.len());
+        let mut reader = Reader::new(&bytes);
+        assert_eq!(reader.read_u8().unwrap(), 0x7F);
+        assert_eq!(reader.read_u32().unwrap(), 0x1234_5678);
+        assert_eq!(reader.read_u64().unwrap(), 0x0123_4567_89AB_CDEF);
+        assert!(reader.read_bool().unwrap());
+        assert_eq!(reader.read_array32().unwrap(), [0xAA; 32]);
+        assert_eq!(reader.offset(), bytes.len());
+        assert_eq!(reader.remaining(), 0);
     }
 
     #[test]
     fn varinteger_roundtrip_updates_the_offset() {
         for value in [0, 127, 128, 16_384, u32::MAX as u64, u64::MAX] {
             let encoded = write_varinteger(value);
-            let mut offset = 0;
-
-            assert_eq!(read_varinteger(&encoded, &mut offset), value);
-            assert_eq!(offset, encoded.len());
+            let mut reader = Reader::new(&encoded);
+            assert_eq!(reader.read_varint().unwrap(), value);
+            assert_eq!(reader.offset(), encoded.len());
         }
     }
 
     #[test]
     fn destination_entry_roundtrip() {
-        let entry = TxDestinationEntry {
-            original: String::from("48A1-test-address"),
-            amount: 12_345_678_901,
-            addr: AccountPublicAddress {
-                spend_public_key: [0x11; 32],
-                view_public_key: [0x22; 32],
-            },
-            is_subaddress: true,
-            is_integrated: false,
-        };
+        let encoded = encoded_destination();
+        let mut reader = Reader::new(&encoded);
+        let decoded = reader.read_tx_destination_entry().unwrap();
 
-        let encoded = write_tx_destination_entry(&entry);
-        let mut offset = 0;
-        let decoded = read_next_tx_destination_entry(&encoded, &mut offset);
+        assert_eq!(decoded.original, "48A1-t");
+        assert_eq!(decoded.amount, 12_345);
+        assert_eq!(decoded.addr.spend_public_key, [0x11u8; 32]);
+        assert_eq!(decoded.addr.view_public_key, [0x22u8; 32]);
+        assert!(decoded.is_subaddress);
+        assert!(!decoded.is_integrated);
+        assert_eq!(reader.offset(), encoded.len());
+    }
 
-        assert_eq!(decoded, entry);
-        assert_eq!(offset, encoded.len());
+    #[test]
+    fn truncated_reads_return_an_error_instead_of_panicking() {
+        let mut reader = Reader::new(&[0x80]);
+        assert!(reader.read_varint().is_err());
+
+        let mut reader = Reader::new(&[0u8; 4]);
+        assert!(reader.read_array32().is_err());
+
+        let mut reader = Reader::new(&[0xff, 0xff, 0xff, 0xff, 0x0f]);
+        assert!(reader.read_count(MAX_SOURCES).is_err());
+
+        let mut reader = Reader::new(&[0x80, 0x80, 0x80, 0x80, 0x08]);
+        assert!(reader.read_count(16).is_err());
+
+        let mut bytes = write_varinteger(1);
+        bytes.push(0xFF);
+        let mut reader = Reader::new(&bytes);
+        assert!(reader.read_tx_destination_entry().is_err());
+    }
+
+    #[test]
+    fn oversized_varints_are_rejected() {
+        let bytes = [0xFFu8; 10];
+        let mut reader = Reader::new(&bytes);
+        assert!(reader.read_varint().is_err());
     }
 }

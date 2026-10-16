@@ -3,7 +3,6 @@ use crate::key_images::Keyimage;
 use crate::transfer::{TxConstructionData, TxDestinationEntry};
 use crate::utils::io::*;
 use alloc::{string::String, vec, vec::Vec};
-use curve25519_dalek::Scalar;
 use monero_serai::transaction::{NotPruned, Transaction};
 
 #[derive(Debug, Clone)]
@@ -83,6 +82,14 @@ impl SignedTxSet {
     }
 }
 
+pub(crate) fn write_selected_transfers(transfers: &[usize]) -> Vec<u8> {
+    let mut res = write_varinteger(transfers.len() as u64);
+    for transfer in transfers {
+        res.extend_from_slice(&write_varinteger(*transfer as u64));
+    }
+    res
+}
+
 impl SignedTxSet {
     pub fn serialize(&self) -> Vec<u8> {
         let signed_tx_set = self;
@@ -99,22 +106,17 @@ impl SignedTxSet {
             res.extend_from_slice(&ptx.fee.to_le_bytes());
             res.push(ptx.dust_added_to_fee as u8);
             res.extend_from_slice(&write_tx_destination_entry(&ptx.change_dts));
-            res.extend_from_slice(write_varinteger(ptx.selected_transfers.len() as u64).as_slice());
-            for transfer in ptx.selected_transfers {
-                res.push(transfer as u8);
-            }
+            res.extend_from_slice(&write_selected_transfers(&ptx.selected_transfers));
             let key_images_bytes = ptx.key_images.as_bytes();
             res.extend_from_slice(write_varinteger(key_images_bytes.len() as u64).as_slice());
             if !key_images_bytes.is_empty() {
                 // res.push(0x01);
                 res.extend_from_slice(key_images_bytes);
             }
-            // tx_key ZERO
-            res.extend_from_slice(&Scalar::ONE.to_bytes());
-            res.extend_from_slice(write_varinteger(ptx.additional_tx_keys.len() as u64).as_slice());
-            for key in ptx.additional_tx_keys {
-                res.extend_from_slice(&key.to_bytes());
-            }
+            let mut placeholder = [0u8; 32];
+            placeholder[0] = 1;
+            res.extend_from_slice(&placeholder);
+            res.extend_from_slice(&write_varinteger(0));
             res.extend_from_slice(write_varinteger(ptx.dests.len() as u64).as_slice());
             for dest in ptx.dests {
                 res.extend_from_slice(&write_tx_destination_entry(&dest));

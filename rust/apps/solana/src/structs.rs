@@ -7,10 +7,16 @@ pub struct SolanaMessage {
     pub raw_message: String,
     pub utf8_message: String,
     pub from: String,
+    pub message_length: usize,
 }
 
 impl SolanaMessage {
-    pub fn from(raw_message: String, utf8_message: String, from: &String) -> Result<Self> {
+    pub fn from(
+        raw_message: String,
+        utf8_message: String,
+        from: &String,
+        message_length: usize,
+    ) -> Result<Self> {
         let from_address = if from.is_empty() {
             "".to_string()
         } else {
@@ -20,6 +26,7 @@ impl SolanaMessage {
             raw_message,
             utf8_message,
             from: from_address,
+            message_length,
         })
     }
 }

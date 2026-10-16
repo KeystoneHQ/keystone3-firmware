@@ -49,14 +49,35 @@ pub fn sign_psbt(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Vec
     sign_psbt_no_serialize(psbt_hex, seed, mfp).map(|v| v.serialize())
 }
 
+pub fn sign_psbt_extend(
+    psbt: Vec<u8>,
+    seed: &[u8],
+    mfp: Fingerprint,
+    coin_id: Option<i128>,
+) -> Result<Vec<u8>> {
+    if coin_id == Some(5) {
+        return transactions::psbt::dash::sign(&psbt, seed, mfp);
+    }
+    let decoded = decode_psbt_extend(&psbt, coin_id)?;
+    transactions::psbt::extend::validate(&decoded, coin_id)?;
+    if coin_id == Some(145) {
+        return transactions::psbt::bch::sign(&psbt, seed, mfp);
+    }
+    sign_psbt(psbt, seed, mfp)
+}
+
 pub fn sign_psbt_no_serialize(psbt_hex: Vec<u8>, seed: &[u8], mfp: Fingerprint) -> Result<Psbt> {
-    let psbt = deserialize_psbt(psbt_hex)?;
+    let psbt =
+        Psbt::deserialize(&psbt_hex).map_err(|e| BitcoinError::InvalidPsbt(e.to_string()))?;
     let mut wpsbt = WrappedPsbt { psbt };
     wpsbt.sign(seed, mfp)
 }
 
 pub fn parse_psbt_hex_sign_status(psbt: &[u8]) -> Result<PsbtSignStatus> {
-    let psbt = deserialize_psbt(psbt.to_vec())?;
+    let psbt = match deserialize_psbt(psbt.to_vec()) {
+        Ok(decoded) => decoded,
+        Err(error) => return transactions::psbt::dash::sign_status(psbt).map_err(|_| error),
+    };
     let wpsbt = WrappedPsbt { psbt };
     Ok(PsbtSignStatus {
         sign_status: wpsbt.get_overall_sign_status(),
@@ -87,6 +108,41 @@ pub fn sign_msg(msg: &str, seed: &[u8], path: &String) -> Result<Vec<u8>> {
                 .serialize()
                 .to_vec()
         })
+}
+
+fn decode_psbt_extend(bytes: &[u8], coin_id: Option<i128>) -> Result<Psbt> {
+    transactions::psbt::extend::network_for_coin(coin_id)?;
+    if coin_id == Some(145) {
+        return transactions::psbt::bch::deserialize(bytes);
+    }
+    Psbt::deserialize(bytes).map_err(|e| BitcoinError::InvalidPsbt(e.to_string()))
+}
+
+pub fn parse_psbt_extend(
+    bytes: Vec<u8>,
+    context: ParseContext,
+    coin_id: Option<i128>,
+) -> Result<ParsedTx> {
+    if coin_id == Some(5) {
+        return transactions::psbt::dash::parse(&bytes, &context);
+    }
+    let psbt = decode_psbt_extend(&bytes, coin_id)?;
+    let network = transactions::psbt::extend::validate(&psbt, coin_id)?;
+    let wrapper = WrappedPsbt { psbt };
+    wrapper.parse_in_network(Some(&context), network, false)
+}
+
+pub fn check_psbt_extend(
+    bytes: Vec<u8>,
+    context: ParseContext,
+    coin_id: Option<i128>,
+) -> Result<()> {
+    if coin_id == Some(5) {
+        return transactions::psbt::dash::check(&bytes, &context);
+    }
+    let psbt = decode_psbt_extend(&bytes, coin_id)?;
+    transactions::psbt::extend::validate(&psbt, coin_id)?;
+    WrappedPsbt { psbt }.check(Left(&context))
 }
 
 pub fn parse_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<ParsedTx> {
@@ -125,7 +181,23 @@ pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) ->
 }
 
 fn deserialize_psbt(psbt_hex: Vec<u8>) -> Result<Psbt> {
-    Psbt::deserialize(&psbt_hex).map_err(|e| BitcoinError::InvalidPsbt(e.to_string()))
+    match Psbt::deserialize(&psbt_hex) {
+        Ok(psbt) => Ok(psbt),
+        Err(error) => {
+            if let Ok(psbt) = transactions::psbt::bch::deserialize(&psbt_hex) {
+                let has_key_origin = !psbt.xpub.is_empty()
+                    || psbt
+                        .inputs
+                        .iter()
+                        .any(|input| !input.bip32_derivation.is_empty());
+                if has_key_origin && transactions::psbt::extend::validate(&psbt, Some(145)).is_ok()
+                {
+                    return Ok(psbt);
+                }
+            }
+            Err(BitcoinError::InvalidPsbt(error.to_string()))
+        }
+    }
 }
 
 #[cfg(test)]

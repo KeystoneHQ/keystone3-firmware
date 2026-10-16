@@ -872,7 +872,7 @@ impl WrappedPsbt {
             ChildNumber::Hardened { index: _i } => match _i {
                 44 => match path.index(1) {
                     ChildNumber::Hardened { index: _i } => match _i {
-                        0 | 3 => Ok(Some(
+                        0 | 3 | 5 | 145 => Ok(Some(
                             Address::p2pkh(&bitcoin::PublicKey::new(*pubkey), network.clone())?
                                 .to_string(),
                         )),
@@ -950,6 +950,7 @@ impl WrappedPsbt {
     ) -> Result<String> {
         match Address::from_script(&tx_out.script_pubkey, network.clone()) {
             Ok(address) => Ok(address.to_string()),
+            Err(_) if tx_out.script_pubkey.is_empty() => Ok("(empty script)".to_string()),
             Err(_) => Ok(tx_out.script_pubkey.to_string()),
         }
     }
@@ -1414,6 +1415,167 @@ mod tests {
             SecretKey::from_str("0000000000000000000000000000000000000000000000000000000000000001")
                 .unwrap();
         secp256k1::PublicKey::from_secret_key(&Secp256k1::new(), &sk)
+    }
+
+    #[test]
+    fn test_psbt_extend_supported_single_sig_scripts() {
+        for (coin, purpose, network) in [
+            (2, 49, network::Network::Litecoin),
+            (2, 84, network::Network::Litecoin),
+            (5, 44, network::Network::Dash),
+            (145, 44, network::Network::BitcoinCash),
+            (3, 44, network::Network::Dogecoin),
+        ] {
+            let public_key = bitcoin::PublicKey::new(dummy_pubkey());
+            let witness_script = ScriptBuf::new_p2wpkh(&public_key.wpubkey_hash().unwrap());
+            let script_pubkey = match purpose {
+                44 => ScriptBuf::new_p2pkh(&public_key.pubkey_hash()),
+                49 => ScriptBuf::new_p2sh(&witness_script.script_hash()),
+                84 => witness_script.clone(),
+                _ => unreachable!(),
+            };
+            let expected = Address::from_script(&script_pubkey, network)
+                .unwrap()
+                .to_string();
+            let mut previous_tx = empty_psbt().unsigned_tx;
+            previous_tx.output.push(TxOut {
+                value: bitcoin::Amount::from_sat(100_000),
+                script_pubkey: script_pubkey.clone(),
+            });
+            let mut unsigned_tx = empty_psbt().unsigned_tx;
+            unsigned_tx.input.push(bitcoin::TxIn {
+                previous_output: bitcoin::OutPoint::new(previous_tx.compute_txid(), 0),
+                ..Default::default()
+            });
+            unsigned_tx.output.push(TxOut {
+                value: bitcoin::Amount::from_sat(99_000),
+                script_pubkey,
+            });
+            let mut psbt = Psbt::from_unsigned_tx(unsigned_tx).unwrap();
+            psbt.inputs[0].non_witness_utxo = Some(previous_tx);
+            if purpose == 49 {
+                psbt.inputs[0].redeem_script = Some(witness_script);
+            }
+            let path = format!("m/{purpose}'/{coin}'/0'/0/0");
+            psbt.inputs[0].bip32_derivation.insert(
+                public_key.inner,
+                (
+                    Fingerprint::from_str("73c5da0a").unwrap(),
+                    DerivationPath::from_str(&path).unwrap(),
+                ),
+            );
+            let context = ParseContext::new(Fingerprint::default(), BTreeMap::new(), None, None);
+            let parsed = WrappedPsbt { psbt }.parse(Some(&context)).unwrap();
+            assert_eq!(
+                parsed.overview.from,
+                alloc::vec![expected.clone()],
+                "{path}"
+            );
+            assert_eq!(
+                parsed.detail.from[0].address.as_ref(),
+                Some(&expected),
+                "{path}"
+            );
+            assert_eq!(parsed.overview.to[0].address, expected, "{path}");
+            assert_eq!(parsed.detail.to[0].address, expected, "{path}");
+        }
+    }
+
+    #[test]
+    fn test_psbt_extend_script_hash_outputs() {
+        let wrapper = WrappedPsbt { psbt: empty_psbt() };
+        let redeem_script = bitcoin::script::Builder::new()
+            .push_int(1)
+            .push_key(&bitcoin::PublicKey::new(dummy_pubkey()))
+            .push_int(1)
+            .push_opcode(bitcoin::opcodes::all::OP_CHECKMULTISIG)
+            .into_script();
+        for network in [
+            network::Network::Litecoin,
+            network::Network::Dash,
+            network::Network::BitcoinCash,
+            network::Network::Dogecoin,
+        ] {
+            let script = ScriptBuf::new_p2sh(&redeem_script.script_hash());
+            let expected = Address::from_script(&script, network.clone())
+                .unwrap()
+                .to_string();
+            let output = TxOut {
+                value: bitcoin::Amount::from_sat(1000),
+                script_pubkey: script,
+            };
+            assert_eq!(
+                wrapper
+                    .calculate_address_for_output(&output, &network)
+                    .unwrap(),
+                expected
+            );
+            assert_eq!(
+                Address::from_str(&expected).unwrap().script_pubkey(),
+                output.script_pubkey
+            );
+        }
+        let script = ScriptBuf::new_p2wsh(&redeem_script.wscript_hash());
+        let output = TxOut {
+            value: bitcoin::Amount::from_sat(1000),
+            script_pubkey: script,
+        };
+        let address = wrapper
+            .calculate_address_for_output(&output, &network::Network::Litecoin)
+            .unwrap();
+        assert!(address.starts_with("ltc1q"));
+        assert_eq!(
+            Address::from_str(&address).unwrap().script_pubkey(),
+            output.script_pubkey
+        );
+    }
+
+    fn assert_demo_from_address(psbt_hex: &str, account_path: &str) {
+        let psbt = Psbt::deserialize(&hex::decode(psbt_hex).unwrap()).unwrap();
+        let wrapper = WrappedPsbt { psbt };
+        let network = wrapper.determine_network().unwrap();
+        let previous_output = &wrapper.psbt.inputs[0]
+            .non_witness_utxo
+            .as_ref()
+            .unwrap()
+            .output[wrapper.psbt.unsigned_tx.input[0].previous_output.vout as usize];
+        let expected = Address::from_script(&previous_output.script_pubkey, network)
+            .unwrap()
+            .to_string();
+        let seed = hex::decode("5eb00bbddcf069084889a8ab9155568165f5c453ccb85e70811aaed6f6da5fc19a5ac40b389cd370d086206dec8aa6c43daea6690f20ad3d8d48b2d2ce9e38e4").unwrap();
+        let account_xpub = keystore::algorithms::secp256k1::get_extended_public_key_by_seed(
+            &seed,
+            &account_path.to_string(),
+        )
+        .unwrap();
+        let context = ParseContext::new(
+            Fingerprint::from_str("73c5da0a").unwrap(),
+            BTreeMap::from([(
+                DerivationPath::from_str(account_path).unwrap(),
+                account_xpub,
+            )]),
+            None,
+            None,
+        );
+        let parsed = wrapper.parse(Some(&context)).unwrap();
+        assert_eq!(parsed.overview.from, alloc::vec![expected.clone()]);
+        assert_eq!(parsed.detail.from[0].address.as_ref(), Some(&expected));
+    }
+
+    #[test]
+    fn test_bch_demo_from_address() {
+        assert_demo_from_address(
+            "70736274ff0100770100000001df92cf31d578229fa876e7bf2f5696798f4d18d28e0066010e67feb6f5fb00b90000000000ffffffff02005a6202000000001976a9144f04b6e897c1a3dfe2b74bfc40cbc4d9c64daf3088ac18839303000000001976a914cfdcdfa3e0483ddd3c7b6ab6ee13c5087c26d5f188ac0000000000010057010000000153ef901d37f8bfee6f9453ff7b8dc3e0672ee715498dae97db9dca73261f9a3300000000020101ffffffff0100e1f505000000001976a914086a977c7dad32a56996af2ce90a727238d4899888ac0000000001030441000000220602bbe7dbcdf8b2261530a867df7180b17a90b482f74f2736b8a30d3f756e42e2171873c5da0a2c000080910000800000008000000000000000000000220202f178b9410d11e47e10bef8a8e4bc53e48d9ae15864a024a54f87a802dad5f5141873c5da0a2c0000809100008000000080010000000000000000",
+            "m/44'/145'/0'",
+        );
+    }
+
+    #[test]
+    fn test_dash_demo_from_address() {
+        assert_demo_from_address(
+            "70736274ff010077010000000102754c72a9069560e14bf2faa47998f4442149e798cff5f8c953e7d92ab219d20000000000ffffffff02005a6202000000001976a9140a38ec3f3cc4c169c295ddb037c31c63bf2fa39188acf05f9303000000001976a914265a7d4ef63d643548a599c8fa53a0d9ef3fdca488ac0000000000010057010000000105d94a72185cf340264af0461c176c985bf0d55fef0026c94447f723ec03f90600000000020101ffffffff0100e1f505000000001976a9148a4f58c222cd5544c527bc66925652baa70b5e8088ac00000000010304010000002206026fa9a6f213b6ba86447965f6b4821264aaadd7521f049f00db9c43a770ea74051873c5da0a2c000080050000800000008000000000000000000000220202bd7b0ae9a8a0e67f82891d92545433e1b37074ab0bf5867b977f8c70b00f28671873c5da0a2c0000800500008000000080010000000000000000",
+            "m/44'/5'/0'",
+        );
     }
 
     #[test]

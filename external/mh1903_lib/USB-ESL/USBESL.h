@@ -31,10 +31,11 @@ extern "C" {
 
 /* Common Macro Start                                                         */
 #if CONFIG_DEBUG
+#include "diagnostic_location.h"
 #define printf_dbg(...) printf(__VA_ARGS__)
 #define util_assert(expression)                              \
     if (!(expression)) {                                     \
-        printf_dbg("Asserted %s, %d\n", __FILE__, __LINE__); \
+        printf_dbg("Asserted %s, %d\n", DIAGNOSTIC_FILE, DIAGNOSTIC_LINE); \
         volatile uint32_t assertTimeout = 0x80000000;        \
         while (assertTimeout--) {}                           \
     }

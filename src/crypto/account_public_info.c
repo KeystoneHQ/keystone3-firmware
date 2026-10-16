@@ -11,6 +11,7 @@
 #include "account_public_info.h"
 #include "account_manager.h"
 #include "se_manager.h"
+#include "se_interface.h"
 #include "user_utils.h"
 #include "librust_c.h"
 #include "assert.h"
@@ -862,6 +863,36 @@ int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
     return ret;
 }
 
+static int32_t VerifySeedMasterFingerprint(const uint8_t *seed, int seedLen)
+{
+    if (GetMnemonicType() == MNEMONIC_TYPE_TON) {
+        return SUCCESS_CODE;
+    }
+    uint8_t expected[4] = {0};
+    uint8_t actual[4] = {0};
+    GetMasterFingerPrint(expected);
+    SimpleResponse_u8 *response = get_master_fingerprint((PtrBytes)seed, (uint32_t)seedLen);
+    bool responseOk = response != NULL && response->error_code == 0 && response->data != NULL;
+    if (responseOk) {
+        memcpy_s(actual, sizeof(actual), response->data, sizeof(actual));
+    }
+    if (response != NULL) {
+        free_simple_response_u8(response);
+    }
+    if (!responseOk || timingsafe_bcmp(actual, expected, sizeof(expected)) != 0) {
+        printf("seed master fingerprint mismatch\r\n");
+#ifdef COMPILE_SIMULATOR
+        printf("simulator: recorded mfp=%02x%02x%02x%02x, seed mfp=%02x%02x%02x%02x, continuing\r\n",
+               expected[0], expected[1], expected[2], expected[3],
+               actual[0], actual[1], actual[2], actual[3]);
+        return SUCCESS_CODE;
+#else
+        return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
+#endif
+    }
+    return SUCCESS_CODE;
+}
+
 int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, uint32_t addr)
 {
     uint8_t entropyLen = 0;
@@ -887,6 +918,8 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
         FreePublicKeyRam();
         ret = GetAccountSeed(accountIndex, seed, password);
         CHECK_ERRCODE_BREAK("get seed", ret);
+        ret = VerifySeedMasterFingerprint(seed, seedLen);
+        CHECK_ERRCODE_BREAK("verify seed fingerprint", ret);
         ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
         CHECK_ERRCODE_BREAK("get entropy", ret);
         if (isBip39) {
@@ -1033,6 +1066,10 @@ int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool
 
     if (regeneratePubKey) {
         ret = AccountPublicSavePublicInfo(accountIndex, password, addr);
+        if (ret != SUCCESS_CODE) {
+            FreePublicKeyRam();
+            return ret;
+        }
     }
 
 #ifdef BTC_ONLY
@@ -1318,6 +1355,8 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
             FreePublicKeyRam();
             ret = GetAccountSeed(accountIndex, seed, password);
             CHECK_ERRCODE_BREAK("get temp account seed", ret);
+            ret = VerifySeedMasterFingerprint(seed, seedLen);
+            CHECK_ERRCODE_BREAK("verify temp account seed fingerprint", ret);
             ret = GetAccountEntropy(accountIndex, entropy, &entropyLen, password);
             CHECK_ERRCODE_BREAK("get temp account entropy", ret);
 
@@ -1447,7 +1486,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     return ret;
 }
 
-static int32_t DeleteAccountPublicInfoFlash(uint8_t accountIndex)
+int32_t DeleteAccountPublicInfoFlash(uint8_t accountIndex)
 {
     if (accountIndex >= 3) {
         return ERR_GENERAL_FAIL;
@@ -1565,6 +1604,69 @@ uint8_t SpecifiedXPubExist(const char *value)
     }
 
     return accountIndex;
+}
+
+int32_t FindAccountByXpub(const char *value, uint8_t *accountIndex)
+{
+    if (value == NULL || accountIndex == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    *accountIndex = INVALID_ACCOUNT_INDEX;
+    for (uint8_t index = 0; index < 3; index++) {
+        uint8_t iv[32] = {0};
+        int32_t ret = SE_HmacEncryptRead(iv, index * PAGE_NUM_PER_ACCOUNT + PAGE_INDEX_IV);
+        bool exists = CheckEntropy(iv, sizeof(iv));
+        CLEAR_ARRAY(iv);
+        if (ret != SUCCESS_CODE) {
+            return ret;
+        }
+        if (!exists) {
+            continue;
+        }
+
+        uint32_t size = 0;
+        uint32_t addr = SPI_FLASH_ADDR_USER1_DATA + index * SPI_FLASH_ADDR_EACH_SIZE;
+        if (Gd25FlashReadBuffer(addr, (uint8_t *)&size, sizeof(size)) != sizeof(size) ||
+                size == 0 || size > SPI_FLASH_SIZE_USER1_DATA - 4) {
+            return ERR_GENERAL_FAIL;
+        }
+        char *json = SRAM_MALLOC(size + 1);
+        if (json == NULL) {
+            return ERR_GENERAL_FAIL;
+        }
+        cJSON *root = NULL;
+        bool matched = false;
+        ret = ERR_GENERAL_FAIL;
+        if (Gd25FlashReadBuffer(addr + 4, (uint8_t *)json, size) == size) {
+            uint8_t hash[32];
+            sha256((struct sha256 *)hash, json, size);
+            bool valid = VerifyWalletDataHash(index, hash);
+            CLEAR_ARRAY(hash);
+            if (!valid) {
+                SRAM_FREE(json);
+                return ERR_KEYSTORE_EXTEND_PUBLIC_KEY_NOT_MATCH;
+            }
+            json[size] = '\0';
+            root = cJSON_Parse(json);
+            cJSON *key = cJSON_GetObjectItem(root, "key");
+            cJSON *chain = cJSON_GetObjectItem(key, g_chainTable[0].name);
+            cJSON *xpub = cJSON_GetObjectItem(chain, "value");
+            if (cJSON_IsString(xpub) && xpub->valuestring != NULL && xpub->valuestring[0] != '\0') {
+                matched = strcmp(value, xpub->valuestring) == 0;
+                ret = SUCCESS_CODE;
+            }
+        }
+        cJSON_Delete(root);
+        SRAM_FREE(json);
+        if (ret != SUCCESS_CODE) {
+            return ret;
+        }
+        if (matched) {
+            *accountIndex = index;
+            return SUCCESS_CODE;
+        }
+    }
+    return SUCCESS_CODE;
 }
 
 /// @brief

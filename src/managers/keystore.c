@@ -28,6 +28,7 @@
 #include "assert.h"
 #include "secret_cache.h"
 #include "background_task.h"
+#include "fingerprint_process.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #include "simulator_storage.h"
@@ -292,11 +293,14 @@ int32_t GetAccountSlip39Ems(uint8_t accountIndex, uint8_t *slip39Ems, const char
 /// @param[in] newPassword New password.
 /// @param[in] password Old password.
 /// @return err code.
-int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char *password)
+int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char *password, bool *modified)
 {
     int32_t ret;
     AccountSecret_t accountSecret;
 
+    if (modified != NULL) {
+        *modified = false;
+    }
     ASSERT(accountIndex <= 2);
     if (accountIndex != GetCurrentAccountIndex() || GetIsTempAccount()) {
         printf("change pin requires the current base account\r\n");
@@ -307,11 +311,15 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
         CHECK_ERRCODE_BREAK("check repeat password", ret);
         ret = LoadAccountSecret(accountIndex, &accountSecret, password);   // decrypt seed under PIN_old (reads only)
         CHECK_ERRCODE_BREAK("load account secret", ret);
+        UpdateFingerSignFlag(accountIndex, false);
         // Change-PIN re-provisions the SAME index under PIN_new. Bracket the re-wrap with CHANGING_PIN so an
         // interrupted change (power loss / failure) is erased and restored at boot. The backend hook
         // handles generation-specific prep (gen-1 no-op).
         ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CHANGING_PIN);
         CHECK_ERRCODE_BREAK("set changing pin status", ret);
+        if (modified != NULL) {
+            *modified = true;
+        }
         ret = SE_PrepareChangePin(accountIndex, password);   // password = PIN_old
         CHECK_ERRCODE_BREAK("prepare change pin", ret);
         ret = SaveAccountSecret(accountIndex, &accountSecret, newPassword, false);
@@ -323,6 +331,8 @@ int32_t ChangePassword(uint8_t accountIndex, const char *newPassword, const char
             CHECK_ERRCODE_BREAK("regenerate zcash z3 ufvk", ret);
         }
 #endif
+        ret = VerifyAccountPassword(accountIndex, newPassword);
+        CHECK_ERRCODE_BREAK("verify new password", ret);
         ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);
         CHECK_ERRCODE_BREAK("set created status", ret);
     } while (0);
@@ -513,7 +523,7 @@ int32_t CheckPasswordExisted(const char *password, uint8_t excludeIndex)
 /// @param[in] passphrase
 /// @param[in] password Password string.
 /// @return err code.
-int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password)
+int32_t SetSetupPassphrase(uint8_t accountIndex, const char *passphrase, const char *password)
 {
     uint8_t seed[SEED_LEN] = {0};
     uint8_t newMfp[4] = {0};
@@ -540,6 +550,10 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         }
         ret = simpleResponse->error_code;
         CHECK_ERRCODE_BREAK("get_master_fingerprint", ret);
+        if (simpleResponse->data == NULL) {
+            ret = ERR_GENERAL_FAIL;
+            break;
+        }
         memcpy_s(newMfp, sizeof(newMfp), simpleResponse->data, sizeof(newMfp));
         free_simple_response_u8(simpleResponse);
         simpleResponse = NULL;
@@ -562,7 +576,7 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
         ret = SetupZcashCache(accountIndex, password, NULL);
         CHECK_ERRCODE_BREAK("setup passphrase zcash cache", ret);
 #endif
-        SetPassphraseMark(passphrase[0] != '\0');
+        ret = SetPassphraseMark(passphrase[0] != '\0');
     } while (0);
     if (simpleResponse != NULL) {
         free_simple_response_u8(simpleResponse);
@@ -570,6 +584,12 @@ int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *
     CLEAR_ARRAY(seed);
     CLEAR_ARRAY(newMfp);
 
+    return ret;
+}
+
+int32_t SetPassphrase(uint8_t accountIndex, const char *passphrase, const char *password)
+{
+    int32_t ret = SetSetupPassphrase(accountIndex, passphrase, password);
     if (ret != SUCCESS_CODE) {
         ClearAccountPassphrase(accountIndex);
         ClearSecretCache();
@@ -667,7 +687,6 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
             // Account-create bracket: mark CREATING before any SE write, so an
             // interrupted create (power loss / auto-lock mid-provision) is caught at the next boot
             // (AccountsDataCheck erases the partial account) instead of leaving a half-written, HMAC-failing
-            // slot. Flipped to CREATED only after the full blob + account info commit below. (Change-PIN's
             // CHANGING_PIN bracket lives in ChangePassword; it calls here with newAccount == false.)
             ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATING);
             CHECK_ERRCODE_BREAK("set creating status", ret);
@@ -749,8 +768,6 @@ static int32_t SaveAccountSecret(uint8_t accountIndex, const AccountSecret_t *ac
             CHECK_ERRCODE_BREAK("get_master_fingerprint", ret);
             ret = SaveCurrentAccountInfo();   // capture the param-page write result (was discarded)
             CHECK_ERRCODE_BREAK("write param", ret);
-            ret = SE_SetAccountStatus(accountIndex, ACCOUNT_STATUS_CREATED);   // create fully committed
-            CHECK_ERRCODE_BREAK("set created status", ret);
         }
     } while (0);
 
@@ -1028,7 +1045,10 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
-        ret = CreateNewAccount(index, entropy, entropyLen, argv[3]);
+        ret = CreateNewAccount(index, entropy, entropyLen, argv[3], NULL);
+        if (ret == SUCCESS_CODE) {
+            ret = SE_SetAccountStatus(index, ACCOUNT_STATUS_CREATED);
+        }
         printf("CreateNewAccount=%d\r\n", ret);
     } else if (strcmp(argv[0], "new_slip39_entropy") == 0) {
         VALUE_CHECK(argc, 4);
@@ -1037,7 +1057,10 @@ void KeyStoreTest(int argc, char *argv[])
         entropyLen = tempI32;
         GenerateEntropy(entropy, entropyLen, argv[3]);
         PrintArray("entropy", entropy, entropyLen);
-        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, false, 0);
+        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[3], 4543, false, 0, NULL);
+        if (ret == SUCCESS_CODE) {
+            ret = SE_SetAccountStatus(index, ACCOUNT_STATUS_CREATED);
+        }
         printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "save_slip39_entropy") == 0) {
         VALUE_CHECK(argc, 5);
@@ -1050,7 +1073,10 @@ void KeyStoreTest(int argc, char *argv[])
         }
         PrintArray("entropy", entropy, entropyLen);
         uint8_t ems[32] = {0};
-        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, false, 0);
+        ret = CreateNewSlip39Account(index, ems, entropy, entropyLen, argv[4], 1234, false, 0, NULL);
+        if (ret == SUCCESS_CODE) {
+            ret = SE_SetAccountStatus(index, ACCOUNT_STATUS_CREATED);
+        }
         printf("CreateNewSlip39Account=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_entropy") == 0) {
         VALUE_CHECK(argc, 3);
@@ -1070,7 +1096,10 @@ void KeyStoreTest(int argc, char *argv[])
             printf("input length err\r\n");
         }
         PrintArray("entropy", entropy, 32);
-        ret = CreateNewAccount(index, entropy, entropyLen, argv[4]);
+        ret = CreateNewAccount(index, entropy, entropyLen, argv[4], NULL);
+        if (ret == SUCCESS_CODE) {
+            ret = SE_SetAccountStatus(index, ACCOUNT_STATUS_CREATED);
+        }
         printf("CreateNewAccount=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_seed") == 0) {
         VALUE_CHECK(argc, 3);
@@ -1113,7 +1142,7 @@ void KeyStoreTest(int argc, char *argv[])
     } else if (strcmp(argv[0], "change_password") == 0) {
         VALUE_CHECK(argc, 4);
         sscanf(argv[1], "%d", &index);
-        ret = ChangePassword(index, argv[2], argv[3]);
+        ret = ChangePassword(index, argv[2], argv[3], NULL);
         printf("ChangePassword=%d\r\n", ret);
     } else if (strcmp(argv[0], "get_account") == 0) {
         ret = GetBlankAccountIndex(&accountIndex);

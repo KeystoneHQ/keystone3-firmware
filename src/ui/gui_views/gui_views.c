@@ -186,6 +186,28 @@ void GuiSDCardExportHandler(lv_event_t *e)
     return;
 }
 
+int32_t GuiHandleWriteSeResult(uint16_t event, const void *param, uint16_t len,
+                              void (*handler)(bool, int32_t))
+{
+    if (handler == NULL) {
+        return ERR_GUI_ERROR;
+    }
+    if (event == SIG_CREAT_SINGLE_PHRASE_WRITE_SE_SUCCESS) {
+        handler(true, SUCCESS_CODE);
+        return SUCCESS_CODE;
+    }
+    if (event != SIG_CREAT_SINGLE_PHRASE_WRITE_SE_FAIL) {
+        return ERR_GUI_UNHANDLED;
+    }
+    if (param == NULL || len < sizeof(int32_t)) {
+        return ERR_GUI_ERROR;
+    }
+    int32_t error;
+    memcpy(&error, param, sizeof(error));
+    handler(false, error);
+    return SUCCESS_CODE;
+}
+
 void GuiWriteSeResult(bool en, int32_t errCode)
 {
     GuiStopCircleAroundAnimation();
@@ -217,6 +239,14 @@ void GuiWriteSeResult(bool en, int32_t errCode)
             break;
         case ERR_KEYSTORE_MNEMONIC_INVALID:
             break;
+        case ERR_KEYSTORE_MNEMONIC_NOT_MATCH_WALLET:
+            titleText = _("error_box_mnemonic_not_match_wallet");
+            descText = _("error_box_mnemonic_not_match_wallet_desc");
+            break;
+        case ERR_KEYSTORE_REPEAT_PASSWORD:
+            titleText = _("password_error_duplicated_pincode");
+            descText = "";
+            break;
         case ERR_KEYSTORE_SAVE_LOW_POWER:
             titleText = _("error_box_low_power");
             descText = _("error_box_low_power_desc");
@@ -228,6 +258,54 @@ void GuiWriteSeResult(bool en, int32_t errCode)
         lv_obj_t *btn = GuiGetHintBoxRightBtn(g_noticeWindow);
         lv_obj_add_event_cb(btn, cb, LV_EVENT_CLICKED, NULL);
     }
+}
+
+static void PasscodeFailureCountdown(lv_timer_t *timer)
+{
+    unsigned seconds = timer->repeat_count > 0 ? (unsigned)timer->repeat_count : 0;
+    lv_obj_t *label = timer->user_data;
+    if (seconds == 0) {
+        lv_label_set_text(label, _("wallet_operation_deleting"));
+    } else {
+        lv_label_set_text_fmt(label, _("wallet_operation_deleting_fmt"), seconds);
+    }
+}
+
+void GuiWalletOperationAborted(bool passcodeFailure)
+{
+    GuiStopCircleAroundAnimation();
+    lv_obj_t *cover = lv_obj_create(lv_layer_top());
+    lv_obj_remove_style_all(cover);
+    lv_obj_set_size(cover, LV_PCT(100), LV_PCT(100));
+    lv_obj_set_style_bg_color(cover, lv_color_black(), 0);
+    lv_obj_set_style_bg_opa(cover, LV_OPA_COVER, 0);
+    lv_obj_add_flag(cover, LV_OBJ_FLAG_CLICKABLE);
+    lv_obj_clear_flag(cover, LV_OBJ_FLAG_SCROLLABLE);
+    if (passcodeFailure) {
+        lv_obj_t *icon = GuiCreateImg(cover, &imgWarn);
+        lv_obj_align(icon, LV_ALIGN_TOP_MID, 0, 240);
+        lv_obj_t *title = GuiCreateLittleTitleLabel(cover, _("passcode_update_failed_title"));
+        lv_obj_set_width(title, 408);
+        lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 330);
+        lv_obj_t *description = GuiCreateIllustrateLabel(cover,
+            _("passcode_update_failed_delete_desc"));
+        lv_obj_set_width(description, 384);
+        lv_label_set_long_mode(description, LV_LABEL_LONG_WRAP);
+        lv_obj_set_style_text_align(description, LV_TEXT_ALIGN_CENTER, 0);
+        lv_obj_align_to(description, title, LV_ALIGN_OUT_BOTTOM_MID, 0, 20);
+        lv_obj_t *countdown = GuiCreateIllustrateLabel(cover, "");
+        lv_label_set_text_fmt(countdown, _("wallet_operation_deleting_fmt"), 10U);
+        lv_obj_set_style_text_color(countdown, ORANGE_COLOR, 0);
+        lv_obj_align(countdown, LV_ALIGN_BOTTOM_MID, 0, -40);
+        lv_timer_t *timer = lv_timer_create(PasscodeFailureCountdown, 1000, countdown);
+        lv_timer_set_repeat_count(timer, 10);
+        return;
+    }
+    lv_obj_t *label = GuiCreateTextLabel(cover, _("wallet_operation_failed_restart"));
+    lv_obj_set_width(label, LV_PCT(85));
+    lv_obj_set_style_text_align(label, LV_TEXT_ALIGN_CENTER, 0);
+    lv_obj_center(label);
 }
 
 void *GuiCreateErrorCodeWindow(int32_t errCode, lv_obj_t **param, ErrorWindowCallback cb)

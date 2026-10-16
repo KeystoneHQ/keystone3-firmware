@@ -437,11 +437,12 @@ static void *GuiParseZcashBatchData(void)
         free_TransactionCheckResult(checkResult);
     }
 
-    uint8_t sfp[32] = {0};
-    GetZcashSFP(GetCurrentAccountIndex(), sfp);
-
+    uint8_t sfp[ZCASH_SFP_LEN] = {0};
     char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+    if (GetZcashSFP(GetCurrentAccountIndex(), sfp) != SUCCESS_CODE ||
+            GetZcashUFVK(GetCurrentAccountIndex(), ufvk) != SUCCESS_CODE) {
+        return NULL;
+    }
     g_parseResult = parse_zcash_batch_tx_cypherpunk(
         g_checkedBatch,
         ufvk,

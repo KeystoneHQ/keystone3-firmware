@@ -15,6 +15,7 @@
 #include "device_setting.h"
 #include "gui_page.h"
 #include "account_manager.h"
+#include "secret_cache.h"
 #include "user_memory.h"
 #include "presetting.h"
 #include "assert.h"
@@ -90,7 +91,12 @@ void GuiFpRecognizeResult(bool en)
     if (en) {
         g_fpErrorCount = 0;
         SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
-        ClearCurrentPasswordErrorCount();
+        int32_t ret = ClearCurrentPasswordErrorCount();
+        if (ret != SUCCESS_CODE) {
+            ClearSecretCache();
+            ASSERT(false);
+            return;
+        }
     } else {
         g_fpErrorCount++;
         if (g_fpErrorCount < FINGERPRINT_EN_SING_ERR_TIMES) {

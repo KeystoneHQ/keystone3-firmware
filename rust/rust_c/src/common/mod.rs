@@ -35,6 +35,7 @@ pub mod qrcode;
 pub mod structs;
 pub mod types;
 pub mod ur;
+mod ur_budget;
 mod ur_ext;
 pub mod utils;
 pub mod web_auth;

@@ -16,6 +16,7 @@
 #include "screen_manager.h"
 #include "power_manager.h"
 #include "account_manager.h"
+#include "account_public_info.h"
 #include "se_manager.h"
 #include "version.h"
 #include "legacy_web_update_pad.h"
@@ -75,7 +76,7 @@ typedef struct {
 } DeviceSettings_t;
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen);
-static void SaveDeviceSettingsSync(void);
+static int32_t SaveDeviceSettingsSync(void);
 static bool GetDeviceSettingsFromJsonString(const char *string);
 static char *GetJsonStringFromDeviceSettings(void);
 static void AesEncryptBuffer(uint8_t *cipher, uint32_t sz, uint8_t *plain);
@@ -255,6 +256,17 @@ void SaveDeviceSettings(void)
     AsyncExecute(SaveDeviceSettingsAsyncFunc, NULL, 0);
 }
 
+int32_t SaveSetupCheckpoint(uint32_t setupStep)
+{
+    uint32_t previous = g_deviceSettings.setupStep;
+    g_deviceSettings.setupStep = setupStep;
+    int32_t ret = SaveDeviceSettingsSync();
+    if (ret != SUCCESS_CODE) {
+        g_deviceSettings.setupStep = previous;
+    }
+    return ret;
+}
+
 uint32_t GetSetupStep(void)
 {
     return g_deviceSettings.setupStep;
@@ -263,6 +275,31 @@ uint32_t GetSetupStep(void)
 void SetSetupStep(uint32_t setupStep)
 {
     g_deviceSettings.setupStep = setupStep;
+}
+
+int32_t DeviceSettingsRecoverSetupStep(void)
+{
+    if (GetSetupStep() != SETUP_PHASE_DONE) {
+        return SUCCESS_CODE;
+    }
+    uint8_t accountNum = 0xFF;
+    int32_t ret = GetExistAccountNum(&accountNum);
+    if (ret != SUCCESS_CODE || accountNum != 0) {
+        return ret;
+    }
+    for (uint8_t index = 0; index < 3; index++) {
+        ret = DeleteAccountPublicInfoFlash(index);
+        if (ret != SUCCESS_CODE) {
+            return ret;
+        }
+    }
+    FpClearManageInfo();
+    SetSetupStep(SETUP_PHASE_WELCOME);
+    ret = SaveDeviceSettingsSync();
+    if (ret != SUCCESS_CODE) {
+        SetSetupStep(SETUP_PHASE_DONE);
+    }
+    return ret;
 }
 
 uint32_t GetBright(void)
@@ -455,7 +492,7 @@ void SetLanguage(uint32_t language)
 }
 
 /// @brief Wipe device.
-void WipeDevice(void)
+int32_t WipeDevice(void)
 {
     // reset all account address index in receive page
     {
@@ -470,25 +507,25 @@ void WipeDevice(void)
     }
 
     uint32_t wipeFlag = DEVICE_WIPE_FLAG_MAGIC_NUM;
-    Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag));
+    if (Gd25FlashWriteBuffer(SPI_FLASH_ADDR_PROTECT_PARAM, (uint8_t *)&wipeFlag, sizeof(wipeFlag)) != sizeof(wipeFlag)) {
+        return ERR_GENERAL_FAIL;
+    }
     SetShowPowerOffPage(false);
     FpWipeManageInfo();
-    ErasePublicInfo();
-    // gen-2: also wipe the SE-side secrets (gen-1 no-op). Best-effort — the blobs are already wiped + flash
-    // erased below.
-    SE_WipeAll();
-    DestroyAccount(0);
-    DestroyAccount(1);
-    DestroyAccount(2);
-    // Clear the external per-account status pages (36/37/38). DestroyAccount above already clears each, but do
-    // it explicitly so the in-app wipe sweeps them like the bootloader's full-range wipe does.
-    SE_SetAccountStatus(0, ACCOUNT_STATUS_UNKNOWN);
-    SE_SetAccountStatus(1, ACCOUNT_STATUS_UNKNOWN);
-    SE_SetAccountStatus(2, ACCOUNT_STATUS_UNKNOWN);
+    int32_t ret = ErasePublicInfo();
+    CHECK_ERRCODE_RETURN_INT(ret);
+    ret = SE_WipeAll();
+    CHECK_ERRCODE_RETURN_INT(ret);
+    for (uint8_t index = 0; index < 3; index++) {
+        ret = DestroyAccount(index);
+        CHECK_ERRCODE_RETURN_INT(ret);
+    }
     for (uint32_t addr = 0; addr < GD25QXX_FLASH_SIZE; addr += 1024 * 64) {
-        Gd25FlashBlockErase(addr);
+        ret = Gd25FlashBlockErase(addr);
+        CHECK_ERRCODE_RETURN_INT(ret);
         printf("flash erase address: %#x\n", (unsigned int)addr);
     }
+    return SUCCESS_CODE;
 }
 
 /// @brief Device settings test.
@@ -496,7 +533,9 @@ void WipeDevice(void)
 /// @param argv Test arg values.
 void DeviceSettingsTest(int argc, char *argv[])
 {
-    if (strcmp(argv[0], "wipe") == 0) {
+    if (argc <= 0 || argv == NULL) {
+        printf("device settings test arg err\n");
+    } else if (strcmp(argv[0], "wipe") == 0) {
         printf("start wipe\n");
         WipeDevice();
         printf("wipe over\n");
@@ -531,23 +570,61 @@ void DeviceSettingsTest(int argc, char *argv[])
 
 static int32_t SaveDeviceSettingsAsyncFunc(const void *inData, uint32_t inDataLen)
 {
-    SaveDeviceSettingsSync();
-    return 0;
+    return SaveDeviceSettingsSync();
 }
 
-static void SaveDeviceSettingsSync(void)
+static int32_t VerifyDeviceSettingsWrite(const char *jsonString, uint32_t size)
+{
+    uint32_t savedSize = 0;
+    uint8_t verifyBuffer[64];
+    int32_t readSize = Gd25FlashReadBuffer(SPI_FLASH_ADDR_NORMAL_PARAM,
+                                           (uint8_t *)&savedSize, sizeof(savedSize));
+    if (readSize != sizeof(savedSize) || savedSize != size) {
+        return ERR_GD25_BAD_PARAM;
+    }
+
+    uint32_t offset = 0;
+    const uint32_t totalSize = size + 1;
+    while (offset < totalSize) {
+        uint32_t chunkSize = totalSize - offset;
+        if (chunkSize > sizeof(verifyBuffer)) {
+            chunkSize = sizeof(verifyBuffer);
+        }
+        readSize = Gd25FlashReadBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + sizeof(savedSize) + offset,
+                                      verifyBuffer, chunkSize);
+        if (readSize != chunkSize || memcmp(verifyBuffer, jsonString + offset, chunkSize) != 0) {
+            return ERR_GD25_BAD_PARAM;
+        }
+        offset += chunkSize;
+    }
+    return SUCCESS_CODE;
+}
+static int32_t SaveDeviceSettingsSync(void)
 {
     char *jsonString;
     uint32_t size;
 
     jsonString = GetJsonStringFromDeviceSettings();
+    if (jsonString == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
     printf("jsonString=%s\n", jsonString);
-    Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM); // Only one sector for device settings.
     size = strnlen_s(jsonString, SPI_FLASH_SIZE_NORMAL_PARAM - 4 - 1);
     ASSERT(size < SPI_FLASH_SIZE_NORMAL_PARAM - 4);
-    Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, 4);
-    Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + 4, (uint8_t *)jsonString, size + 1);
+    int32_t ret = Gd25FlashSectorErase(SPI_FLASH_ADDR_NORMAL_PARAM);
+    if (ret == SUCCESS_CODE &&
+            Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM, (uint8_t *)&size, sizeof(size)) != sizeof(size)) {
+        ret = ERR_GD25_BAD_PARAM;
+    }
+    if (ret == SUCCESS_CODE &&
+            Gd25FlashWriteBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + 4, (uint8_t *)jsonString, size + 1) != size + 1) {
+        ret = ERR_GD25_BAD_PARAM;
+    }
+    if (ret == SUCCESS_CODE) {
+        ret = VerifyDeviceSettingsWrite(jsonString, size);
+    }
     EXT_FREE(jsonString);
+    return ret;
 }
 
 static bool GetDeviceSettingsFromJsonString(const char *string)
@@ -592,28 +669,36 @@ static bool GetDeviceSettingsFromJsonString(const char *string)
 
 static char *GetJsonStringFromDeviceSettings(void)
 {
-    cJSON *rootJson;
-    char *retStr;
+    char *retStr = NULL;
+    cJSON *rootJson = cJSON_CreateObject();
+    if (rootJson == NULL) {
+        return NULL;
+    }
 
-    rootJson = cJSON_CreateObject();
-    cJSON_AddItemToObject(rootJson, KEY_VERSION, cJSON_CreateString(g_deviceSettingsVersion));
-    cJSON_AddItemToObject(rootJson, KEY_SETUP_STEP, cJSON_CreateNumber(g_deviceSettings.setupStep));
-    cJSON_AddItemToObject(rootJson, KEY_BRIGHT, cJSON_CreateNumber(g_deviceSettings.bright));
-    cJSON_AddItemToObject(rootJson, KEY_AUTO_LOCK_SCREEN, cJSON_CreateNumber(g_deviceSettings.autoLockScreen));
-    cJSON_AddItemToObject(rootJson, KEY_AUTO_POWER_OFF, cJSON_CreateNumber(g_deviceSettings.autoPowerOff));
-    cJSON_AddItemToObject(rootJson, KEY_VIBRATION, cJSON_CreateNumber(g_deviceSettings.vibration));
-    cJSON_AddItemToObject(rootJson, KEY_RANDOM_PIN_PAD, cJSON_CreateNumber(g_deviceSettings.randomPinPad));
-    cJSON_AddItemToObject(rootJson, KEY_PERMIT_SIGN, cJSON_CreateNumber(g_deviceSettings.permitSign));
-    cJSON_AddItemToObject(rootJson, KEY_DARK_MODE, cJSON_CreateNumber(g_deviceSettings.darkMode));
-    cJSON_AddItemToObject(rootJson, KEY_USB_SWITCH, cJSON_CreateNumber(g_deviceSettings.usbSwitch));
-    cJSON_AddItemToObject(rootJson, KEY_LAST_VERSION, cJSON_CreateNumber(g_deviceSettings.lastVersion));
-    cJSON_AddItemToObject(rootJson, KEY_LANGUAGE, cJSON_CreateNumber(g_deviceSettings.language));
-    cJSON_AddItemToObject(rootJson, KEY_NFT_SCREEN, cJSON_CreateBool(g_deviceSettings.nftEnable));
-    cJSON_AddItemToObject(rootJson, KEY_NFT_VALID, cJSON_CreateBool(g_deviceSettings.nftValid));
-    cJSON_AddItemToObject(rootJson, KEY_ENABLE_BLIND_SIGNING, cJSON_CreateBool(g_deviceSettings.enableBlindSigning));
-    retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_NORMAL_PARAM - 4, false);
-    RemoveFormatChar(retStr);
+    if (cJSON_AddStringToObject(rootJson, KEY_VERSION, g_deviceSettingsVersion) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_SETUP_STEP, g_deviceSettings.setupStep) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_BRIGHT, g_deviceSettings.bright) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_AUTO_LOCK_SCREEN, g_deviceSettings.autoLockScreen) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_AUTO_POWER_OFF, g_deviceSettings.autoPowerOff) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_VIBRATION, g_deviceSettings.vibration) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_RANDOM_PIN_PAD, g_deviceSettings.randomPinPad) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_PERMIT_SIGN, g_deviceSettings.permitSign) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_DARK_MODE, g_deviceSettings.darkMode) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_USB_SWITCH, g_deviceSettings.usbSwitch) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_LAST_VERSION, g_deviceSettings.lastVersion) == NULL ||
+            cJSON_AddNumberToObject(rootJson, KEY_LANGUAGE, g_deviceSettings.language) == NULL ||
+            cJSON_AddBoolToObject(rootJson, KEY_NFT_SCREEN, g_deviceSettings.nftEnable) == NULL ||
+            cJSON_AddBoolToObject(rootJson, KEY_NFT_VALID, g_deviceSettings.nftValid) == NULL ||
+            cJSON_AddBoolToObject(rootJson, KEY_ENABLE_BLIND_SIGNING, g_deviceSettings.enableBlindSigning) == NULL) {
+        cJSON_Delete(rootJson);
+        return NULL;
+    }
+
+    retStr = cJSON_PrintBuffered(rootJson, SPI_FLASH_SIZE_NORMAL_PARAM - sizeof(uint32_t), false);
     cJSON_Delete(rootJson);
+    if (retStr != NULL) {
+        RemoveFormatChar(retStr);
+    }
 
     return retStr;
 }

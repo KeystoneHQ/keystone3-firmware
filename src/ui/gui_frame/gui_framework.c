@@ -3,6 +3,7 @@
 #include "gui_api.h"
 #include "screen_manager.h"
 #include "gui_model.h"
+#include <string.h>
 #ifndef COMPILE_SIMULATOR
 #include "user_msg.h"
 #endif
@@ -29,11 +30,13 @@ bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t 
 {
     int32_t ret;
     bool handled = false;
-    if (NULL != view->pEvtHandler) {
+    if (view != NULL && view->pEvtHandler != NULL) {
         if (GuiLockScreenIsTop()) {
             if (usEvent == GUI_EVENT_REFRESH || usEvent == SIG_INIT_SDCARD_CHANGE) {
-                g_lockView.pEvtHandler(&g_lockView, usEvent, param, usLen);
-                return SUCCESS_CODE;
+                if (g_lockView.pEvtHandler != NULL) {
+                    g_lockView.pEvtHandler(&g_lockView, usEvent, param, usLen);
+                    return true;
+                }
             }
         }
 
@@ -50,25 +53,45 @@ bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t 
 
 int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
 {
+    static bool walletAborted = false;
+    if (walletAborted) {
+        return SUCCESS_CODE;
+    }
+    if (usEvent == SIG_WALLET_OPERATION_ABORTED || usEvent == SIG_WALLET_PASSCODE_ABORTED) {
+        walletAborted = true;
+        GuiWalletOperationAborted(usEvent == SIG_WALLET_PASSCODE_ABORTED);
+        return SUCCESS_CODE;
+    }
     bool sigHandled;
     GUI_VIEW *pView = g_workingView;
     uint32_t loopCnt = 0;
     if (GuiLockScreenIsTop()) {
         //verify failed
         if (usEvent == SIG_VERIFY_PASSWORD_FAIL) {
-            PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
-            if (SIG_LOCK_VIEW_VERIFY_PIN == passwordVerifyResult->signal) {
+            if (param == NULL || usLen < sizeof(PasswordVerifyResult_t)) {
+                return ERR_GUI_ERROR;
+            }
+            uint16_t signal;
+            memcpy(&signal, param, sizeof(signal));
+            if (SIG_LOCK_VIEW_VERIFY_PIN == signal) {
                 sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
                 return SUCCESS_CODE;
             }
         }
         //verify success
-        if (param != NULL && (*(uint16_t *)param == SIG_LOCK_VIEW_VERIFY_PIN)) {
-            sigHandled = GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
-            return SUCCESS_CODE;
+        if (usEvent == SIG_VERIFY_PASSWORD_PASS || usEvent == SIG_LOCK_VIEW_SCREEN_ON_PASSPHRASE_PASS) {
+            if (param == NULL || usLen < sizeof(uint16_t)) {
+                return ERR_GUI_ERROR;
+            }
+            uint16_t signal;
+            memcpy(&signal, param, sizeof(signal));
+            if (signal == SIG_LOCK_VIEW_VERIFY_PIN) {
+                GuiViewHandleEvent(&g_lockView, usEvent, param, usLen);
+                return SUCCESS_CODE;
+            }
         }
     }
-    do {
+    while (pView != NULL) {
         sigHandled = GuiViewHandleEvent(pView, usEvent, param, usLen);
         if (sigHandled) {
             printf("usEvENT:%d sig has handled: id=%d name=%s\n", usEvent, pView->id, GuiFrameIdToName(pView->id));
@@ -79,25 +102,19 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
         if (loopCnt > g_viewCnt + 10) {
             return ERR_GUI_ERROR;
         }
-    } while (pView != NULL);
+    }
     return SUCCESS_CODE;
 }
 
 bool GuiCheckIfViewOpened(GUI_VIEW *viewToOpen)
 {
-    // todo some error proofing
-    if (viewToOpen->isActive) {
-        return true;
-    }
-
-    return false;
+    return viewToOpen != NULL && viewToOpen->isActive;
 }
 
-int32_t GuiFrameOpenView(GUI_VIEW *view)
+static int32_t GuiFrameOpenViewInternal(GUI_VIEW *view, void *param, uint16_t usLen, bool deactivatePrevious)
 {
-    // todo some error proofing
-    if (GuiCheckIfViewOpened(view)) {
-        printf("err:gui has already opened!\r\n");
+    if (view == NULL || g_viewCnt >= OPENED_VIEW_MAX || GuiCheckIfViewOpened(view)) {
+        printf("err:invalid, duplicate or excessive gui view\r\n");
         return ERR_GUI_ERROR;
     }
 
@@ -109,29 +126,8 @@ int32_t GuiFrameOpenView(GUI_VIEW *view)
     g_debugView[g_viewCnt].view.isActive = view->isActive;
     g_debugView[g_viewCnt].pview = view;
     g_viewCnt++;
-    if (NULL != g_workingView) {
+    if (deactivatePrevious && g_workingView != NULL) {
         GuiViewHandleEvent(g_workingView, GUI_EVENT_DISACTIVE, NULL, 0);
-        // g_workingView->isActive = false;
-    }
-    view->previous = g_workingView;
-    g_workingView = view;
-    g_workingView->isActive = true;
-    GuiViewHandleEvent(view, GUI_EVENT_OBJ_INIT, NULL, 0);
-    GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
-    return SUCCESS_CODE;
-}
-
-int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
-{
-    // todo some error proofing
-    g_debugView[g_viewCnt].view.id = view->id;
-    g_debugView[g_viewCnt].view.pEvtHandler = view->pEvtHandler;
-    g_debugView[g_viewCnt].view.previous = view->previous;
-    g_debugView[g_viewCnt].view.isActive = view->isActive;
-    g_debugView[g_viewCnt].pview = view;
-
-    g_viewCnt++;
-    if (NULL != g_workingView) {
         // g_workingView->isActive = false;
     }
     view->previous = g_workingView;
@@ -142,8 +138,21 @@ int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
     return SUCCESS_CODE;
 }
 
+int32_t GuiFrameOpenView(GUI_VIEW *view)
+{
+    return GuiFrameOpenViewInternal(view, NULL, 0, true);
+}
+
+int32_t GuiFrameOpenViewWithParam(GUI_VIEW *view, void *param, uint16_t usLen)
+{
+    return GuiFrameOpenViewInternal(view, param, usLen, false);
+}
+
 int32_t GuiCloseCurrentWorkingView(void)
 {
+    if (g_workingView == NULL || g_workingView->previous == NULL || g_viewCnt == 0) {
+        return ERR_GUI_ERROR;
+    }
     g_viewCnt--;
     GuiViewHandleEvent(g_workingView, GUI_EVENT_OBJ_DEINIT, NULL, 0);
     printf("close view %s freeHeap %d\n", GuiFrameIdToName(g_workingView->id), xPortGetFreeHeapSize());
@@ -158,6 +167,9 @@ int32_t GuiCloseCurrentWorkingView(void)
 
 int32_t GuiFrameCLoseView(GUI_VIEW *view)
 {
+    if (view == NULL || g_workingView == NULL || g_viewCnt == 0) {
+        return ERR_GUI_ERROR;
+    }
     if (g_workingView == view) {
         return GuiCloseCurrentWorkingView();
     } else {
@@ -182,10 +194,11 @@ int32_t GuiFrameCLoseView(GUI_VIEW *view)
 
 int32_t GuiFrameWorkViewHandleMsg(void *data, uint16_t len)
 {
+    if (data == NULL || len < sizeof(GuiEmitMsg_t)) {
+        return ERR_GUI_ERROR;
+    }
     GuiEmitMsg_t *msg = data;
-    GuiEmitSignal(msg->signal, (void *)msg->param, len - 2);
-    // GuiViewHandleEvent(g_workingView, msg->signal, (void *)msg->param, len - 2);
-    return SUCCESS_CODE;
+    return GuiEmitSignal(msg->signal, (void *)msg->param, len - sizeof(GuiEmitMsg_t));
 }
 
 void GuiFrameDebugging(void)
@@ -204,12 +217,28 @@ bool GuiCheckIfTopView(GUI_VIEW *view)
 
 int32_t GuiCloseToTargetView(GUI_VIEW *view)
 {
+    if (view == NULL || g_workingView == NULL) {
+        return ERR_GUI_ERROR;
+    }
+    if (g_workingView != &g_homeView) {
+        GUI_VIEW *current = g_workingView;
+        uint32_t remaining = g_viewCnt;
+        while (current != NULL && current != view && remaining > 0) {
+            current = current->previous;
+            remaining--;
+        }
+        if (current != view) {
+            return ERR_GUI_ERROR;
+        }
+    }
     GuiViewHintBoxClear();
     if (g_workingView == &g_homeView) {
         GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
     } else {
         while (g_workingView != view) {
-            GuiCloseCurrentWorkingView();
+            if (GuiCloseCurrentWorkingView() != SUCCESS_CODE) {
+                return ERR_GUI_ERROR;
+            }
         }
         GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
     }

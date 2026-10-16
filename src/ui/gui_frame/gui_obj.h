@@ -66,6 +66,8 @@ typedef int32_t(*GuiEventProcessFunc)(void *self, uint16_t usEvent, void *param,
     add(SCREEN_CHECK_DELETE_WALLET)             \
     add(SCREEN_ETH_BATCH_TX)                    \
     add(SCREEN_ZCASH_BATCH_TX)                  \
+    add(SCREEN_ZCASH_VERIFY)                    \
+    add(SCREEN_ZCASH_VERIFY_RESULT)             \
     add(SCREEN_BOOT_UPDATE)                     \
 
 typedef enum {

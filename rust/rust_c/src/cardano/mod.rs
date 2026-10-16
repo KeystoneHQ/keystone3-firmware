@@ -1,4 +1,4 @@
-use alloc::{format, slice};
+use alloc::{collections::BTreeSet, format, slice};
 use alloc::{
     string::{String, ToString},
     vec,
@@ -348,7 +348,7 @@ pub unsafe extern "C" fn cardano_parse_sign_tx_hash(
     let sign_hash_request = extract_ptr_with_type!(ptr, CardanoSignTxHashRequest);
     let message = sign_hash_request.get_tx_hash();
     let crypto_key_paths = sign_hash_request.get_paths();
-    let paths = match crypto_key_paths
+    let mut paths = match crypto_key_paths
         .iter()
         .map(|v| v.get_path())
         .collect::<Option<Vec<String>>>()
@@ -361,13 +361,11 @@ pub unsafe extern "C" fn cardano_parse_sign_tx_hash(
             .c_ptr()
         }
     };
-    let address_list = sign_hash_request.get_address_list();
-    if paths.len() != address_list.len() {
-        return TransactionParseResult::from(RustCError::InvalidData(
-            "address and derivation path count mismatch".to_string(),
-        ))
-        .c_ptr();
-    }
+    let mut seen_paths = BTreeSet::new();
+    paths.retain(|path| seen_paths.insert(path.clone()));
+    let mut address_list = sign_hash_request.get_address_list();
+    let mut seen_addresses = BTreeSet::new();
+    address_list.retain(|address| seen_addresses.insert(address.clone()));
     let network = "Cardano".to_string();
     let result = DisplayCardanoSignTxHash::new(network, paths, message, address_list);
     TransactionParseResult::success(result.c_ptr()).c_ptr()

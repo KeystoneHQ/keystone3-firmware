@@ -5,6 +5,6 @@
 #include "stdbool.h"
 #include "mhscpu.h"
 
-void PowerOnSelfCheck(void);
+int32_t PowerOnSelfCheck(void);
 
 #endif

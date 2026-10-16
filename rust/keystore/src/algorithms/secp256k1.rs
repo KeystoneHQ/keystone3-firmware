@@ -11,7 +11,7 @@ use bitcoin::secp256k1;
 use bitcoin::Network;
 use secp256k1::Message;
 
-use crate::algorithms::utils::{is_all_zero_or_ff, normalize_path};
+use crate::algorithms::utils::{ensure_valid_seed, normalize_path};
 
 use crate::errors::{KeystoreError, Result};
 
@@ -62,10 +62,7 @@ pub fn get_master_fingerprint_by_seed(seed: &[u8]) -> Result<Fingerprint> {
 }
 
 fn ensure_non_trivial_seed(seed: &[u8]) -> Result<()> {
-    if is_all_zero_or_ff(seed) {
-        return Err(KeystoreError::SeedError("invalid seed".to_string()));
-    }
-    Ok(())
+    ensure_valid_seed(seed)
 }
 
 pub fn sign_message_by_seed(
@@ -215,6 +212,18 @@ mod tests {
         let result = get_master_fingerprint_by_seed(&ff_seed);
         assert!(result.is_err());
         assert!(matches!(result, Err(KeystoreError::SeedError(_))));
+    }
+
+    #[test]
+    fn test_reject_wrong_length_seed() {
+        for len in [0usize, 15, 17, 31, 33, 63, 65] {
+            let seed: alloc::vec::Vec<u8> = (0..len).map(|i| (i as u8).wrapping_add(1)).collect();
+            let result = get_master_fingerprint_by_seed(&seed);
+            assert!(
+                matches!(result, Err(KeystoreError::SeedError(_))),
+                "len {len}"
+            );
+        }
     }
 
     #[test]

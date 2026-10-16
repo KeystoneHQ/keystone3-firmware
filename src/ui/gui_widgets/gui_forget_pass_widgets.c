@@ -102,7 +102,7 @@ static void ContinueStopCreateHandler(lv_event_t *e)
     // never runs. Explicitly drop the provision-recovery arm and clear the proven flag here — otherwise the redo
     // skips prove-ownership (the !g_proveOwnershipDone gate) and reuses a stale arm.
     g_proveOwnershipDone = false;
-    AbandonProvisionRecovery();
+    GuiModelResetForgetAuthorization();
     SetPageLockScreen(true);
     CloseToTargetTileView(g_forgetPassTileView.currentTile, FORGET_PASSWORD_METHOD_SELECT);
     GUI_DEL_OBJ(g_noticeWindow)
@@ -374,7 +374,7 @@ static void ProveOwnershipBackHandler(lv_event_t *e)
 {
     // back out of the modal -> drop the provision-recovery arm, restore the auto-lock, stay on the mnemonic tile.
     ProveOwnershipCloseModal();
-    AbandonProvisionRecovery();
+    GuiModelResetForgetAuthorization();
     SetPageLockScreen(true);
 }
 
@@ -478,7 +478,7 @@ void GuiForgetPassDeInit(void)
     }
     // forget-pass torn down: drop any gen-2 provision-recovery arm not yet consumed by the re-save, and restore
     // the auto-lock that the prove-ownership step may have disabled.
-    AbandonProvisionRecovery();
+    GuiModelResetForgetAuthorization();
     SetPageLockScreen(true);
     g_proveOwnershipDone = false;
 
@@ -573,7 +573,7 @@ int8_t GuiForgetPassPrevTile(uint8_t tileIndex)
         if (g_proveOwnershipDone) {
             // backing past the proven step -> drop the provision-recovery arm + restore the auto-lock; the
             // mnemonic re-entry would re-pop the prove-ownership modal.
-            AbandonProvisionRecovery();
+            GuiModelResetForgetAuthorization();
             SetPageLockScreen(true);
             g_proveOwnershipDone = false;
         }

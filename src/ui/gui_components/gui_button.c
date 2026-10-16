@@ -1,6 +1,29 @@
 #include "gui_button.h"
 #include "gui_obj.h"
 
+void GuiSetConfirmButtonEnabled(lv_obj_t *button, bool enabled)
+{
+    if (button == NULL) {
+        return;
+    }
+    lv_obj_t *label = lv_obj_get_child(button, 0);
+    if (enabled) {
+        lv_obj_clear_state(button, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
+        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN);
+        if (label != NULL) {
+            lv_obj_set_style_text_opa(label, LV_OPA_100, LV_PART_MAIN);
+        }
+    } else {
+        lv_obj_add_state(button, LV_STATE_DISABLED);
+        lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN | LV_STATE_DISABLED);
+        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN | LV_STATE_DISABLED);
+        if (label != NULL) {
+            lv_obj_set_style_text_opa(label, LV_OPA_60, LV_PART_MAIN | LV_STATE_DISABLED);
+        }
+    }
+}
+
 void *GuiCreateButton(lv_obj_t *parent, uint16_t w, uint16_t h, GuiButton_t *member,
                       uint8_t cnt, lv_event_cb_t buttonCb, void *param)
 {

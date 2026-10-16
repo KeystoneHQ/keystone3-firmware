@@ -15,6 +15,7 @@
 #include "gui_keyboard.h"
 #include "motor_manager.h"
 #include "gui_page.h"
+#include "assert.h"
 
 typedef struct {
     lv_obj_t *cont;
@@ -189,7 +190,12 @@ bool GuiPassphraseLoadingIsTop(void)
 static void SkipHandler(lv_event_t *e)
 {
 #ifndef COMPILE_SIMULATOR
-    SetPassphraseMark(false);
+    int32_t ret = SetPassphraseMark(false);
+    if (ret != SUCCESS_CODE) {
+        ClearSecretCache();
+        ASSERT(false);
+        return;
+    }
 #endif
     GuiCloseCurrentWorkingView();
     GuiLockScreenHidden();
@@ -240,7 +246,12 @@ static void UpdatePassPhraseHandler(lv_event_t *e)
             const char *repeat = lv_textarea_get_text(g_passphraseWidgets.repeatTa);
             if (!strcmp(input, repeat)) {
                 if (strnlen_s(repeat, PASSPHRASE_MAX_LEN) == 0) {
-                    SetPassphraseMark(false);
+                    int32_t ret = SetPassphraseMark(false);
+                    if (ret != SUCCESS_CODE) {
+                        ClearSecretCache();
+                        ASSERT(false);
+                        return;
+                    }
                     GuiCloseCurrentWorkingView();
                     GuiLockScreenHidden();
                     if (g_homeView.isActive) {

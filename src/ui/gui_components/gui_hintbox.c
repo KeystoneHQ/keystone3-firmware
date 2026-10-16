@@ -230,11 +230,14 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
     }
 
     uint32_t height =
-        24 + lv_obj_get_self_height(title) + 12 + lv_obj_get_self_height(desc1);
+        24 + lv_obj_get_self_height(title);
+    if (desc1 != NULL) {
+        height += 12 + lv_obj_get_self_height(desc1);
+    }
     if (img != NULL) {
         height = height + 48 + lv_obj_get_self_width(img);
     }
-    if (lv_obj_get_self_height(desc2) != 0) {
+    if (desc2 != NULL && lv_obj_get_self_height(desc2) != 0) {
         height += (12 + lv_obj_get_self_height(desc2));
     }
     height += 16;
@@ -245,23 +248,23 @@ void *GuiCreateGeneralHintBox(const void *src, const char *titleText,
     return cont;
 }
 
-static void SetBackupConfirmationButtonState(lv_obj_t *button, bool enabled)
+#ifdef CYPHERPUNK_VERSION
+lv_obj_t *GuiCreateZcashSeedWarning(lv_event_cb_t backHandler, lv_event_cb_t continueHandler)
 {
-    if (enabled) {
-        lv_obj_clear_state(button, LV_STATE_DISABLED);
-        lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_100, LV_PART_MAIN);
-    } else {
-        lv_obj_add_state(button, LV_STATE_DISABLED);
-        lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20,
-                                  LV_PART_MAIN | LV_STATE_DISABLED);
-        lv_obj_set_style_bg_opa(button, LV_OPA_100,
-                                LV_PART_MAIN | LV_STATE_DISABLED);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_60,
-                                  LV_PART_MAIN | LV_STATE_DISABLED);
-    }
+    lv_obj_t *cont = GuiCreateGeneralHintBox(&imgWarn,
+                     _("zcash_seed_warning_title"), _("zcash_seed_warning_desc"), NULL,
+                     _("zcash_seed_warning_back"), DARK_GRAY_COLOR, _("Continue"), ORANGE_COLOR);
+    lv_obj_t *back = GuiGetHintBoxLeftBtn(cont);
+    lv_obj_t *next = GuiGetHintBoxRightBtn(cont);
+    lv_obj_set_width(back, 196);
+    lv_obj_set_width(next, 196);
+    lv_obj_add_event_cb(back, backHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_add_event_cb(next, continueHandler, LV_EVENT_CLICKED, NULL);
+    lv_obj_t *close = GuiCreateImgButton(cont, &imgClose, 48, backHandler, NULL);
+    lv_obj_align_to(close, lv_obj_get_child(cont, 1), LV_ALIGN_TOP_RIGHT, -16, 16);
+    return cont;
 }
+#endif
 
 static void BackupConfirmationCheckHandler(lv_event_t *e)
 {
@@ -275,8 +278,31 @@ static void BackupConfirmationCheckHandler(lv_event_t *e)
     } else {
         lv_obj_add_state(hintBox->checkBox, LV_STATE_CHECKED);
     }
-    SetBackupConfirmationButtonState(hintBox->continueButton,
+    GuiSetConfirmButtonEnabled(hintBox->continueButton,
                                      lv_obj_has_state(hintBox->checkBox, LV_STATE_CHECKED));
+}
+
+lv_obj_t *GuiCreateSdCardErrorHintBox(bool cardMissing, lv_event_cb_t closeCallback)
+{
+    lv_obj_t *window = GuiCreateHintBox(356);
+    lv_obj_t *img = GuiCreateImg(window, &imgFailed);
+    lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
+    const char *title = cardMissing ? _("firmware_update_sd_failed_access_title") :
+                                     _("multisig_export_to_sdcard_failed");
+    const char *description = cardMissing ? _("firmware_update_sd_failed_access_desc") :
+                                           _("multisig_export_to_sdcard_failed_desc");
+    lv_obj_t *label = GuiCreateLittleTitleLabel(window, title);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
+    label = GuiCreateIllustrateLabel(window, description);
+    lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 640);
+    lv_obj_t *button = GuiCreateTextBtn(window, _("OK"));
+    lv_obj_set_style_bg_color(button, cardMissing ? WHITE_COLOR : ORANGE_COLOR, LV_PART_MAIN);
+    if (cardMissing) {
+        lv_obj_set_style_bg_opa(button, LV_OPA_20, LV_PART_MAIN);
+    }
+    lv_obj_align(button, LV_ALIGN_BOTTOM_RIGHT, -16, -24);
+    lv_obj_add_event_cb(button, closeCallback, LV_EVENT_CLICKED, NULL);
+    return window;
 }
 
 void * GuiCreateBackupConfirmationHintBox(BackupConfirmationHintBox_t *hintBox)
@@ -322,7 +348,7 @@ void * GuiCreateBackupConfirmationHintBox(BackupConfirmationHintBox_t *hintBox)
     hintBox->continueButton = GuiCreateTextBtn(cont, _("Continue"));
     lv_obj_set_size(hintBox->continueButton, 408, 66);
     lv_obj_align_to(hintBox->continueButton, checkRow, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 24);
-    SetBackupConfirmationButtonState(hintBox->continueButton, false);
+    GuiSetConfirmButtonEnabled(hintBox->continueButton, false);
 
     return cont;
 }

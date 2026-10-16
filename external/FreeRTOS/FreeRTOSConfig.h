@@ -147,6 +147,7 @@ See http://www.FreeRTOS.org/RTOS-Cortex-M3-M4.html. */
 /* Normal assert() semantics without relying on the provision of an assert.h
 header file. */
 /* USER CODE BEGIN 1 */
+#include "diagnostic_location.h"
 #define configASSERT( x )                                                        \
     do {                                                                         \
         if( ( x ) == 0 ) {                                                       \
@@ -160,7 +161,7 @@ header file. */
             }                                                                    \
             printf( "assert file=%s, line=%d, ipsr=%lu, irq=%ld, "              \
                     "prio=0x%02lX, max_syscall=0x%02X, aircr=0x%08lX\r\n",      \
-                    __FILE__, __LINE__, ( unsigned long ) ulAssertIpsr,           \
+                    DIAGNOSTIC_FILE, DIAGNOSTIC_LINE, ( unsigned long ) ulAssertIpsr, \
                     ( long ) lAssertIrq, ( unsigned long ) ulAssertPriority,      \
                     ( unsigned int ) configMAX_SYSCALL_INTERRUPT_PRIORITY,       \
                     ( unsigned long ) ( *( ( volatile uint32_t * ) 0xE000ED0CUL ) ) ); \

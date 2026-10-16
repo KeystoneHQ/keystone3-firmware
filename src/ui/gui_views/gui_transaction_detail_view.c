@@ -30,7 +30,8 @@ int32_t GuiTransactionDetailViewEventProcess(void *self, uint16_t usEvent, void 
         GuiTransactionDetailDeInit();
         break;
     case GUI_EVENT_REFRESH:
-        GuiTransactionDetailRefresh();
+        GuiTransactionDetailRefresh(param != NULL && usLen == sizeof(uint16_t) &&
+                                    *(uint16_t *)param == SIG_LOCK_VIEW_VERIFY_PIN);
         break;
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {

@@ -16183,14 +16183,15 @@ struct TreeView {
 SQLITE_PRIVATE int sqlite3CorruptError(int);
 SQLITE_PRIVATE int sqlite3MisuseError(int);
 SQLITE_PRIVATE int sqlite3CantopenError(int);
-#define SQLITE_CORRUPT_BKPT sqlite3CorruptError(__LINE__)
-#define SQLITE_MISUSE_BKPT sqlite3MisuseError(__LINE__)
-#define SQLITE_CANTOPEN_BKPT sqlite3CantopenError(__LINE__)
+#include "diagnostic_location.h"
+#define SQLITE_CORRUPT_BKPT sqlite3CorruptError(DIAGNOSTIC_LINE)
+#define SQLITE_MISUSE_BKPT sqlite3MisuseError(DIAGNOSTIC_LINE)
+#define SQLITE_CANTOPEN_BKPT sqlite3CantopenError(DIAGNOSTIC_LINE)
 #ifdef SQLITE_DEBUG
 SQLITE_PRIVATE   int sqlite3NomemError(int);
 SQLITE_PRIVATE   int sqlite3IoerrnomemError(int);
-# define SQLITE_NOMEM_BKPT sqlite3NomemError(__LINE__)
-# define SQLITE_IOERR_NOMEM_BKPT sqlite3IoerrnomemError(__LINE__)
+# define SQLITE_NOMEM_BKPT sqlite3NomemError(DIAGNOSTIC_LINE)
+# define SQLITE_IOERR_NOMEM_BKPT sqlite3IoerrnomemError(DIAGNOSTIC_LINE)
 #else
 # define SQLITE_NOMEM_BKPT SQLITE_NOMEM
 # define SQLITE_IOERR_NOMEM_BKPT SQLITE_IOERR_NOMEM

@@ -16,8 +16,15 @@
 #define MPU_SANDBOX_UR_CHUNK_HEADER_SIZE 4U
 #define MPU_SANDBOX_UR_CHUNK_DATA_SIZE \
     (MPU_SANDBOX_INPUT_SIZE - MPU_SANDBOX_UR_CHUNK_HEADER_SIZE)
+#ifdef CYPHERPUNK_VERSION
+#define MPU_SANDBOX_CBOR_INPUT_MAX_SIZE        (32U * 1024U)
+#elif defined(WEB3_VERSION)
+#define MPU_SANDBOX_CBOR_INPUT_MAX_SIZE        (17U * 1024U)
+#else
 #define MPU_SANDBOX_CBOR_INPUT_MAX_SIZE        (14U * 1024U)
-#define MPU_SANDBOX_EIP712_JSON_INPUT_MAX_SIZE MPU_SANDBOX_CBOR_INPUT_MAX_SIZE
+#endif
+#define MPU_SANDBOX_EIP712_JSON_INPUT_MAX_SIZE (14U * 1024U)
+#define MPU_SANDBOX_CBOR_STATE_SIZE 512U
 
 typedef struct {
     volatile MpuSandboxRequest_t request;
@@ -42,11 +49,17 @@ typedef struct {
 } MpuSandboxUrChunkResult_t;
 
 typedef struct {
-    uint8_t data[MPU_SANDBOX_CBOR_INPUT_MAX_SIZE];
+    uint8_t data[MPU_SANDBOX_EIP712_JSON_INPUT_MAX_SIZE];
     uint16_t length;
     uint16_t total_length;
     bool active;
 } MpuSandboxPayloadValidationState_t;
+
+typedef struct {
+    uint8_t parser[MPU_SANDBOX_CBOR_STATE_SIZE] __attribute__((aligned(8)));
+    uint16_t length;
+    uint16_t total_length;
+} MpuSandboxCborState_t;
 
 typedef enum {
     MPU_SANDBOX_PAYLOAD_NONE = 0,
@@ -58,10 +71,12 @@ typedef enum {
 #ifndef BTC_ONLY
 typedef union {
     EapduFramingState_t eapdu;
+    MpuSandboxCborState_t cbor;
     MpuSandboxPayloadValidationState_t validation;
 } MpuSandboxPayloadState_t;
 #else
 typedef union {
+    MpuSandboxCborState_t cbor;
     MpuSandboxPayloadValidationState_t validation;
 } MpuSandboxPayloadState_t;
 #endif

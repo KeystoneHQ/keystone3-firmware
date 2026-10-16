@@ -101,6 +101,11 @@ impl<'a> fmt::Display for BCHAddressEncoding<'a> {
                     Err(_) => write!(fmt, "invalid addresses"),
                 }
             }
+            Payload::P2sh { script_hash } => {
+                let address =
+                    CashAddrCodec::encode_p2sh(script_hash[..].to_vec()).map_err(|_| fmt::Error)?;
+                write!(fmt, "{address}")
+            }
             _ => {
                 write!(fmt, "invalid payload")
             }

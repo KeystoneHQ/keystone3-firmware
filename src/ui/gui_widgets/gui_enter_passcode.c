@@ -17,6 +17,7 @@
 #include "drv_mpu.h"
 #include "device_setting.h"
 #include "screen_manager.h"
+#include "assert.h"
 
 typedef enum {
     PASSWORD_STRENGTH_LEN,
@@ -91,8 +92,14 @@ static int32_t CheckPasswordExistedWithCounter(const char *password, uint8_t exc
 
 static bool RecordDupPasswordIntentLimitReached(void)
 {
-    return RecordCurrentPasswordError(MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX) >=
-           MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
+    uint8_t errorCount = 0;
+    int32_t ret = RecordCurrentPasswordError(MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX, &errorCount);
+    if (ret != SUCCESS_CODE) {
+        ClearSecretCache();
+        ASSERT(false);
+        return true;
+    }
+    return errorCount >= MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
 }
 
 static void GuiAbortSetPasscodeFlow(void)

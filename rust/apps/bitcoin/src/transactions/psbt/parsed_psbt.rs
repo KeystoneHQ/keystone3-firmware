@@ -11,46 +11,7 @@ use core::ops::Index;
 impl TxParser for WrappedPsbt {
     fn parse(&self, context: Option<&ParseContext>) -> Result<ParsedTx> {
         let network = self.determine_network()?;
-        let context = context.ok_or(BitcoinError::InvalidParseContext(
-            "empty context".to_string(),
-        ))?;
-        let inputs = self
-            .psbt
-            .inputs
-            .iter()
-            .enumerate()
-            .map(|(i, input)| self.parse_input(input, i, context, &network))
-            .collect::<Result<Vec<ParsedInput>>>()?;
-        let outputs = self
-            .psbt
-            .outputs
-            .iter()
-            .enumerate()
-            .map(|(i, output)| self.parse_output(output, i, context, &network))
-            .collect::<Result<Vec<ParsedOutput>>>()?;
-        let has_witness_only_inputs = self
-            .psbt
-            .inputs
-            .iter()
-            .any(|input| input.witness_utxo.is_some() && input.non_witness_utxo.is_none());
-        let estimated_signed_vbytes = self.estimated_signed_vbytes();
-
-        match self.identify_fractal_bitcoin_tx() {
-            Some(custom_net) => self.normalize(
-                inputs,
-                outputs,
-                &custom_net,
-                has_witness_only_inputs,
-                estimated_signed_vbytes,
-            ),
-            None => self.normalize(
-                inputs,
-                outputs,
-                &network,
-                has_witness_only_inputs,
-                estimated_signed_vbytes,
-            ),
-        }
+        self.parse_in_network(context, network, true)
     }
 
     fn determine_network(&self) -> Result<Network> {
@@ -97,6 +58,60 @@ impl TxParser for WrappedPsbt {
             _ => Err(BitcoinError::InvalidTransaction(format!(
                 "unsupported derivation path {path}"
             ))),
+        }
+    }
+}
+
+impl WrappedPsbt {
+    pub(crate) fn parse_in_network(
+        &self,
+        context: Option<&ParseContext>,
+        network: Network,
+        allow_custom_network: bool,
+    ) -> Result<ParsedTx> {
+        let context = context.ok_or(BitcoinError::InvalidParseContext(
+            "empty context".to_string(),
+        ))?;
+        let inputs = self
+            .psbt
+            .inputs
+            .iter()
+            .enumerate()
+            .map(|(i, input)| self.parse_input(input, i, context, &network))
+            .collect::<Result<Vec<ParsedInput>>>()?;
+        let outputs = self
+            .psbt
+            .outputs
+            .iter()
+            .enumerate()
+            .map(|(i, output)| self.parse_output(output, i, context, &network))
+            .collect::<Result<Vec<ParsedOutput>>>()?;
+        let has_witness_only_inputs = self
+            .psbt
+            .inputs
+            .iter()
+            .any(|input| input.witness_utxo.is_some() && input.non_witness_utxo.is_none());
+        let estimated_signed_vbytes = self.estimated_signed_vbytes();
+
+        match if allow_custom_network {
+            self.identify_fractal_bitcoin_tx()
+        } else {
+            None
+        } {
+            Some(custom_net) => self.normalize(
+                inputs,
+                outputs,
+                &custom_net,
+                has_witness_only_inputs,
+                estimated_signed_vbytes,
+            ),
+            None => self.normalize(
+                inputs,
+                outputs,
+                &network,
+                has_witness_only_inputs,
+                estimated_signed_vbytes,
+            ),
         }
     }
 }

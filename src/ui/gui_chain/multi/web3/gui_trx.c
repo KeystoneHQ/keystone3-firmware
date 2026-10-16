@@ -1,4 +1,5 @@
 #include "gui_analyze.h"
+#include "gui_chain_components.h"
 #include "rust.h"
 #include "account_public_info.h"
 #include "keystore.h"
@@ -239,10 +240,48 @@ void GetTrxSwapDstAddress(void *indata, void *param, uint32_t maxLen)
     strcpy_s(out, maxLen, "");
 }
 
+bool GetTrxMemoExist(void *indata, void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return trx->detail->memo != NULL && trx->detail->memo[0] != '\0';
+}
+
+bool GetTrxMemoBytesExist(void *indata, void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return trx->detail->memo_hex != NULL && trx->detail->memo_hex[0] != '\0';
+}
+
 void GetTrxMemo(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
     strcpy_s((char *)indata, maxLen, trx->detail->memo);
+}
+
+const char *GuiGetTrxMemoText(void *param)
+{
+    const DisplayTron *trx = (const DisplayTron *)param;
+    const char *text = trx != NULL && trx->detail != NULL ? trx->detail->memo : NULL;
+    return text == NULL ? "" : text;
+}
+
+const char *GuiGetTrxMemoHexText(void *param)
+{
+    const DisplayTron *trx = (const DisplayTron *)param;
+    const char *text = trx != NULL && trx->detail != NULL ? trx->detail->memo_hex : NULL;
+    return text == NULL ? "" : text;
+}
+
+int GetTrxMemoLen(void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return strlen(trx->detail->memo) + 1;
+}
+
+int GetTrxMemoHexLen(void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return strlen(trx->detail->memo_hex) + 1;
 }
 
 void GetTrxNetwork(void *indata, void *param, uint32_t maxLen)
@@ -261,6 +300,61 @@ void GetTrxValueRaw(void *indata, void *param, uint32_t maxLen)
 {
     DisplayTron *trx = (DisplayTron *)param;
     strcpy_s((char *)indata, maxLen, trx->detail->raw_value);
+}
+
+#define DEFINE_TRX_DETAIL_GETTER(name, field)                         \
+    void name(void *indata, void *param, uint32_t maxLen)             \
+    {                                                                  \
+        DisplayTron *trx = (DisplayTron *)param;                       \
+        strcpy_s((char *)indata, maxLen, trx->detail->field);         \
+    }
+
+DEFINE_TRX_DETAIL_GETTER(GetTrxMemoHex, memo_hex)
+DEFINE_TRX_DETAIL_GETTER(GetTrxMemoHash, memo_hash)
+DEFINE_TRX_DETAIL_GETTER(GetTrxFeeLimit, fee_limit)
+DEFINE_TRX_DETAIL_GETTER(GetTrxTimestamp, timestamp)
+DEFINE_TRX_DETAIL_GETTER(GetTrxRefBlockNum, ref_block_num)
+DEFINE_TRX_DETAIL_GETTER(GetTrxRefBlockBytes, ref_block_bytes)
+DEFINE_TRX_DETAIL_GETTER(GetTrxRefBlockHash, ref_block_hash)
+DEFINE_TRX_DETAIL_GETTER(GetTrxPermissionId, permission_id)
+DEFINE_TRX_DETAIL_GETTER(GetTrxRawDataHash, raw_data_hash)
+
+DEFINE_TRX_DETAIL_GETTER(GetTrxCallValue, call_value)
+DEFINE_TRX_DETAIL_GETTER(GetTrxCallTokenValue, call_token_value)
+DEFINE_TRX_DETAIL_GETTER(GetTrxTokenId, token_id)
+DEFINE_TRX_DETAIL_GETTER(GetTrxCallData, call_data)
+
+const char *GuiGetTrxCallDataText(void *param)
+{
+    const DisplayTron *trx = (const DisplayTron *)param;
+    const char *text = trx != NULL && trx->detail != NULL ? trx->detail->call_data : NULL;
+    return text == NULL ? "" : text;
+}
+
+void GetTrxContractWarning(void *indata, void *param, uint32_t maxLen)
+{
+    const DisplayTron *trx = (const DisplayTron *)param;
+    const bool hasWarning = trx != NULL && trx->detail != NULL &&
+        trx->detail->contract_warning != NULL && trx->detail->contract_warning[0] != '\0';
+    strcpy_s((char *)indata, maxLen, hasWarning ? _("tron_unknown_contract_warning") : "");
+}
+
+bool GetTrxAttachedTokenExist(void *indata, void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return trx->detail->token_id != NULL && trx->detail->token_id[0] != '\0';
+}
+
+bool GetTrxContractWarningExist(void *indata, void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return trx->detail->contract_warning != NULL && trx->detail->contract_warning[0] != '\0';
+}
+
+int GetTrxCallDataLen(void *param)
+{
+    DisplayTron *trx = (DisplayTron *)param;
+    return strlen(trx->detail->call_data) + 1;
 }
 
 void TrxCheckVault(lv_event_t *e)
@@ -420,6 +514,19 @@ void GetTrxMessageRaw(void *indata, void *param, uint32_t maxLen)
     } else {
         snprintf((char *)indata, maxLen, "%s%s", message && message->raw_message ? message->raw_message : "", warning);
     }
+}
+
+void GuiShowTrxMessagePaged(lv_obj_t *parent, void *param, bool raw)
+{
+    DisplayTRONPersonalMessage *message = (DisplayTRONPersonalMessage *)param;
+    const char *text = message == NULL ? NULL :
+                       (raw ? message->raw_message : message->utf8_message);
+    GuiShowPagedMessageText(
+        parent,
+        text,
+        !raw,
+        raw ? _("solana_blind_sign_title") : NULL,
+        raw ? _("solana_unparsed_message_warning") : NULL);
 }
 
 bool GetTrxMessageFromExist(void *indata, void *param)

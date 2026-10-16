@@ -7,6 +7,10 @@
 
 typedef char (*GuiPagedMessageByteAtFunc)(void *context, size_t offset);
 
+void GuiSetTransactionContainerStyle(lv_obj_t *container);
+void GuiSetTransactionFlexStyle(lv_obj_t *container, lv_flex_flow_t flow, lv_coord_t padding_y);
+void GuiSetTransactionTitleStyle(lv_obj_t *label);
+
 typedef struct {
     void *context;
     size_t length;
@@ -14,6 +18,7 @@ typedef struct {
     bool utf8;
     const char *warning_title;
     const char *warning_content;
+    const lv_font_t *font;
 } GuiPagedMessageSource_t;
 
 lv_obj_t *CreateTransactionContentContainer(lv_obj_t *parent, uint16_t w, uint16_t h);

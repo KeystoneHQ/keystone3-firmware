@@ -154,6 +154,11 @@ impl Address {
                 payload: Payload::P2sh { script_hash: hash },
             })
         } else if script.is_witness_program() {
+            if matches!(network, Network::Dogecoin | Network::Dash) {
+                return Err(BitcoinError::AddressError(
+                    "no witness address format for this network".to_string(),
+                ));
+            }
             let opcode = script
                 .first_opcode()
                 .expect("is_witness_program guarantees len > 4");

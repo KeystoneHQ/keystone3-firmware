@@ -3,8 +3,13 @@
 #include "cjson/cJSON.h"
 #include "lvgl.h"
 #include "gui_analyze.h"
+#include "assert.h"
+#include "gui_chain_components.h"
 #include "gui_chain.h"
 #include "gui_model.h"
+#ifdef FEATURE_TRON
+#include "gui_trx.h"
+#endif
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_mem_lib.h"
@@ -29,7 +34,7 @@ typedef struct {
     FreeChainDataFunc freeFunc;
 } GuiAnalyze_t;
 
-#define GUI_ANALYZE_TABVIEW_CNT 2
+#define GUI_ANALYZE_TABVIEW_CNT 3
 typedef struct {
     lv_obj_t *obj[GUI_ANALYZE_TABVIEW_CNT];
     uint8_t tabviewIndex;
@@ -45,22 +50,14 @@ typedef struct {
 const static GuiAnalyze_t g_analyzeArray[] = {
     {
         REMAPVIEW_BTC,
-#ifndef COMPILE_SIMULATOR
         "{\"name\":\"btc_page\",\"type\":\"tabview\",\"pos\":[36,0],\"size\":[408,774],\"bg_color\":0,\"border_width\":0,\"children\":[{\"type\":\"tabview_child\",\"index\":1,\"tab_name\":\"Overview\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcTxOverview\"}]},{\"type\":\"tabview_child\",\"index\":2,\"tab_name\":\"Details\",\"text_color\":16777215,\"font\":\"openSansEnIllustrate\",\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcTxDetail\"}]}]}",
-#else
-        PC_SIMULATOR_PATH "/page_btc.json",
-#endif
         GuiGetParsedQrData,
         NULL,
         FreePsbtUxtoMemory,
     },
     {
         REMAPVIEW_BTC_MESSAGE,
-#ifndef COMPILE_SIMULATOR
         "{\"type\":\"container\",\"pos\":[36,0],\"size\":[408,526],\"bg_opa\":0,\"children\":[{\"type\":\"custom_container\",\"bg_color\":0,\"bg_opa\":0,\"pos\":[0,12],\"custom_show_func\":\"GuiBtcMsg\"}]}",
-#else
-        PC_SIMULATOR_PATH "/page_btc_msg.json",
-#endif
         GuiGetParsedQrData,
         NULL,
         FreeBtcMsgMemory,
@@ -313,7 +310,7 @@ lv_event_cb_t GuiTemplateEventCbGet(char *type)
 void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
 {
     GetContSizeFunc func = NULL;
-    uint16_t xpos, ypos;
+    uint16_t xpos = 0, ypos = 0;
     int xsize, ysize;
     lv_align_t align;
     // virtual void create_lvgl_widget(cJSON *json) {};
@@ -418,6 +415,39 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
 
     lv_obj_set_scrollbar_mode(obj, LV_SCROLLBAR_MODE_OFF);
 
+    bool dynamic = cJSON_IsTrue(cJSON_GetObjectItem(json, "dynamic"));
+    if (dynamic) {
+        const char *type = cJSON_GetObjectItem(json, "type")->valuestring;
+        bool viewport = cJSON_IsTrue(cJSON_GetObjectItem(json, "viewport"));
+        if (!strcmp(type, "container") || !strcmp(type, "tabview_child")) {
+            lv_obj_set_flex_flow(obj, LV_FLEX_FLOW_COLUMN);
+            lv_obj_set_style_pad_row(obj, 12, LV_PART_MAIN);
+            lv_obj_set_style_pad_column(obj, 0, LV_PART_MAIN);
+            if (!strcmp(type, "tabview_child")) {
+                lv_obj_set_style_pad_all(obj, 0, LV_PART_MAIN);
+                lv_obj_set_style_pad_top(obj, 12, LV_PART_MAIN);
+                lv_obj_set_style_pad_bottom(obj, 16, LV_PART_MAIN);
+            } else {
+                cJSON *padding = cJSON_GetObjectItem(json, "content_padding");
+                lv_obj_set_style_pad_all(obj, padding ? padding->valueint : 16, LV_PART_MAIN);
+            }
+        }
+        if (strcmp(type, "tabview_child") && !viewport) {
+            lv_obj_set_width(obj, lv_pct(100));
+            if (strcmp(type, "paged_text")) lv_obj_set_height(obj, LV_SIZE_CONTENT);
+        }
+        if (!strcmp(type, "label")) {
+            lv_label_set_long_mode(obj, LV_LABEL_LONG_WRAP);
+            lv_obj_set_height(obj, LV_SIZE_CONTENT);
+        }
+        if (viewport || !strcmp(type, "tabview_child")) {
+            lv_obj_add_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+            lv_obj_set_scroll_dir(obj, LV_DIR_VER);
+        } else {
+            lv_obj_clear_flag(obj, LV_OBJ_FLAG_SCROLLABLE);
+        }
+    }
+
     cJSON *childrenArray = cJSON_GetObjectItem(json, "children");
     if (childrenArray != NULL) {
         for (cJSON *child = childrenArray->child; child != NULL; child = child->next) {
@@ -445,6 +475,18 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
                 continue;
             }
 #endif
+#ifdef FEATURE_TRON
+            cJSON *trxType = cJSON_GetObjectItem(child, "type");
+            cJSON *trxTextFunc = cJSON_GetObjectItem(child, "text_func");
+            if (trxType != NULL && trxTextFunc != NULL &&
+                !strcmp(trxType->valuestring, "label") &&
+                (!strcmp(trxTextFunc->valuestring, "GetTrxMessageUtf8") ||
+                 !strcmp(trxTextFunc->valuestring, "GetTrxMessageRaw"))) {
+                GuiShowTrxMessagePaged(obj, g_totalData,
+                                       !strcmp(trxTextFunc->valuestring, "GetTrxMessageRaw"));
+                continue;
+            }
+#endif
             GuiWidgetFactoryCreate(obj, child);
         }
     }
@@ -463,6 +505,8 @@ static char *GetLabelText(lv_obj_t *parent, cJSON *json)
         }
     }
     char *text = EXT_MALLOC(bufLen);
+    ASSERT(text != NULL);
+    memset(text, 0, bufLen);
     item = cJSON_GetObjectItem(json, "text");
     if (item != NULL) {
         strcpy_s(text, bufLen, _(item->valuestring));
@@ -482,6 +526,46 @@ static char *GetLabelText(lv_obj_t *parent, cJSON *json)
         }
     }
     return text;
+}
+
+static void GuiPagedTextDelete(lv_event_t *event)
+{
+    EXT_FREE(lv_event_get_user_data(event));
+}
+
+static lv_obj_t *GuiWidgetPagedText(lv_obj_t *parent, cJSON *json)
+{
+    lv_obj_t *obj = lv_obj_create(parent);
+    lv_obj_set_size(obj, lv_pct(100), 360);
+    lv_obj_set_style_pad_all(obj, 0, LV_PART_MAIN);
+    lv_obj_set_style_border_width(obj, 0, LV_PART_MAIN);
+    lv_obj_set_style_bg_opa(obj, LV_OPA_TRANSP, LV_PART_MAIN);
+    char *ownedText = NULL;
+    const char *text = NULL;
+#ifdef FEATURE_TRON
+    cJSON *textFunc = cJSON_GetObjectItem(json, "text_func");
+    if (textFunc != NULL && textFunc->valuestring != NULL &&
+            (strcmp(textFunc->valuestring, "GetTrxCallData") == 0 ||
+             strcmp(textFunc->valuestring, "GetTrxMemo") == 0 ||
+             strcmp(textFunc->valuestring, "GetTrxMemoHex") == 0)) {
+        if (strcmp(textFunc->valuestring, "GetTrxMemo") == 0) {
+            text = GuiGetTrxMemoText(g_totalData);
+        } else if (strcmp(textFunc->valuestring, "GetTrxMemoHex") == 0) {
+            text = GuiGetTrxMemoHexText(g_totalData);
+        } else {
+            text = GuiGetTrxCallDataText(g_totalData);
+        }
+    } else
+#endif
+    {
+        ownedText = GetLabelText(parent, json);
+        text = ownedText;
+    }
+    GuiShowPagedMessageText(obj, text, true, NULL, NULL);
+    if (ownedText != NULL) {
+        lv_obj_add_event_cb(obj, GuiPagedTextDelete, LV_EVENT_DELETE, ownedText);
+    }
+    return obj;
 }
 
 lv_obj_t *GuiWidgetTextArea(lv_obj_t *parent, cJSON *json)
@@ -536,7 +620,7 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
 
     while (item != NULL) {
         if (item->string != NULL) {
-            snprintf(buf, sizeof(buf), "%s:", item->string);
+            snprintf_s(buf, sizeof(buf), "%s:", item->string);
             GuiCreateValueLabel(parent, buf, indent, yOffset);
         }
 
@@ -556,13 +640,13 @@ static void DisplayJsonRecursive(lv_obj_t *parent, cJSON *item, int indent, uint
             }
             GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsNumber(item)) {
-            snprintf(buf, sizeof(buf), "%.0f", item->valuedouble);
+            snprintf_s(buf, sizeof(buf), "%.0f", item->valuedouble);
             GuiCreateValueLabel(parent, buf, indent + 1, yOffset);
         } else if (cJSON_IsBool(item)) {
-            snprintf(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valueint ? "true" : "false");
+            snprintf_s(buf, sizeof(buf), "%*s%s", (indent + 1) * 2, "", item->valueint ? "true" : "false");
             GuiCreateValueLabel(parent, buf, indent, yOffset);
         } else if (cJSON_IsNull(item)) {
-            snprintf(buf, sizeof(buf), "%*snull", (indent + 1) * 2, "");
+            snprintf_s(buf, sizeof(buf), "%*snull", (indent + 1) * 2, "");
             GuiCreateValueLabel(parent, buf, indent, yOffset);
         }
 
@@ -916,7 +1000,7 @@ lv_obj_t *GuiWidgetTabViewChild(lv_obj_t *parent, cJSON *json)
     lv_obj_set_style_text_color(tab_btns, WHITE_COLOR, LV_PART_ITEMS | LV_STATE_CHECKED);
     lv_obj_set_style_text_color(tab_btns, WHITE_COLOR, LV_PART_MAIN);
     lv_obj_set_style_border_side(tab_btns, LV_BORDER_SIDE_BOTTOM, LV_PART_ITEMS | LV_STATE_CHECKED);
-    lv_obj_set_width(tab_btns, 200);
+    lv_obj_set_width(tab_btns, g_analyzeTabview.tabviewIndex >= 2 ? 408 : 200);
 
     item = cJSON_GetObjectItem(json, "font");
     if (item != NULL) {
@@ -995,6 +1079,8 @@ static lv_obj_t *GuiWidgetFactoryCreate(lv_obj_t *parent, cJSON *json)
         obj = GuiWidgetCustomContainer(parent, json);
     } else if (0 == strcmp(type, "textarea")) {
         obj = GuiWidgetTextArea(parent, json);
+    } else if (0 == strcmp(type, "paged_text")) {
+        obj = GuiWidgetPagedText(parent, json);
     } else if (0 == strcmp(type, "json_label")) {
         obj = GuiWidgetJsonLabel(parent, json);
     } else if (0 == strcmp(type, "btn")) {
@@ -1012,6 +1098,30 @@ void SetParseTransactionResult(void* result)
     g_totalData = ((TransactionParseResult_DisplayTx *)result)->data;
 }
 
+static cJSON *ParseTransactionTemplate(const char *config)
+{
+#ifdef COMPILE_SIMULATOR
+    enum { TRANSACTION_TEMPLATE_MAX_LEN = 100 * 1024 };
+    if (config[0] != '{') {
+        lv_fs_file_t fd;
+        uint32_t size = 0;
+        char buf[TRANSACTION_TEMPLATE_MAX_LEN];
+        if (LV_FS_RES_OK != lv_fs_open(&fd, config, LV_FS_MODE_RD)) {
+            printf("lv_fs_open failed %s\n", config);
+            return NULL;
+        }
+        lv_fs_res_t result = lv_fs_read(&fd, buf, sizeof(buf), &size);
+        lv_fs_close(&fd);
+        if (result != LV_FS_RES_OK || size >= sizeof(buf)) {
+            return NULL;
+        }
+        buf[size] = '\0';
+        return cJSON_Parse(buf);
+    }
+#endif
+    return cJSON_Parse(config);
+}
+
 static void* CreateTransactionDetailWidgets()
 {
     int index = -1;
@@ -1024,36 +1134,12 @@ static void* CreateTransactionDetailWidgets()
     if (index == -1) {
         return NULL;
     }
-#ifdef COMPILE_SIMULATOR
-    lv_fs_file_t fd;
-    uint32_t size;
-#define JSON_MAX_LEN (1024 * 100)
-    char buf[JSON_MAX_LEN];
-    if (LV_FS_RES_OK != lv_fs_open(&fd, g_analyzeArray[index].config, LV_FS_MODE_RD)) {
-        printf("lv_fs_open failed %s\n", g_analyzeArray[index].config);
-        return NULL;
-    }
-
-    lv_fs_read(&fd, buf, JSON_MAX_LEN, &size);
-    buf[size] = '\0';
-#endif
-
-#ifdef COMPILE_SIMULATOR
-    cJSON *paramJson = cJSON_Parse(buf);
-#else
-    cJSON *paramJson = cJSON_Parse(g_analyzeArray[index].config);
-#endif
+    cJSON *paramJson = ParseTransactionTemplate(g_analyzeArray[index].config);
     if (paramJson == NULL) {
         printf("cJSON_Parse failed\n");
-#ifdef COMPILE_SIMULATOR
-        lv_fs_close(&fd);
-#endif
         return NULL;
     }
     lv_obj_t *obj = GuiWidgetFactoryCreate(g_templateContainer, paramJson);
-#ifdef COMPILE_SIMULATOR
-    lv_fs_close(&fd);
-#endif
     cJSON_Delete(paramJson);
     return obj;
 }
@@ -1104,6 +1190,9 @@ void GuiAnalyzeViewInit(lv_obj_t *parent)
             break;
         }
         tabWidth += tabItemWidth;
+    }
+    if (tabWidth > 408) {
+        tabWidth = 408;
     }
 
     for (int i = 0; i < GUI_ANALYZE_TABVIEW_CNT; i++) {
@@ -1189,7 +1278,13 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
         return NULL;
     }
 #ifdef COMPILE_SIMULATOR
-    return g_templateContainer;
+    if (g_reMapIndex != REMAPVIEW_BTC && g_reMapIndex != REMAPVIEW_BTC_MESSAGE
+#ifdef WEB3_VERSION
+        && g_reMapIndex != REMAPVIEW_SOL && g_reMapIndex != REMAPVIEW_SOL_MESSAGE
+#endif
+       ) {
+        return g_templateContainer;
+    }
 #endif
 
     if (g_tableView == NULL || g_analyzeTabview.obj[0] == NULL) {

@@ -1106,30 +1106,37 @@ static void CloseDerivationHandler(lv_event_t *e)
 static void GetCardanoEgAddress(void)
 {
 #ifdef WEB3_VERSION
-    char *xPub = NULL;
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_0);
-    SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
-    CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][0], BUFFER_SIZE_128,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_ADA_1);
-    result = cardano_get_base_address(xPub, 0, 1);
-    CutAndFormatString(g_derivationPathAddr[STANDARD_ADA][1], BUFFER_SIZE_128,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_0);
-    result = cardano_get_base_address(xPub, 0, 1);
-    CutAndFormatString(g_derivationPathAddr[LEDGER_ADA][0], BUFFER_SIZE_128,
-                       result->data, 24);
-    free_simple_response_c_char(result);
-
-    xPub = GetCurrentAccountPublicKey(XPUB_TYPE_LEDGER_ADA_1);
-    result = cardano_get_base_address(xPub, 0, 1);
-    CutAndFormatString(g_derivationPathAddr[LEDGER_ADA][1], BUFFER_SIZE_128,
-                       result->data, 24);
-    free_simple_response_c_char(result);
+    const struct {
+        ChainType chainType;
+        uint8_t row;
+        uint8_t col;
+    } items[] = {
+        {XPUB_TYPE_ADA_0, STANDARD_ADA, 0},
+        {XPUB_TYPE_ADA_1, STANDARD_ADA, 1},
+        {XPUB_TYPE_LEDGER_ADA_0, LEDGER_ADA, 0},
+        {XPUB_TYPE_LEDGER_ADA_1, LEDGER_ADA, 1},
+    };
+    for (uint32_t i = 0; i < NUMBER_OF_ARRAYS(items); i++) {
+        char *xPub = GetCurrentAccountPublicKey(items[i].chainType);
+        bool valid = xPub != NULL && xPub[0] != '\0';
+        if (!valid) {
+            ClearSecretCache();
+        }
+        ASSERT(valid);
+        SimpleResponse_c_char *result = cardano_get_base_address(xPub, 0, 1);
+        valid = result != NULL && result->error_code == 0 && result->data != NULL && result->data[0] != '\0';
+        if (valid) {
+            CutAndFormatString(g_derivationPathAddr[items[i].row][items[i].col], BUFFER_SIZE_128,
+                               result->data, 24);
+        }
+        if (result != NULL) {
+            free_simple_response_c_char(result);
+        }
+        if (!valid) {
+            ClearSecretCache();
+        }
+        ASSERT(valid);
+    }
 #endif
 }
 

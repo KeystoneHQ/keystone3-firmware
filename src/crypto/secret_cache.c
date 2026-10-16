@@ -8,6 +8,9 @@
 #include "stdio.h"
 #include "account_manager.h"
 #include "se_manager.h"
+#ifdef CYPHERPUNK_VERSION
+extern void monero_clear_transaction_state(void);
+#endif
 
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
@@ -240,6 +243,9 @@ uint32_t SecretCacheGetDiceRollsLen(void)
 
 void ClearSecretCache(void)
 {
+#ifdef CYPHERPUNK_VERSION
+    monero_clear_transaction_state();
+#endif
     uint32_t len;
     g_identifier = 0;
     g_iteration = 0;
@@ -309,4 +315,68 @@ void ClearSecretCache(void)
 
     // SE-side transient session secrets share the passcode cache's lifetime (gen-2). No-op on gen-1.
     SE_ClearSessionSecrets();
+}
+
+void WipeSecretCacheOnFatalError(void)
+{
+
+    uint32_t len;
+    g_identifier = 0;
+    g_iteration = 0;
+    g_extendable = false;
+
+    if (g_passwordCache != NULL) {
+        len = strnlen_s(g_passwordCache, PASSWORD_MAX_LEN);
+        memset_s(g_passwordCache, len, 0, len);
+        g_passwordCache = NULL;
+    }
+
+    if (g_passphraseCache != NULL) {
+        len = strnlen_s(g_passphraseCache, PASSPHRASE_MAX_LEN);
+        memset_s(g_passphraseCache, len, 0, len);
+        g_passphraseCache = NULL;
+    }
+
+    if (g_newPasswordCache != NULL) {
+        len = strnlen_s(g_newPasswordCache, PASSWORD_MAX_LEN);
+        memset_s(g_newPasswordCache, len, 0, len);
+        g_newPasswordCache = NULL;
+    }
+
+    if (g_entropyCache != NULL) {
+        memset_s(g_entropyCache, g_entropyLen, 0, g_entropyLen);
+        g_entropyLen = 0;
+        g_entropyCache = NULL;
+    }
+
+    if (g_emsCache != NULL) {
+        memset_s(g_emsCache, g_emsLen, 0, g_emsLen);
+        g_emsLen = 0;
+        g_emsCache = NULL;
+    }
+
+    if (g_mnemonicCache != NULL) {
+        len = strnlen_s(g_mnemonicCache, MNEMONIC_MAX_LEN);
+        memset_s(g_mnemonicCache, len, 0, len);
+        g_mnemonicCache = NULL;
+    }
+
+    if (g_walletName != NULL) {
+        size_t len = strnlen_s(g_walletName, WALLET_NAME_MAX_LEN + 1);
+        memset_s(g_walletName, WALLET_NAME_MAX_LEN + 1, 0, len);
+        g_walletName = NULL;
+    }
+
+    for (int i = 0; i < SLIP39_MAX_MEMBER; i++) {
+        if (g_slip39MnemonicCache[i] != NULL) {
+            len = strnlen_s(g_slip39MnemonicCache[i], MNEMONIC_MAX_LEN);
+            memset_s(g_slip39MnemonicCache[i], len, 0, len);
+            g_slip39MnemonicCache[i] = NULL;
+        }
+    }
+
+    memset_s(g_checksumCache, 32, 0, 32);
+    memset_s(g_diceRollHashCache, 32, 0, 32);
+    g_diceRollsLen = 0;
+
 }

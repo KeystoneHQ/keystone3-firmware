@@ -182,6 +182,15 @@ pub mod instruction {
         /// Unpacks a byte buffer into a [SwapInstruction](enum.SwapInstruction.html).
         pub fn unpack(input: &[u8]) -> Result<Self, ProgramError> {
             let (&tag, rest) = input.split_first().ok_or(SwapError::InvalidInstruction)?;
+            let expected_len = match tag {
+                0 => Fees::LEN + SwapCurve::LEN,
+                1 | 4 | 5 => 16,
+                2 | 3 => 24,
+                _ => return Err(SwapError::InvalidInstruction.into()),
+            };
+            if rest.len() != expected_len {
+                return Err(SwapError::InvalidInstruction.into());
+            }
             Ok(match tag {
                 0 => {
                     if rest.len() >= Fees::LEN {
@@ -254,6 +263,27 @@ pub mod instruction {
                 Ok((amount, rest))
             } else {
                 Err(SwapError::InvalidInstruction.into())
+            }
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::SwapInstruction;
+
+        #[test]
+        fn rejects_short_and_trailing_swap_data() {
+            for (tag, body_len) in [(1u8, 16usize), (2, 24), (3, 24), (4, 16), (5, 16)] {
+                let mut valid = vec![tag];
+                valid.extend(core::iter::repeat(0).take(body_len));
+                assert!(SwapInstruction::unpack(&valid).is_ok(), "tag={tag}");
+
+                let mut short = valid.clone();
+                short.pop();
+                assert!(SwapInstruction::unpack(&short).is_err(), "tag={tag}");
+
+                valid.push(0xaa);
+                assert!(SwapInstruction::unpack(&valid).is_err(), "tag={tag}");
             }
         }
     }

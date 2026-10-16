@@ -22,6 +22,7 @@
 #endif
 #ifdef CYPHERPUNK_VERSION
 #include "gui_zcash_batch_widgets.h"
+#include "gui_scan_widgets.h"
 #endif
 
 // The order of the enumeration must be guaranteed
@@ -97,6 +98,19 @@ void handleURResult(URParseResult *urResult, URParseMultiResult *urMultiResult, 
         break;
 #endif
 #ifdef CYPHERPUNK_VERSION
+    case ZcashAddressCheck: {
+        ZcashAddressScanResult_t message = {.viewType = urViewType};
+        const char *address = zcash_address_qr_text(urResult->data);
+        if (address == NULL || strcpy_s(message.address, sizeof(message.address), address) != EOK) {
+            free_ur_parse_result(urResult);
+            return;
+        }
+        free_ur_parse_result(urResult);
+        if (GuiApiEmitSignal(SIG_QRCODE_VIEW_SCAN_PASS, &message, sizeof(message)) == SUCCESS_CODE) {
+            StopQrDecode();
+        }
+        return;
+    }
     case ZcashBatchTx:
         GuiSetZcashBatchUrData(urResult, urMultiResult, is_multi);
         break;

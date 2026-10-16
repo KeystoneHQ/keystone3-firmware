@@ -144,6 +144,7 @@ default = ["debug-cypherpunk"]
 
 [dev-dependencies]
 keystore = { path = "../keystore" }
+ur = { package = "keystone-ur", version = "=0.1.1", default-features = false }
 
 [build-dependencies]
 cbindgen = "0.27.0"

@@ -353,6 +353,17 @@ pub mod instruction {
             let (&tag, rest) = input
                 .split_first()
                 .ok_or(LendingError::InstructionUnpackError)?;
+            let expected_len = match tag {
+                0 => 64,
+                1 => 32,
+                2 => 32,
+                3 | 6 | 7 => 0,
+                4 | 5 | 8 | 9 | 10 | 11 | 12 | 13 => 8,
+                _ => return Err(LendingError::InstructionUnpackError.into()),
+            };
+            if rest.len() != expected_len {
+                return Err(LendingError::InstructionUnpackError.into());
+            }
             Ok(match tag {
                 0 => {
                     let (owner, rest) = Self::unpack_pubkey(rest)?;
@@ -483,6 +494,44 @@ pub mod instruction {
             let (key, rest) = input.split_at(PUBKEY_BYTES);
             let pk = Pubkey::new(key);
             Ok((pk, rest))
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::LendingInstruction;
+
+        #[test]
+        fn rejects_short_and_trailing_lending_data() {
+            for (tag, body_len) in [
+                (0u8, 64usize),
+                (1, 32),
+                (2, 32),
+                (3, 0),
+                (4, 8),
+                (5, 8),
+                (6, 0),
+                (7, 0),
+                (8, 8),
+                (9, 8),
+                (10, 8),
+                (11, 8),
+                (12, 8),
+                (13, 8),
+            ] {
+                let mut valid = vec![tag];
+                valid.extend(core::iter::repeat(0).take(body_len));
+                assert!(LendingInstruction::unpack(&valid).is_ok(), "tag={tag}");
+
+                if body_len > 0 {
+                    let mut short = valid.clone();
+                    short.pop();
+                    assert!(LendingInstruction::unpack(&short).is_err(), "tag={tag}");
+                }
+
+                valid.push(0xaa);
+                assert!(LendingInstruction::unpack(&valid).is_err(), "tag={tag}");
+            }
         }
     }
 }

@@ -214,8 +214,17 @@ void GuiTransactionParseFailed()
     ThrowError(ERR_INVALID_QRCODE);
 }
 
-void GuiTransactionDetailRefresh()
+void GuiTransactionDetailRefresh(bool resumedFromLock)
 {
+#ifdef FEATURE_MONERO
+    if (resumedFromLock && (g_viewType == XmrTxUnsigned || g_viewType == XmrOutput)) {
+        GuiCloseToTargetView(&g_homeView);
+        return;
+    }
+#else
+    (void)resumedFromLock;
+#endif
+
     // PassWordPinHintRefresh(g_keyboardWidget);
     GUI_DEL_OBJ(g_fingerSingContainer)
 }

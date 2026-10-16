@@ -35,6 +35,7 @@ void FatfsGetFileName(const char *path, char *fileName[], uint32_t maxLen, uint3
 uint32_t GetCurrentStampTime(void);
 bool FatfsFileExist(const char *path);
 bool GetEnsName(const char *addr, char *name);
+void FpClearManageInfo(void);
 void FpWipeManageInfo(void);
 void SetPageLockScreen(bool enable);
 uint8_t GetFingerSignFlag(void);
@@ -50,6 +51,7 @@ extern bool g_reboot;
 
 #undef GUI_ANALYZE_OBJ_SURPLUS
 #ifdef CYPHERPUNK_VERSION
+#include "multi/cypherpunk/gui_monero_template.h"
 #define GUI_ANALYZE_OBJ_SURPLUS \
     { \
         REMAPVIEW_ZCASH, \
@@ -60,14 +62,14 @@ extern bool g_reboot;
     }, \
     { \
         REMAPVIEW_XMR_OUTPUT, \
-        PC_SIMULATOR_PATH "/page_xmr_output.json", \
+        GUI_XMR_OUTPUT_TEMPLATE, \
         GuiGetMoneroOutputData, \
         NULL, \
         FreeMoneroMemory, \
     }, \
     { \
         REMAPVIEW_XMR_UNSIGNED, \
-        PC_SIMULATOR_PATH "/page_xmr_unsigned.json", \
+        GUI_XMR_UNSIGNED_TEMPLATE, \
         GuiGetMoneroUnsignedTxData, \
         NULL, \
         FreeMoneroMemory, \
@@ -75,6 +77,8 @@ extern bool g_reboot;
 #endif
 
 #ifdef WEB3_VERSION
+#include "multi/web3/gui_trx_template.h"
+#include "multi/web3/gui_general_analyze.h"
 #define GUI_ANALYZE_OBJ_SURPLUS           \
     { \
         REMAPVIEW_ETH, \
@@ -99,21 +103,21 @@ extern bool g_reboot;
     }, \
     { \
         REMAPVIEW_TRX, \
-        PC_SIMULATOR_PATH "/page_trx.json", \
+        GUI_TRX_PAGE_TEMPLATE, \
         GuiGetTrxData, \
         NULL, \
         FreeTrxMemory, \
     }, \
     { \
         REMAPVIEW_TRX_PERSONAL_MESSAGE, \
-        PC_SIMULATOR_PATH "/page_trx_person.json", \
+        GUI_TRX_PERSONAL_MESSAGE_TEMPLATE, \
         GuiGetTrxPersonalMessage, \
         GetTrxPersonalMessageType, \
         FreeTrxMemory, \
     }, \
     { \
         REMAPVIEW_TRX_SWAP, \
-        PC_SIMULATOR_PATH "/page_trx_swap.json", \
+        GUI_TRX_SWAP_TEMPLATE, \
         GuiGetTrxData, \
         NULL, \
         FreeTrxMemory, \
@@ -155,14 +159,14 @@ extern bool g_reboot;
     }, \
     { \
         REMAPVIEW_SOL, \
-        PC_SIMULATOR_PATH "/page_sol.json", \
+        GUI_SOL_PAGE_TEMPLATE, \
         GuiGetSolData, \
         NULL, \
         FreeSolMemory, \
     }, \
     { \
         REMAPVIEW_SOL_MESSAGE, \
-        PC_SIMULATOR_PATH "/page_sol_message.json", \
+        GUI_SOL_MESSAGE_TEMPLATE, \
         GuiGetSolMessageData, \
         GetSolMessageType, \
         FreeSolMemory, \
@@ -176,7 +180,7 @@ extern bool g_reboot;
     }, \
     { \
         REMAPVIEW_ADA, \
-        PC_SIMULATOR_PATH "/page_ada.json", \
+        GUI_ADA_PAGE_TEMPLATE, \
         GuiGetAdaData, \
         NULL, \
         FreeAdaMemory, \

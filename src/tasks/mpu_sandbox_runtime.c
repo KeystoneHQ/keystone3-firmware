@@ -179,9 +179,56 @@ static void MpuSandboxProcessPayloadValidationChunk(MpuSandboxInput_t *input,
 
 static void MpuSandboxProcessCborChunk(MpuSandboxInput_t *input, MpuSandboxRw_t *rw)
 {
-    MpuSandboxProcessPayloadValidationChunk(input, rw,
-                                            MPU_SANDBOX_PAYLOAD_CBOR,
-                                            MPU_SANDBOX_VALIDATION_CBOR);
+    MpuSandboxCborState_t *state = &rw->payload.cbor;
+    uint32_t inputLength = input->request.input_length;
+    if ((rw->payload_mode != MPU_SANDBOX_PAYLOAD_NONE) &&
+            (rw->payload_mode != MPU_SANDBOX_PAYLOAD_CBOR)) {
+        rw->output.response.status = MPU_SANDBOX_STATUS_INVALID_REQUEST;
+        return;
+    }
+    if ((inputLength <= MPU_SANDBOX_UR_CHUNK_HEADER_SIZE) ||
+            (inputLength > MPU_SANDBOX_INPUT_SIZE)) {
+        goto invalid;
+    }
+    uint16_t offset = (uint16_t)input->input[0] | ((uint16_t)input->input[1] << 8U);
+    uint16_t total = (uint16_t)input->input[2] | ((uint16_t)input->input[3] << 8U);
+    uint32_t length = inputLength - MPU_SANDBOX_UR_CHUNK_HEADER_SIZE;
+    if ((total == 0U) || (total > MPU_SANDBOX_CBOR_INPUT_MAX_SIZE) ||
+            ((uint32_t)offset + length > total)) {
+        goto invalid;
+    }
+    if (offset == 0U) {
+        if (rw->payload_mode != MPU_SANDBOX_PAYLOAD_NONE) {
+            goto invalid;
+        }
+        SandboxZero(&rw->payload, sizeof(rw->payload));
+        rw->payload_mode = MPU_SANDBOX_PAYLOAD_CBOR;
+        state->total_length = total;
+    } else if ((rw->payload_mode != MPU_SANDBOX_PAYLOAD_CBOR) ||
+               (state->length != offset) || (state->total_length != total)) {
+        goto invalid;
+    }
+    state->length = (uint16_t)(offset + length);
+    bool last = state->length == total;
+    MpuSandboxUrChunkResult_t result = {
+        .validation_status = mpu_sandbox_cbor_stream_push(state->parser,
+            sizeof(state->parser), input->input + MPU_SANDBOX_UR_CHUNK_HEADER_SIZE,
+            length, last),
+        .accepted_length = state->length,
+    };
+    if (last) {
+        SandboxZero(&rw->payload, sizeof(rw->payload));
+        rw->payload_mode = MPU_SANDBOX_PAYLOAD_NONE;
+    }
+    SandboxCopy(rw->output.output, &result, sizeof(result));
+    rw->output.response.output_length = sizeof(result);
+    __asm volatile("dmb" ::: "memory");
+    rw->output.response.status = MPU_SANDBOX_STATUS_OK;
+    return;
+invalid:
+    SandboxZero(&rw->payload, sizeof(rw->payload));
+    rw->payload_mode = MPU_SANDBOX_PAYLOAD_NONE;
+    rw->output.response.status = MPU_SANDBOX_STATUS_INVALID_REQUEST;
 }
 
 static void MpuSandboxProcessEip712JsonChunk(MpuSandboxInput_t *input, MpuSandboxRw_t *rw)

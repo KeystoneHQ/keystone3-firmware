@@ -5,6 +5,7 @@
 #include "assert.h"
 #include "mh_rand.h"
 #include "mhscpu_qspi.h"
+#include "mhscpu_cache.h"
 
 static uint32_t CheckFlashType(void);
 

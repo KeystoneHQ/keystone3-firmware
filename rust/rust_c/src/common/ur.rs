@@ -88,18 +88,24 @@ unsafe extern "C" {
 
 struct KeystoneURDecoder {
     decoder: ur::Decoder,
+    budget: super::ur_budget::FragmentBudget,
 }
 
 impl KeystoneURDecoder {
     fn from_first_part(part: &str) -> Result<Self, URError> {
-        let mut decoder = ur::Decoder::default();
-        decoder
-            .receive(part)
-            .map_err(|error| URError::UrDecodeError(error.to_string()))?;
-        Ok(Self { decoder })
+        let mut decoder = Self {
+            decoder: ur::Decoder::default(),
+            budget: Default::default(),
+        };
+        decoder.receive(part)?;
+        Ok(decoder)
     }
 
     fn receive(&mut self, part: &str) -> Result<(), URError> {
+        if let Err(reason) = self.budget.receive(part) {
+            self.decoder = ur::Decoder::default();
+            return Err(URError::UrDecodeError(reason.to_string()));
+        }
         self.decoder
             .receive(part)
             .map_err(|error| URError::UrDecodeError(error.to_string()))
@@ -127,9 +133,10 @@ fn validate_reassembled_cbor(cbor: &[u8]) -> Result<(), URError> {
         let mut status = sandbox_parser::ValidationStatus::InvalidInput as u32;
         let available = unsafe { MpuSandboxValidateCbor(cbor.as_ptr(), cbor.len(), &mut status) };
         if !available {
-            return Err(URError::CborDecodeError(
-                "sandbox CBOR validation unavailable".to_string(),
-            ));
+            return Err(URError::CborDecodeError(format!(
+                "sandbox CBOR validation unavailable ({} bytes)",
+                cbor.len()
+            )));
         }
         status
     };
@@ -387,6 +394,8 @@ pub enum ViewType {
     MultisigCryptoImportXpub,
     #[cfg(feature = "btc-only")]
     MultisigBytesImportXpub,
+    #[cfg(feature = "cypherpunk")]
+    ZcashAddressCheck,
     ViewTypeUnKnown,
 }
 
@@ -403,6 +412,8 @@ pub enum QRCodeType {
     #[cfg(feature = "bitcoin")]
     BtcSignRequest,
     SeedSignerMessage,
+    #[cfg(feature = "cypherpunk")]
+    ZcashAddressText,
     #[cfg(feature = "multi-coins")]
     KeystoneSignRequest,
     #[cfg(feature = "ethereum")]
@@ -601,6 +612,10 @@ impl Free for URParseResult {
 
 unsafe fn free_ur(ur_type: &QRCodeType, data: PtrUR) {
     match ur_type {
+        #[cfg(feature = "cypherpunk")]
+        QRCodeType::ZcashAddressText => {
+            free_ptr_with_type!(data, CString);
+        }
         #[cfg(feature = "bitcoin")]
         QRCodeType::CryptoPSBT => {
             free_ptr_with_type!(data, CryptoPSBT);
@@ -781,6 +796,80 @@ impl_response!(URParseMultiResult);
 
 #[cfg(test)]
 mod tests {
+    #[cfg(feature = "cypherpunk")]
+    #[test]
+    fn zcash_address_text_qr_owns_and_releases_its_payload() {
+        use crate::common::qrcode::parse_qrcode_text;
+        use crate::zcash::{verify_zcash_address, zcash_address_qr_text, ZcashAddressVerification};
+        let key = keystore::algorithms::zcash::derive_ufvk(
+            &zcash_vendor::zcash_protocol::consensus::MainNetwork,
+            &[1; 32],
+            "m/32'/133'/0'",
+        )
+        .unwrap();
+        let text =
+            app_zcash::get_address(&zcash_vendor::zcash_protocol::consensus::MainNetwork, &key)
+                .unwrap();
+        let input = CString::new(text.as_bytes()).unwrap();
+        let key = CString::new(key).unwrap();
+        unsafe {
+            for _ in 0..8 {
+                let parsed = Box::from_raw(parse_qrcode_text(input.as_ptr() as PtrString));
+                assert_eq!(parsed.error_code, 0);
+                assert_eq!(parsed.t, ViewType::ZcashAddressCheck);
+                assert!(matches!(parsed.ur_type, QRCodeType::ZcashAddressText));
+                let borrowed = zcash_address_qr_text(parsed.data);
+                assert_eq!(cstr_core::CStr::from_ptr(borrowed).to_str().unwrap(), text);
+                assert!(matches!(
+                    verify_zcash_address(key.as_ptr() as PtrString, borrowed as PtrString),
+                    ZcashAddressVerification::ZcashAddressOwned
+                ));
+                parsed.free();
+            }
+            for (candidate, owned) in [
+                (text.to_ascii_uppercase(), true),
+                (format!("U{}", &text[1..]), false),
+                ("UTEST1INVALID".to_string(), false),
+                ("UREGTEST1INVALID".to_string(), false),
+            ] {
+                let input = CString::new(candidate.as_bytes()).unwrap();
+                let parsed = Box::from_raw(parse_qrcode_text(input.as_ptr() as PtrString));
+                assert_eq!(parsed.error_code, 0);
+                assert_eq!(parsed.t, ViewType::ZcashAddressCheck);
+                let borrowed = zcash_address_qr_text(parsed.data);
+                assert_eq!(
+                    cstr_core::CStr::from_ptr(borrowed).to_str().unwrap(),
+                    candidate
+                );
+                let result = verify_zcash_address(key.as_ptr() as PtrString, borrowed as PtrString);
+                if owned {
+                    assert!(matches!(
+                        result,
+                        ZcashAddressVerification::ZcashAddressOwned
+                    ));
+                } else {
+                    assert!(matches!(
+                        result,
+                        ZcashAddressVerification::ZcashAddressInvalid
+                    ));
+                }
+                parsed.free();
+            }
+            for text in [
+                "zcash:u1invalid".to_string(),
+                format!("u1{}", "q".repeat(1024)),
+            ] {
+                let text = CString::new(text).unwrap();
+                let parsed = Box::from_raw(parse_qrcode_text(text.as_ptr() as PtrString));
+                assert_ne!(parsed.error_code, 0);
+                parsed.free();
+            }
+            assert!(matches!(
+                verify_zcash_address(core::ptr::null_mut(), core::ptr::null_mut()),
+                ZcashAddressVerification::ZcashAddressKeyUnavailable
+            ));
+        }
+    }
     use alloc::vec;
 
     use super::*;
@@ -911,12 +1000,15 @@ fn sandbox_cbor_error(status: sandbox_parser::ValidationStatus) -> URError {
 }
 
 fn validate_single_part_cbor(value: &str) -> Result<(), URError> {
+    #[cfg(feature = "tron")]
+    if super::ur_budget::is_tron(value) {
+        super::ur_budget::validate_text_len(value).map_err(URError::UrDecodeError)?;
+    }
     let (kind, cbor) =
         ur::decode(value).map_err(|error| URError::UrDecodeError(error.to_string()))?;
     if kind != ur::ur::Kind::SinglePart {
         return Ok(());
     }
-
     let status = sandbox_parser::validate_cbor(&cbor);
     if status != sandbox_parser::ValidationStatus::Ok {
         return Err(sandbox_cbor_error(status));
@@ -1039,6 +1131,8 @@ pub fn decode_ur(ur: String) -> URParseResult {
         QRCodeType::AvaxSignRequest => _decode_ur::<AvaxSignRequest>(ur, ur_type),
         #[cfg(not(feature = "btc-only"))]
         QRCodeType::QRHardwareCall => _decode_ur::<QRHardwareCall>(ur, ur_type),
+        #[cfg(feature = "cypherpunk")]
+        QRCodeType::ZcashAddressText => URParseResult::from(RustCError::InvalidMessage),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),
@@ -1153,6 +1247,8 @@ fn receive_ur(ur: String, decoder: &mut KeystoneURDecoder) -> URParseMultiResult
         QRCodeType::XmrTxUnsignedRequest => _receive_ur::<XmrTxUnsigned>(ur, ur_type, decoder),
         #[cfg(feature = "avalanche")]
         QRCodeType::AvaxSignRequest => _receive_ur::<AvaxSignRequest>(ur, ur_type, decoder),
+        #[cfg(feature = "cypherpunk")]
+        QRCodeType::ZcashAddressText => URParseMultiResult::from(RustCError::InvalidMessage),
         QRCodeType::URTypeUnKnown | QRCodeType::SeedSignerMessage => URParseMultiResult::from(
             URError::NotSupportURTypeError("UnKnown ur type".to_string()),
         ),
@@ -1210,4 +1306,150 @@ pub unsafe extern "C" fn receive(ur: PtrString, decoder: PtrDecoder) -> *mut URP
     }
     let decoder = extract_ptr_with_type!(decoder, KeystoneURDecoder);
     receive_ur(ur, decoder).c_ptr()
+}
+
+#[cfg(all(test, feature = "tron"))]
+mod tron_limit_tests {
+    use super::*;
+    use alloc::vec;
+
+    fn fragment(parts: u32, message_len: u32, data: &[u8]) -> String {
+        let mut e = minicbor::Encoder::new(Vec::new());
+        e.array(5)
+            .unwrap()
+            .u32(1)
+            .unwrap()
+            .u32(parts)
+            .unwrap()
+            .u32(message_len)
+            .unwrap()
+            .u32(0)
+            .unwrap()
+            .bytes(data)
+            .unwrap();
+        ur::encode(&e.into_writer(), "tron-sign-request").replacen(
+            "tron-sign-request/",
+            &format!("tron-sign-request/1-{parts}/"),
+            1,
+        )
+    }
+
+    #[test]
+    fn tron_limits_enforce_frame_text_length() {
+        for (payload_len, accepted) in [(750, true), (751, false)] {
+            let mut encoder = minicbor::Encoder::new(Vec::new());
+            encoder.bytes(&vec![0; payload_len]).unwrap();
+            let single = ur::encode(&encoder.into_writer(), "tron-sign-request");
+            assert_eq!(single.len(), if accepted { 1535 } else { 1537 });
+            assert_eq!(validate_single_part_cbor(&single).is_ok(), accepted);
+            assert_eq!(
+                super::super::ur_budget::validate_text_len(&single.to_uppercase()).is_ok(),
+                accepted
+            );
+        }
+        let oversized_part = fragment(2, 2000, &[0; 1000]);
+        assert!(validate_single_part_cbor(&oversized_part).is_err());
+        assert!(KeystoneURDecoder::from_first_part(&oversized_part).is_err());
+    }
+
+    #[test]
+    fn tron_limits_reject_oversized_single_and_fountain_metadata() {
+        let max_cbor_bytes = app_tron::MAX_SIGN_DATA_LEN + 1024;
+        let too_big = ur::encode(&vec![0; max_cbor_bytes + 1], "tron-sign-request");
+        assert!(validate_single_part_cbor(&too_big)
+            .unwrap_err()
+            .to_string()
+            .contains("1536-byte limit"));
+        for bad in [
+            fragment(100, max_cbor_bytes as u32 + 1, &[0; 200]),
+            fragment(129, 129, &[0]),
+            fragment(u32::MAX, 1, &[0]),
+            fragment(0, 1, &[0]),
+            fragment(2, 1, &[0]),
+            fragment(2, 3, &[0]),
+        ] {
+            assert!(KeystoneURDecoder::from_first_part(&bad).is_err());
+        }
+    }
+
+    #[test]
+    fn tron_limits_reassemble_full_size_request_with_reordered_parts() {
+        use ur_registry::crypto_key_path::CryptoKeyPath;
+        use ur_registry::tron::tron_sign_request::DataType;
+        let req = TronSignRequest::new(
+            None,
+            vec![b'a'; app_tron::MAX_SIGN_DATA_LEN],
+            DataType::PersonalMessage,
+            CryptoKeyPath::from_path("m/44'/195'/0'/0/0".into(), Some([0x73, 0xc5, 0xda, 0x0a]))
+                .unwrap(),
+            None,
+            None,
+        );
+        let cbor = minicbor::to_vec(req).unwrap();
+        let mut encoder = ur::Encoder::new(&cbor, 200, "tron-sign-request").unwrap();
+        let mut parts: Vec<String> = (0..encoder.fragment_count())
+            .map(|_| encoder.next_part().unwrap())
+            .collect();
+        parts.reverse();
+        let first = encoder.next_part().unwrap();
+        let mut decoder = KeystoneURDecoder::from_first_part(&first).unwrap();
+        for part in parts {
+            decoder.receive(&part).unwrap();
+        }
+        assert!(decoder.complete());
+        assert_eq!(decoder.message().unwrap(), cbor);
+        let decoded = TronSignRequest::try_from(decoder.message().unwrap()).unwrap();
+        assert_eq!(decoded.get_sign_data().len(), app_tron::MAX_SIGN_DATA_LEN);
+        assert!(validate_single_part_cbor(&ur::encode(&cbor, "tron-sign-request")).is_err());
+    }
+
+    #[test]
+    fn tron_limits_bound_redundant_fragments_and_prevent_type_switching() {
+        let cbor = vec![0; 1024];
+        let mut encoder = ur::Encoder::new(&cbor, 200, "tron-sign-request").unwrap();
+        let part = encoder.next_part().unwrap();
+        let mut decoder = KeystoneURDecoder::from_first_part(&part).unwrap();
+        for _ in 0..2000 {
+            decoder.receive(&part).unwrap();
+        }
+        let mut rejected = false;
+        for _ in 0..2000 {
+            if decoder.receive(&encoder.next_part().unwrap()).is_err() {
+                rejected = true;
+                break;
+            }
+        }
+        assert!(rejected);
+        assert!(!decoder.complete());
+        assert!(decoder.message().is_err());
+        let other = part.replacen("tron-sign-request", "bytes", 1);
+        let mut decoder = KeystoneURDecoder::from_first_part(&other).unwrap();
+        assert!(decoder.receive(&part).is_err());
+        let mut decoder = KeystoneURDecoder::from_first_part(&part).unwrap();
+        assert!(decoder.receive(&other).is_err());
+    }
+}
+
+#[cfg(all(test, feature = "monero"))]
+mod monero_budget_tests {
+    use super::*;
+
+    #[test]
+    fn monero_reassembly_boundaries() {
+        let cbor = vec![0; app_monero::utils::io::MAX_REQUEST_BYTES];
+        let mut encoder = ur::Encoder::new(&cbor, 200, "xmr-txunsigned").unwrap();
+        let mut parts: Vec<String> = (0..encoder.fragment_count())
+            .map(|_| encoder.next_part().unwrap())
+            .collect();
+        parts.reverse();
+        let mut decoder = KeystoneURDecoder::from_first_part(&parts[0]).unwrap();
+        for part in &parts[1..] {
+            decoder.receive(part).unwrap();
+        }
+        assert!(decoder.complete());
+        assert_eq!(decoder.message().unwrap(), cbor);
+        let too_large = vec![0; cbor.len() + 1];
+        let mut encoder = ur::Encoder::new(&too_large, 200, "xmr-txunsigned").unwrap();
+        assert!(KeystoneURDecoder::from_first_part(&encoder.next_part().unwrap()).is_err());
+    }
 }

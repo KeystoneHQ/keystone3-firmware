@@ -2,6 +2,7 @@
 #define _GUI_SETUP_WIDGETS_H
 
 #include <stdint.h>
+#include "device_setting.h"
 
 typedef enum {
     WALLET_METHOD_CREATE,
@@ -9,15 +10,6 @@ typedef enum {
 
     WALLET_METHOD_BUTT,
 } WALLET_METHOD_ENUM;
-
-typedef enum {
-    SETUP_PAHSE_WELCOME = 0,
-    SETUP_PAHSE_LANGUAGE,
-    SETUP_PAHSE_WEB_AUTH,
-    SETUP_PAHSE_FIRMWARE_UPDATE,
-    SETUP_PAHSE_CREATE_WALLET,
-    SETUP_PAHSE_DONE,
-} SETUP_PHASE_ENUM;
 
 extern SETUP_PHASE_ENUM lastShutDownPage;
 
@@ -34,4 +26,3 @@ uint8_t GuiSetSetupPhase(SETUP_PHASE_ENUM pahaseEnum);
 bool GuiJudgeCurrentPahse(SETUP_PHASE_ENUM pahaseEnum);
 
 #endif /* _GUI_SETUP_WIDGETS_H */
-

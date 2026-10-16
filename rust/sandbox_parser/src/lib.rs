@@ -1,5 +1,7 @@
 #![no_std]
 
+pub mod cbor_stream;
+
 pub const MAX_NESTING_DEPTH: u32 = 32;
 pub const MAX_ITEMS: u32 = 1024;
 pub const MAX_JSON_NESTING_DEPTH: u32 = 32;

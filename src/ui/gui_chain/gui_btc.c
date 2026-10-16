@@ -359,7 +359,7 @@ static void PreparePublicKeys(PtrT_CSliceFFI_ExtendedPublicKey public_keys, Exte
     keys[3].path = "m/86'/0'/0'";
     keys[3].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_BTC_TAPROOT);
 #ifdef WEB3_VERSION
-    public_keys->size = 9;
+    public_keys->size = 10;
     keys[4].path = "m/44'/60'/0'";
     keys[4].xpub = GetCurrentAccountPublicKey(XPUB_TYPE_AVAX_BIP44_STANDARD);
     keys[5].path = "m/44'/3'/0'";
@@ -808,19 +808,7 @@ static bool IsAvalancheTx(DisplayTx *data)
     return strcmp(data->overview->network, "Avalanche BTC") == 0;
 }
 
-static void SetContainerDefaultStyle(lv_obj_t *container)
-{
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-}
 
-static void SetTitleLabelStyle(lv_obj_t *label)
-{
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
-}
 
 static void SetContentLableStyle(lv_obj_t *label)
 {
@@ -877,12 +865,12 @@ static lv_obj_t *CreateSignStatusView(lv_obj_t *parent, char *multi_sig_status, 
     } else {
         lv_obj_align_to(signStatusContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    SetContainerDefaultStyle(signStatusContainer);
+    GuiSetTransactionContainerStyle(signStatusContainer);
 
     lv_obj_t *label = lv_label_create(signStatusContainer);
     lv_label_set_text(label, "Status");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *value = lv_label_create(signStatusContainer);
     lv_label_set_text(value, multi_sig_status);
@@ -900,7 +888,7 @@ static lv_obj_t *CreateAvalancheNoticeView(lv_obj_t *parent, lv_obj_t *lastView)
     } else {
         lv_obj_align_to(noticeContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    SetContainerDefaultStyle(noticeContainer);
+    GuiSetTransactionContainerStyle(noticeContainer);
 
     lv_obj_t *img = GuiCreateImg(noticeContainer, &imgNotice);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 24, 24);
@@ -991,12 +979,12 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     } else {
         lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    SetContainerDefaultStyle(amountContainer);
+    GuiSetTransactionContainerStyle(amountContainer);
 
     lv_obj_t *label = lv_label_create(amountContainer);
     lv_label_set_text(label, "Amount");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *amountValue = lv_label_create(amountContainer);
     lv_label_set_text(amountValue, overviewData->total_output_amount);
@@ -1008,7 +996,7 @@ static lv_obj_t *CreateOverviewAmountView(lv_obj_t *parent, DisplayTxOverview *o
     label = lv_label_create(amountContainer);
     lv_label_set_text(label, "Fee");
     lv_obj_align_to(label, amountValue, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *feeValue = lv_label_create(amountContainer);
     char feeText[BUFFER_SIZE_64] = {0};
@@ -1050,12 +1038,12 @@ static lv_obj_t *CreateNetworkView(lv_obj_t *parent, char *network, lv_obj_t *la
     } else {
         lv_obj_align_to(networkContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
-    SetContainerDefaultStyle(networkContainer);
+    GuiSetTransactionContainerStyle(networkContainer);
 
     lv_obj_t *label = lv_label_create(networkContainer);
     lv_label_set_text(label, "Network");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *networkValue = lv_label_create(networkContainer);
     lv_label_set_text(networkValue, network);
@@ -1077,13 +1065,13 @@ static lv_obj_t *CreateSighashView(lv_obj_t *parent, char *sighashType, lv_obj_t
 static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *overviewData, lv_obj_t *lastView)
 {
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
-    SetContainerDefaultStyle(formContainer);
+    GuiSetTransactionContainerStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = lv_label_create(formContainer);
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lastView = label;
 
@@ -1103,7 +1091,7 @@ static lv_obj_t *CreateOverviewFromView(lv_obj_t *parent, DisplayTxOverview *ove
             snprintf(str, sizeof(str), "%d", (i + 1));
             lv_label_set_text(orderLabel, str);
             lv_obj_align(orderLabel, LV_ALIGN_DEFAULT, 0, 0);
-            SetTitleLabelStyle(orderLabel);
+            GuiSetTransactionTitleStyle(orderLabel);
         }
 
         lv_obj_t *addressLabel = lv_label_create(formInnerContainer);
@@ -1148,13 +1136,13 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
     showChange = !CHECK_UR_TYPE();
 #endif
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 62);
-    SetContainerDefaultStyle(toContainer);
+    GuiSetTransactionContainerStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = lv_label_create(toContainer);
     lv_label_set_text(label, "To");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lastView = label;
 
@@ -1175,7 +1163,7 @@ static lv_obj_t *CreateOverviewToView(lv_obj_t *parent, DisplayTxOverview *overv
             snprintf(str, sizeof(str), "%d", (i + 1));
             lv_label_set_text(toOrderLabel, str);
             lv_obj_align(toOrderLabel, LV_ALIGN_DEFAULT, 0, 0);
-            SetTitleLabelStyle(toOrderLabel);
+            GuiSetTransactionTitleStyle(toOrderLabel);
         }
 
         lv_obj_t *addressLabel = lv_label_create(toInnerContainer);
@@ -1238,12 +1226,12 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
 {
     lv_obj_t *amountContainer = GuiCreateContainerWithParent(parent, 408, 138);
     lv_obj_align_to(amountContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
-    SetContainerDefaultStyle(amountContainer);
+    GuiSetTransactionContainerStyle(amountContainer);
 
     lv_obj_t *label = lv_label_create(amountContainer);
     lv_label_set_text(label, "Input Value");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *inputValue = lv_label_create(amountContainer);
     lv_label_set_text(inputValue, detailData->total_input_amount);
@@ -1254,7 +1242,7 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
     label = lv_label_create(amountContainer);
     lv_label_set_text(label, "Output Value");
     lv_obj_align_to(label, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *outputValue = lv_label_create(amountContainer);
     lv_label_set_text(outputValue, detailData->total_output_amount);
@@ -1265,7 +1253,7 @@ static lv_obj_t *CreateDetailAmountView(lv_obj_t *parent, DisplayTxDetail *detai
     label = lv_label_create(amountContainer);
     lv_label_set_text(label, "Fee");
     lv_obj_align_to(label, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lv_obj_t *feeValue = lv_label_create(amountContainer);
     char feeText[BUFFER_SIZE_64] = {0};
@@ -1293,13 +1281,13 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 #endif
 
     lv_obj_t *formContainer = GuiCreateContainerWithParent(parent, 408, 0);
-    SetContainerDefaultStyle(formContainer);
+    GuiSetTransactionContainerStyle(formContainer);
     lv_obj_align_to(formContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = lv_label_create(formContainer);
     lv_label_set_text(label, "From");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lastView = label;
 
@@ -1317,7 +1305,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         snprintf(str, sizeof(str), "%d", (i + 1));
         lv_label_set_text(orderLabel, str);
         lv_obj_align(orderLabel, LV_ALIGN_DEFAULT, 0, 0);
-        SetTitleLabelStyle(orderLabel);
+        GuiSetTransactionTitleStyle(orderLabel);
 
         lv_obj_t *valueLabel = lv_label_create(formInnerContainer);
         lv_label_set_text(valueLabel, from->data[i].amount);
@@ -1356,7 +1344,7 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
         lv_obj_set_width(pathLabel, 332);
         lv_label_set_long_mode(pathLabel, LV_LABEL_LONG_WRAP);
         lv_label_set_text(pathLabel, from->data[i].path == NULL ? "" : from->data[i].path);
-        SetTitleLabelStyle(pathLabel);
+        GuiSetTransactionTitleStyle(pathLabel);
         lv_obj_align_to(pathLabel, addressLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 4);
         lv_obj_update_layout(pathLabel);
 
@@ -1379,13 +1367,13 @@ static lv_obj_t *CreateDetailFromView(lv_obj_t *parent, DisplayTxDetail *detailD
 static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailData, lv_obj_t *lastView)
 {
     lv_obj_t *toContainer = GuiCreateContainerWithParent(parent, 408, 0);
-    SetContainerDefaultStyle(toContainer);
+    GuiSetTransactionContainerStyle(toContainer);
     lv_obj_align_to(toContainer, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
 
     lv_obj_t *label = lv_label_create(toContainer);
     lv_label_set_text(label, "To");
     lv_obj_align(label, LV_ALIGN_DEFAULT, 24, 16);
-    SetTitleLabelStyle(label);
+    GuiSetTransactionTitleStyle(label);
 
     lastView = label;
 
@@ -1403,7 +1391,7 @@ static lv_obj_t *CreateDetailToView(lv_obj_t *parent, DisplayTxDetail *detailDat
         snprintf(str, sizeof(str), "%d", (i + 1));
         lv_label_set_text(orderLabel, str);
         lv_obj_align(orderLabel, LV_ALIGN_DEFAULT, 0, 0);
-        SetTitleLabelStyle(orderLabel);
+        GuiSetTransactionTitleStyle(orderLabel);
 
         lv_obj_t *valueLabel = lv_label_create(toInnerContainer);
         lv_label_set_text(valueLabel, to->data[i].amount);

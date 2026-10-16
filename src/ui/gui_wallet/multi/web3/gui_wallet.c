@@ -510,16 +510,21 @@ UREncodeResult *GuiGetKeystoneConnectWalletDataBip39(void)
     ExtendedPublicKey keys[NUMBER_OF_ARRAYS(chainPaths)];
     uint8_t mfp[4] = {0};
     GetMasterFingerPrint(mfp);
+
+    uint8_t sfp[ZCASH_SFP_LEN] = {0};
+    if (GetZcashSFP(GetCurrentAccountIndex(), sfp) != SUCCESS_CODE) {
+        printf("keystone connect: zcash sfp not ready for account %d\r\n", GetCurrentAccountIndex());
+        return NULL;
+    }
+
     PtrT_CSliceFFI_ExtendedPublicKey public_keys = BuildChainPaths(chainPaths, keys, NUMBER_OF_ARRAYS(chainPaths));
     char serialNumber[256];
     GetSerialNumber(serialNumber);
     char firmwareVersion[12];
     GetSoftWareVersionNumber(firmwareVersion);
 
-    uint8_t sfp[32];
-    GetZcashSFP(GetCurrentAccountIndex(), sfp);
-
     UREncodeResult *urEncode = get_keystone_connect_wallet_ur(mfp, sizeof(mfp), serialNumber, public_keys, "Keystone 3 Pro", firmwareVersion, sfp, sizeof(sfp));
+    memset_s(sfp, sizeof(sfp), 0, sizeof(sfp));
     CHECK_CHAIN_PRINT(urEncode);
     SRAM_FREE(public_keys);
     return urEncode;

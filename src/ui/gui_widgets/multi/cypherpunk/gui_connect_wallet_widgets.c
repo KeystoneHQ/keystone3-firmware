@@ -350,21 +350,31 @@ void GuiConnectWalletInit(void)
 
 UREncodeResult *GuiGetZecData(void)
 {
+    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
+    uint8_t sfp[ZCASH_SFP_LEN] = {0};
+    UREncodeResult *urEncode = NULL;
+    if (GetZcashUFVK(GetCurrentAccountIndex(), ufvk) != SUCCESS_CODE ||
+            GetZcashSFP(GetCurrentAccountIndex(), sfp) != SUCCESS_CODE) {
+        printf("zcash connect: cache not ready for account %d\r\n", GetCurrentAccountIndex());
+        memset_s(ufvk, sizeof(ufvk), 0, sizeof(ufvk));
+        memset_s(sfp, sizeof(sfp), 0, sizeof(sfp));
+        return NULL;
+    }
     CSliceFFI_ZcashKey *keys = SRAM_MALLOC(sizeof(CSliceFFI_ZcashKey));
     ZcashKey data[1];
     keys->data = data;
     keys->size = 1;
-    char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
-    uint8_t sfp[32];
-    GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-    GetZcashSFP(GetCurrentAccountIndex(), sfp);
     data[0].key_text = ufvk;
     data[0].key_name = GetWalletName();
     data[0].index = 0;
     char firmwareVersion[32];
     snprintf(firmwareVersion, sizeof(firmwareVersion), "%d.%d.%d",
              SOFTWARE_VERSION_MAJOR, SOFTWARE_VERSION_MINOR, SOFTWARE_VERSION_BUILD);
-    return get_connect_zcash_wallet_ur(sfp, 32, keys, firmwareVersion);
+    urEncode = get_connect_zcash_wallet_ur(sfp, sizeof(sfp), keys, firmwareVersion);
+    SRAM_FREE(keys);
+    memset_s(ufvk, sizeof(ufvk), 0, sizeof(ufvk));
+    memset_s(sfp, sizeof(sfp), 0, sizeof(sfp));
+    return urEncode;
 }
 
 void GuiPrepareArConnectWalletView(void)

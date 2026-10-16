@@ -1214,10 +1214,15 @@ void __inline FingerprintIsrRecvProcess(uint8_t byte)
     }
 }
 
-void FpWipeManageInfo(void)
+void FpClearManageInfo(void)
 {
     memset_s(&g_fpManager, sizeof(g_fpManager), 0, sizeof(g_fpManager));
     SetFingerManagerInfoToSE();
+}
+
+void FpWipeManageInfo(void)
+{
+    FpClearManageInfo();
     FpDeleteSend(FINGERPRINT_CMD_DELETE_ALL, 1);
 }
 

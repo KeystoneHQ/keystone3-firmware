@@ -928,6 +928,9 @@ int Slip39OneSliceCheck(char *wordsList, uint8_t wordCnt, uint16_t id, uint8_t e
 
 int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshold)
 {
+    if (wordCnt != 20 && wordCnt != 33) {
+        return SLIP39_INVALID_SECRET_LENGTH;
+    }
     uint16_t wordIndexBuf[wordCnt];
     Slip39Shared_t shards;
     char words[wordCnt][10];
@@ -937,13 +940,16 @@ int Slip39CheckFirstWordList(char *wordsList, uint8_t wordCnt, uint8_t *threshol
         wordIndexBuf[i] = slip39_word_for_string(words[i]);
     }
 
-    int ret = DecodeMnemonics(wordIndexBuf, wordCnt, &shards);
-    if (ret < 0) {
-        Slip39Error(ret);
-        return ret;
+    int shareLen = DecodeMnemonics(wordIndexBuf, wordCnt, &shards);
+    if (shareLen < 0) {
+        Slip39Error(shareLen);
+        return shareLen;
+    }
+    if (shareLen != (wordCnt == 20 ? 16 : 32)) {
+        return SLIP39_INVALID_SECRET_LENGTH;
     }
     *threshold = shards.memberThreshold;
-    return ret;
+    return SLIP39_OK;
 }
 
 void Slip39Error(int errNum)

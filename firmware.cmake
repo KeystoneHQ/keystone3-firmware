@@ -39,7 +39,7 @@ file(GLOB_RECURSE USB_DRIVER
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/msc/src/*.c"
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_Device_Library/Class/cdc/src/*.c"
     "external/mh1903_lib/SCPU_USB_Lib/SCPU_USB_OTG_Driver/src/*.c"
-    "external/mh1903_lib/USB-ESL/CircularBuffer.c"    
+    "external/mh1903_lib/USB-ESL/CircularBuffer.c"
 )
 
 set(TASKS
@@ -73,19 +73,19 @@ file(GLOB_RECURSE SRC
     "src/firmware/*.c"
     "src/msg/*.c"
     "src/ram/*.c"
-    "src/hardware_interface/*.c"    
+    "src/hardware_interface/*.c"
     "src/config/*"
 )
 
 file(GLOB_RECURSE EXCLUDED_FILES
      "src/managers/btc_only/*"
      )
-     
+
 if(NOT BTC_ONLY)
     list(REMOVE_ITEM SRC ${EXCLUDED_FILES})
     list(APPEND WEBUSB_PROTOCOL ${WEBUSB_PROTOCOL_GENERAL})
 endif()
-    
+
 file(GLOB_RECURSE FREERTOS
     "external/FreeRTOS/Source/croutine.c"
     "external/FreeRTOS/Source/event_groups.c"

@@ -1,7 +1,7 @@
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;
 
-use serde::ser::SerializeStruct;
+use serde::ser::{SerializeSeq, SerializeStruct};
 use serde::{Serialize, Serializer};
 
 use crate::solana_lib::jupiter_v6::instructions::{
@@ -17,15 +17,60 @@ use crate::solana_lib::spl::token_swap::instruction::{
     WithdrawAllTokenTypes, WithdrawSingleTokenTypeExactAmountOut,
 };
 use crate::solana_lib::squads_v4::instructions::{
-    MultisigCreateArgs, MultisigCreateArgsV2, ProposalCreateArgs, ProposalVoteArgs,
-    VaultTransactionCreateArgs,
+    ConfigTransactionCreateArgs, MultisigCreateArgs, MultisigCreateArgsV2, ProposalCreateArgs,
+    ProposalVoteArgs, VaultTransactionCreateArgs,
 };
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ProgramDetailSquadsConfigTransactionCreate {
+    pub multisig: String,
+    pub creator: String,
+    #[serde(flatten)]
+    pub args: ConfigTransactionCreateArgs,
+}
 
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ProgramDetailSystemTransfer {
     pub value: String,
+    #[serde(serialize_with = "serialize_account_reference")]
     pub from: String,
+    #[serde(serialize_with = "serialize_account_reference")]
     pub to: String,
+}
+
+fn serialize_account_reference<S: Serializer>(
+    account: &String,
+    serializer: S,
+) -> core::result::Result<S::Ok, S::Error> {
+    if let Some((table, index)) = account.split_once('#') {
+        if let Ok(index) = index.parse::<u8>() {
+            if !table.is_empty() {
+                let mut reference = serializer.serialize_struct("AltReference", 3)?;
+                reference.serialize_field("Table", table)?;
+                reference.serialize_field("Index", &index)?;
+                reference.serialize_field("Status", "Unresolved offline")?;
+                return reference.end();
+            }
+        }
+    }
+    serializer.serialize_str(account)
+}
+
+fn serialize_account_references<S: Serializer>(
+    accounts: &Vec<String>,
+    serializer: S,
+) -> core::result::Result<S::Ok, S::Error> {
+    struct Account<'a>(&'a String);
+    impl Serialize for Account<'_> {
+        fn serialize<S: Serializer>(&self, serializer: S) -> core::result::Result<S::Ok, S::Error> {
+            serialize_account_reference(self.0, serializer)
+        }
+    }
+    let mut seq = serializer.serialize_seq(Some(accounts.len()))?;
+    for account in accounts {
+        seq.serialize_element(&Account(account))?;
+    }
+    seq.end()
 }
 
 #[derive(Debug, Clone, Default, Serialize)]
@@ -1054,7 +1099,9 @@ pub struct ProgramDetailUnknown {
 #[derive(Debug, Clone, Default, Serialize)]
 pub struct ProgramDetailInstruction {
     pub data: String,
+    #[serde(serialize_with = "serialize_account_references")]
     pub accounts: Vec<String>,
+    #[serde(serialize_with = "serialize_account_reference")]
     pub program_account: String,
 }
 
@@ -1216,6 +1263,7 @@ pub enum ProgramDetail {
     StakeDeactivateDelinquent(ProgramDetailStakeDeactivateDelinquent),
 
     // squads v4
+    SquadsV4ConfigTransactionCreate(ProgramDetailSquadsConfigTransactionCreate),
     SquadsV4MultisigCreate(MultisigCreateArgs),
     SquadsV4MultisigCreateV2(MultisigCreateArgsV2),
     SquadsV4ProposalActivate,

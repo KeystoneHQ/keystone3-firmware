@@ -1,4 +1,5 @@
 #include "define.h"
+#include "gui_chain_components.h"
 #include "rust.h"
 #include "keystore.h"
 #include "gui_chain.h"
@@ -75,35 +76,13 @@ PtrT_TransactionCheckResult GuiGetSuiSignHashCheckResult(void)
     return sui_check_sign_hash_request(data, mfp, sizeof(mfp));
 }
 
-static void SetContainerDefaultStyle(lv_obj_t *container)
-{
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-}
 
-static void SetFlexContainerStyle(lv_obj_t *container, lv_flex_flow_t flow, lv_coord_t padding_y)
-{
-    lv_obj_set_style_radius(container, 24, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_color(container, WHITE_COLOR, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_style_bg_opa(container, 30, LV_PART_MAIN | LV_STATE_DEFAULT);
-    lv_obj_set_flex_flow(container, flow);
-    lv_obj_set_style_pad_top(container, padding_y, LV_PART_MAIN);
-    lv_obj_set_style_pad_bottom(container, padding_y, LV_PART_MAIN);
-    lv_obj_set_style_pad_left(container, 24, LV_PART_MAIN);
-}
 
-static void SetTitleLabelStyle(lv_obj_t *label)
-{
-    lv_obj_set_style_text_font(label, g_defIllustrateFont, LV_PART_MAIN);
-    lv_obj_set_style_text_color(label, WHITE_COLOR, LV_PART_MAIN);
-    lv_obj_set_style_text_opa(label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
-}
 
 lv_obj_t *GuiCreateSuiAutoHeightContainer(lv_obj_t *parent, uint16_t width, uint16_t padding_x)
 {
     lv_obj_t * container = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    SetContainerDefaultStyle(container);
+    GuiSetTransactionContainerStyle(container);
     lv_obj_set_style_pad_all(container, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_top(container, padding_x, LV_PART_MAIN);
     lv_obj_set_style_pad_bottom(container, padding_x, LV_PART_MAIN);
@@ -112,7 +91,7 @@ lv_obj_t *GuiCreateSuiAutoHeightContainer(lv_obj_t *parent, uint16_t width, uint
 lv_obj_t* GuiCreateSuiNoticeCard(lv_obj_t* parent)
 {
     lv_obj_t* card = GuiCreateSuiAutoHeightContainer(parent, 408, 24);
-    SetContainerDefaultStyle(card);
+    GuiSetTransactionContainerStyle(card);
     lv_obj_set_style_bg_color(card, lv_color_hex(0xF55831), LV_PART_MAIN);
     lv_obj_set_style_radius(card, 8, LV_PART_MAIN);
 
@@ -134,10 +113,10 @@ lv_obj_t* GuiCreateSuiNoticeCard(lv_obj_t* parent)
 lv_obj_t *GuiCreateLabelCard(lv_obj_t *parent, const char *title, const char *content)
 {
     lv_obj_t *card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    SetFlexContainerStyle(card, LV_FLEX_FLOW_ROW, 16);
+    GuiSetTransactionFlexStyle(card, LV_FLEX_FLOW_ROW, 16);
     lv_obj_t *title_label = GuiCreateTextLabel(card, title);
     lv_obj_align_to(title_label, card, LV_ALIGN_OUT_TOP_LEFT, 24, 16);
-    SetTitleLabelStyle(title_label);
+    GuiSetTransactionTitleStyle(title_label);
     lv_obj_t *content_label = GuiCreateIllustrateLabel(card, content);
     lv_obj_align_to(content_label, title_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     return card;
@@ -146,10 +125,10 @@ lv_obj_t *GuiCreateLabelCard(lv_obj_t *parent, const char *title, const char *co
 lv_obj_t *GuiCreateSuiFromAddressCard(lv_obj_t *parent, const char *content)
 {
     lv_obj_t *card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
-    SetFlexContainerStyle(card, LV_FLEX_FLOW_COLUMN, 16);
+    GuiSetTransactionFlexStyle(card, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *title_label = GuiCreateTextLabel(card, "From Address");
     lv_obj_align_to(title_label, card, LV_ALIGN_OUT_TOP_LEFT, 24, 16);
-    SetTitleLabelStyle(title_label);
+    GuiSetTransactionTitleStyle(title_label);
     lv_obj_t *content_label = GuiCreateIllustrateLabel(card, content);
     lv_obj_align_to(content_label, title_label, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
     lv_obj_set_width(content_label, lv_pct(90));
@@ -177,7 +156,7 @@ void GuiShowSuiSignMessageHashOverview(lv_obj_t *parent, void *totalData)
     // message hash container
     lv_obj_t *message_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
     lv_obj_align(message_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
-    SetFlexContainerStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
+    GuiSetTransactionFlexStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_card, "Hash");
     lv_obj_set_style_text_opa(message_hash_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(message_hash_label, message_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 16);
@@ -222,7 +201,7 @@ void GuiShowSuiSignMessageHashDetails(lv_obj_t *parent, void *totalData)
     // message hash container
     lv_obj_t *message_hash_card = GuiCreateContainerWithParent(parent, 408, LV_SIZE_CONTENT);
     lv_obj_align(message_hash_card, LV_ALIGN_DEFAULT, 0, containerYOffset);
-    SetFlexContainerStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
+    GuiSetTransactionFlexStyle(message_hash_card, LV_FLEX_FLOW_COLUMN, 16);
     lv_obj_t *message_hash_label = GuiCreateTextLabel(message_hash_card, "Hash");
     lv_obj_set_style_text_opa(message_hash_label, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(message_hash_label, message_hash_card, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 1);

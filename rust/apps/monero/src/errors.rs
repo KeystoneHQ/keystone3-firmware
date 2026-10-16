@@ -13,6 +13,8 @@ pub enum MoneroError {
     Base58DecodeError,
     #[error("format error")]
     FormatError,
+    #[error("transaction request exceeds the supported display size")]
+    RequestTooComplex,
     #[error("unknown network")]
     UnknownNetwork,
     #[error("pub_keyring length error")]
@@ -29,6 +31,8 @@ pub enum MoneroError {
     UnsupportedInputType,
     #[error("mismatched mfp")]
     MismatchedMfp,
+    #[error("change address does not belong to this wallet")]
+    ChangeAddressMismatch,
     #[error("invalid private view key")]
     InvalidPrivateViewKey,
 }

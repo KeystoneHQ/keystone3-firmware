@@ -37,7 +37,22 @@ pub struct DisplayTronDetail {
     token: PtrString,
     contract_address: PtrString,
     pub memo: PtrString,
+    pub memo_hex: PtrString,
+    pub memo_hash: PtrString,
+    pub fee_limit: PtrString,
+    pub timestamp: PtrString,
     pub expiration: PtrString,
+    pub ref_block_num: PtrString,
+    pub ref_block_bytes: PtrString,
+    pub ref_block_hash: PtrString,
+    pub permission_id: PtrString,
+    pub raw_data_hash: PtrString,
+    pub call_value: PtrString,
+    pub call_token_value: PtrString,
+    pub token_id: PtrString,
+    pub call_data: PtrString,
+    pub contract_warning: PtrString,
+
     pub raw_value: PtrString,
 }
 
@@ -66,7 +81,22 @@ impl From<DetailTx> for DisplayTronDetail {
             token: convert_c_char(value.token),
             contract_address: convert_c_char(value.contract_address),
             memo: convert_c_char(value.memo),
+            memo_hex: convert_c_char(value.memo_hex),
+            memo_hash: convert_c_char(value.memo_hash),
+            fee_limit: convert_c_char(value.fee_limit),
+            timestamp: convert_c_char(value.timestamp),
             expiration: convert_c_char(value.expiration),
+            ref_block_num: convert_c_char(value.ref_block_num),
+            ref_block_bytes: convert_c_char(value.ref_block_bytes),
+            ref_block_hash: convert_c_char(value.ref_block_hash),
+            permission_id: convert_c_char(value.permission_id),
+            raw_data_hash: convert_c_char(value.raw_data_hash),
+            call_value: convert_c_char(value.call_value),
+            call_token_value: convert_c_char(value.call_token_value),
+            token_id: convert_c_char(value.token_id),
+            call_data: convert_c_char(value.call_data),
+            contract_warning: convert_c_char(value.contract_warning),
+
             raw_value: convert_c_char(value.raw_value),
         }
     }
@@ -100,7 +130,22 @@ impl Free for DisplayTronDetail {
         free_str_ptr!(self.token);
         free_str_ptr!(self.contract_address);
         free_str_ptr!(self.memo);
+        free_str_ptr!(self.memo_hex);
+        free_str_ptr!(self.memo_hash);
+        free_str_ptr!(self.fee_limit);
+        free_str_ptr!(self.timestamp);
         free_str_ptr!(self.expiration);
+        free_str_ptr!(self.ref_block_num);
+        free_str_ptr!(self.ref_block_bytes);
+        free_str_ptr!(self.ref_block_hash);
+        free_str_ptr!(self.permission_id);
+        free_str_ptr!(self.raw_data_hash);
+        free_str_ptr!(self.call_value);
+        free_str_ptr!(self.call_token_value);
+        free_str_ptr!(self.token_id);
+        free_str_ptr!(self.call_data);
+        free_str_ptr!(self.contract_warning);
+
         free_str_ptr!(self.raw_value);
     }
 }

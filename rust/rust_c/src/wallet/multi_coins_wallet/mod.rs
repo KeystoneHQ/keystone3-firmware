@@ -1,11 +1,11 @@
 pub mod arconnect;
 pub mod backpack;
 pub mod bitget;
+pub mod keeper;
 pub mod keplr;
 pub mod keystone_connect;
 pub mod okx;
 pub mod structs;
-pub mod tonkeeper;
 mod utils;
 pub mod xrp_toolkit;
 

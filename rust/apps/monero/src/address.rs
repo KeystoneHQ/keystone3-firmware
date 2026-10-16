@@ -4,6 +4,7 @@ use crate::structs::{AddressType, Network};
 use crate::utils::{constants::PUBKEY_LEH, hash::keccak256};
 use alloc::format;
 use alloc::string::{String, ToString};
+use alloc::vec;
 use base58_monero::{decode, encode};
 use curve25519_dalek::edwards::EdwardsPoint;
 use curve25519_dalek::scalar::Scalar;
@@ -42,6 +43,14 @@ impl Address {
             Ok(decoded) => decoded,
             _ => return Err(MoneroError::Base58DecodeError),
         };
+
+        if decoded.len() != 1 + PUBKEY_LEH * 2 + 4 {
+            return Err(MoneroError::FormatError);
+        }
+        if keccak256(&decoded[..1 + PUBKEY_LEH * 2])[..4] != decoded[1 + PUBKEY_LEH * 2..] {
+            return Err(MoneroError::FormatError);
+        }
+
         let prefix = hex::encode(&decoded[0..1]).to_uppercase();
         let net = match prefix.as_str() {
             "12" => Network::Mainnet,
@@ -124,8 +133,12 @@ pub fn pub_keyring_to_address(
     if pub_keyring.len() != PUBKEY_LEH * 4 {
         return Err(MoneroError::PubKeyringLengthError);
     }
-    let pub_spend_key = PublicKey::from_bytes(&hex::decode(&pub_keyring[0..64]).unwrap())?;
-    let pub_view_key = PublicKey::from_bytes(&hex::decode(&pub_keyring[64..128]).unwrap())?;
+    let spend_hex =
+        hex::decode(&pub_keyring.as_bytes()[0..64]).map_err(|_| MoneroError::FormatError)?;
+    let view_hex =
+        hex::decode(&pub_keyring.as_bytes()[64..128]).map_err(|_| MoneroError::FormatError)?;
+    let pub_spend_key = PublicKey::from_bytes(&spend_hex)?;
+    let pub_view_key = PublicKey::from_bytes(&view_hex)?;
 
     pub_keys_to_address(net, is_subaddress, &pub_spend_key, &pub_view_key)
 }
@@ -173,6 +186,22 @@ fn pub_keys_to_address(
     }
 }
 
+pub fn integrated_address_string(
+    public_spend_key: &PublicKey,
+    public_view_key: &PublicKey,
+    payment_id: &[u8; 8],
+) -> Result<String> {
+    let mut payload = vec![0x13u8];
+    payload.extend_from_slice(&public_spend_key.as_bytes());
+    payload.extend_from_slice(&public_view_key.as_bytes());
+    payload.extend_from_slice(payment_id);
+
+    let checksum = keccak256(&payload);
+    payload.extend_from_slice(&checksum[0..4]);
+
+    encode(&payload).map_err(|_| MoneroError::Base58DecodeError)
+}
+
 pub fn generate_address(
     public_spend_key: &PublicKey,
     private_view_key: &PrivateKey,
@@ -180,6 +209,8 @@ pub fn generate_address(
     minor: u32,
     is_subaddress: bool,
 ) -> Result<String> {
+    let point = public_spend_key.validate_for_address()?;
+    PrivateKey::try_from_slice(&private_view_key.to_bytes())?;
     if !is_subaddress {
         return Ok(Address::new(
             Network::Mainnet,
@@ -190,7 +221,6 @@ pub fn generate_address(
         .to_string());
     }
 
-    let point = public_spend_key.point.decompress().unwrap();
     let m = Scalar::from_bytes_mod_order(calc_subaddress_m(
         &private_view_key.to_bytes(),
         major,
@@ -199,8 +229,9 @@ pub fn generate_address(
     let pub_spend_key = PublicKey {
         point: (point + EdwardsPoint::mul_base(&m)).compress(),
     };
+    let sub_spend_point = pub_spend_key.validate_for_address()?;
     let pub_view_point = PublicKey {
-        point: (pub_spend_key.point.decompress().unwrap() * private_view_key.scalar).compress(),
+        point: (sub_spend_point * private_view_key.scalar).compress(),
     };
 
     pub_keys_to_address(Network::Mainnet, true, &pub_spend_key, &pub_view_point)

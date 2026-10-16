@@ -6,6 +6,6 @@ void GuiMultisigWalletExportWidgetsDeInit();
 void GuiMultisigWalletExportWidgetsRefresh();
 void GuiSetExportMultiSigSwitch();
 bool GuiGetExportMultisigWalletSwitch();
-void ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index);
+bool ModelGenerateMultiSigAddress(char *address, uint32_t maxLen, char *walletConfig, uint32_t index);
 
 #endif

@@ -127,6 +127,24 @@ impl Instruction {
                 resolvers::squads_v4::resolve(instruction, accounts)
             }
             SupportedProgram::JupiterProgramV6 => {
+                if self.data.len() < 8 {
+                    return Err(SolanaError::InvalidData(
+                        "Jupiter instruction discriminator is truncated".to_string(),
+                    ));
+                }
+                let discriminator = &self.data[..8];
+                let is_supported_instruction = matches!(
+                    discriminator,
+                    [0xc1, 0x20, 0x9b, 0x33, 0x41, 0xd6, 0x9c, 0x81]
+                        | [0xe5, 0x17, 0xcb, 0x97, 0x7a, 0xe3, 0xad, 0x2a]
+                        | [0xd0, 0x33, 0xef, 0x97, 0x7b, 0x2b, 0xed, 0x5c]
+                        | [0xb0, 0xd1, 0x69, 0xa8, 0x9a, 0x7d, 0x45, 0x3e]
+                );
+                if !is_supported_instruction {
+                    return Err(SolanaError::UnsupportedProgram(
+                        "unsupported Jupiter v6 instruction".to_string(),
+                    ));
+                }
                 let instruction =
                     crate::solana_lib::jupiter_v6::instructions::JupiterInstructions::dispatch(
                         self.data.as_slice(),
@@ -150,8 +168,9 @@ impl Instruction {
             ));
         }
         let mut detail = ProgramDetailComputeBudget::default();
+        // Match the validator's unchecked Borsh decoding: require complete
         let method = match data[0] {
-            0 if data.len() == 9 => {
+            0 if data.len() >= 9 => {
                 detail.compute_unit_limit =
                     u32::from_le_bytes(data[1..5].try_into().map_err(|_| {
                         SolanaError::InvalidData("invalid compute unit limit".to_string())
@@ -164,15 +183,15 @@ impl Instruction {
                     .to_string();
                 "RequestUnitsDeprecated"
             }
-            1 if data.len() == 5 => {
+            1 if data.len() >= 5 => {
                 detail.heap_frame_bytes = Self::read_compute_budget_u32(&data[1..5])?.to_string();
                 "RequestHeapFrame"
             }
-            2 if data.len() == 5 => {
+            2 if data.len() >= 5 => {
                 detail.compute_unit_limit = Self::read_compute_budget_u32(&data[1..5])?.to_string();
                 "SetComputeUnitLimit"
             }
-            3 if data.len() == 9 => {
+            3 if data.len() >= 9 => {
                 detail.compute_unit_price_micro_lamports =
                     u64::from_le_bytes(data[1..9].try_into().map_err(|_| {
                         SolanaError::InvalidData("invalid compute unit price".to_string())
@@ -180,7 +199,7 @@ impl Instruction {
                     .to_string();
                 "SetComputeUnitPrice"
             }
-            4 if data.len() == 5 => {
+            4 if data.len() >= 5 => {
                 detail.loaded_accounts_data_size_limit =
                     Self::read_compute_budget_u32(&data[1..5])?.to_string();
                 "SetLoadedAccountsDataSizeLimit"
@@ -211,9 +230,8 @@ impl Instruction {
     ) -> Result<T> {
         // Copied from solana_sdk
         // pub const PACKET_DATA_SIZE: usize = 1280 - 40 - 8;
-        crate::solana_lib::solana_program::program_utils::limited_deserialize(
+        crate::solana_lib::solana_program::program_utils::limited_deserialize::<T, 1232>(
             instruction_data.as_slice(),
-            1280 - 40 - 8,
         )
         .map_err(|e| ProgramError(e.to_string()))
     }
@@ -263,7 +281,31 @@ mod tests {
     }
 
     #[test]
-    fn parses_compute_budget_instructions_strictly() {
+    fn distinguishes_malformed_and_unknown_jupiter_instructions() {
+        let jupiter_program = PROGRAM_IDS[7];
+        let instruction = |data| Instruction {
+            program_index: 0,
+            account_indexes: vec![],
+            data,
+        };
+
+        assert!(matches!(
+            instruction(vec![0x42; 7]).parse(jupiter_program, vec![]),
+            Err(SolanaError::InvalidData(_))
+        ));
+        assert!(matches!(
+            instruction(vec![0x42; 8]).parse(jupiter_program, vec![]),
+            Err(SolanaError::UnsupportedProgram(_))
+        ));
+        assert!(matches!(
+            instruction(vec![0xc1, 0x20, 0x9b, 0x33, 0x41, 0xd6, 0x9c, 0x81])
+                .parse(jupiter_program, vec![]),
+            Err(SolanaError::ProgramError(_))
+        ));
+    }
+
+    #[test]
+    fn parses_compute_budget_instructions_with_trailing_bytes() {
         let cases = [
             (vec![0, 64, 13, 3, 0, 7, 0, 0, 0], "RequestUnitsDeprecated"),
             (vec![1, 0, 0, 4, 0], "RequestHeapFrame"),
@@ -275,11 +317,26 @@ mod tests {
             let parsed = Instruction::parse_compute_budget_instruction(&data, vec![]).unwrap();
             assert_eq!("ComputeBudget", parsed.common.program);
             assert_eq!(method, parsed.common.method);
+            let expected = serde_json::to_value(&parsed).unwrap();
+            let mut padded = data.clone();
+            padded.extend_from_slice(&[0, 0xff, 0x42, 0]);
+            let parsed = Instruction::parse_compute_budget_instruction(&padded, vec![]).unwrap();
+            assert_eq!(expected, serde_json::to_value(&parsed).unwrap());
+            for length in 0..data.len() {
+                assert!(
+                    Instruction::parse_compute_budget_instruction(&data[..length], vec![]).is_err()
+                );
+            }
         }
 
-        assert!(
-            Instruction::parse_compute_budget_instruction(&[2, 1, 0, 0, 0, 0], vec![]).is_err()
-        );
+        let parsed =
+            Instruction::parse_compute_budget_instruction(&[1, 0, 0, 1, 0, 0, 0, 0, 0], vec![])
+                .unwrap();
+        let ProgramDetail::ComputeBudget(detail) = parsed.kind else {
+            panic!("expected ComputeBudget detail");
+        };
+        assert_eq!("65536", detail.heap_frame_bytes);
+        assert!(Instruction::parse_compute_budget_instruction(&[5, 0, 0, 0, 0], vec![]).is_err());
         assert!(Instruction::parse_compute_budget_instruction(
             &[2, 1, 0, 0, 0],
             vec!["unexpected".to_string()]

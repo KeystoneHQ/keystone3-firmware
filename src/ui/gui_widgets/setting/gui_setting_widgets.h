@@ -128,6 +128,8 @@ void GuiAddWalletAmountLimit(void);
 void GuiDelWalletSetup(void);
 void GuiResettingWriteSe(void);
 void GuiChangePassWord(bool result);
+void GuiChangePasswordFailed(int32_t error);
+void GuiChangePasswordNoticeHandler(lv_event_t *e);
 void GuiDelWallet(bool result);
 void GuiWalletRepeatPinWidget(lv_obj_t *parent);
 void GuiSetPinDestruct(void *obj, void *param);

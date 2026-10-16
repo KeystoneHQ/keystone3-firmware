@@ -41,6 +41,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 #include "mpu_syscall_numbers.h"
+#include "mhscpu.h"
 
 #ifndef __ARM_FP
     #error This port can only be used when the project options are configured to enable hardware floating point support.
@@ -93,11 +94,8 @@ typedef void ( * portISR_t )( void );
 #define portPRIVILEGED_EXECUTION_START_ADDRESS    ( 0UL )
 #define portMPU_REGION_VALID                      ( 0x10UL )
 #define portMPU_REGION_ENABLE                     ( 0x01UL )
-#define portPERIPHERALS_START_ADDRESS             0x40000000UL
-#define portPERIPHERALS_END_ADDRESS               0x5FFFFFFFUL
-
-#ifndef configALLOW_UNPRIVILEGED_PERIPHERAL_ACCESS
-    #define configALLOW_UNPRIVILEGED_PERIPHERAL_ACCESS    1
+#if !defined( configALLOW_UNPRIVILEGED_PERIPHERAL_ACCESS ) || ( configALLOW_UNPRIVILEGED_PERIPHERAL_ACCESS != 0 )
+    #error PSRAM protection requires privileged-only default peripheral access.
 #endif
 
 /* Constants required to access and manipulate the SysTick. */
@@ -1379,19 +1377,14 @@ static void prvSetupMPU( void )
                                        prvGetMPURegionSizeSetting( ( uint32_t ) __privileged_data_end__ - ( uint32_t ) __privileged_data_start__ ) |
                                        ( portMPU_REGION_ENABLE );
 
-        /* Configure the general peripheral window.  This project keeps it
-         * privileged-only and grants narrower task regions when required. */
-        portMPU_REGION_BASE_ADDRESS_REG = ( portPERIPHERALS_START_ADDRESS ) |
+        portMPU_REGION_BASE_ADDRESS_REG = ( MHSCPU_PSRAM_BASE ) |
                                           ( portMPU_REGION_VALID ) |
-                                          ( portGENERAL_PERIPHERALS_REGION );
+                                          ( portPSRAM_REGION );
 
-        portMPU_REGION_ATTRIBUTE_REG =
-            #if ( configALLOW_UNPRIVILEGED_PERIPHERAL_ACCESS == 1 )
-                ( portMPU_REGION_READ_WRITE | portMPU_REGION_EXECUTE_NEVER ) |
-            #else
-                ( portMPU_REGION_PRIVILEGED_READ_WRITE | portMPU_REGION_EXECUTE_NEVER ) |
-            #endif
-                                       ( prvGetMPURegionSizeSetting( portPERIPHERALS_END_ADDRESS - portPERIPHERALS_START_ADDRESS ) ) |
+        portMPU_REGION_ATTRIBUTE_REG = ( portMPU_REGION_PRIVILEGED_READ_WRITE ) |
+                                       ( portMPU_REGION_EXECUTE_NEVER ) |
+                                       ( 0x02UL << portMPU_RASR_TEX_S_C_B_LOCATION ) |
+                                       ( prvGetMPURegionSizeSetting( MHSCPU_PSRAM_END - MHSCPU_PSRAM_BASE + 1UL ) ) |
                                        ( portMPU_REGION_ENABLE );
 
         /* Enable the memory fault exception. */

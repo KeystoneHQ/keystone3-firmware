@@ -12,7 +12,7 @@ typedef enum {
 
 void GuiTransactionDetailInit(uint8_t viewType);
 void GuiTransactionDetailDeInit(void);
-void GuiTransactionDetailRefresh(void);
+void GuiTransactionDetailRefresh(bool resumedFromLock);
 void GuiTransactionDetailVerifyPasswordSuccess(void);
 void GuiSignVerifyPasswordErrorCount(void *param);
 void GuiSignDealFingerRecognize(void *param);

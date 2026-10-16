@@ -1,4 +1,5 @@
-assets
+assets/*
+!assets/page_sol.json
 lib/rust-builds
 tools/json_str.txt
 tools/json.json

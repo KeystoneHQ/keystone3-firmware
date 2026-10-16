@@ -13,6 +13,13 @@ pub struct PrivateKey {
     pub scalar: Scalar,
 }
 
+impl Drop for PrivateKey {
+    fn drop(&mut self) {
+        use zeroize::Zeroize;
+        self.scalar.zeroize();
+    }
+}
+
 impl PrivateKey {
     pub fn new(scalar: Scalar) -> PrivateKey {
         PrivateKey { scalar }
@@ -22,6 +29,14 @@ impl PrivateKey {
         PrivateKey {
             scalar: Scalar::from_bytes_mod_order(bytes.try_into().unwrap()),
         }
+    }
+
+    pub fn try_from_slice(bytes: &[u8]) -> Result<PrivateKey> {
+        let bytes: [u8; PUBKEY_LEH] = bytes.try_into().map_err(|_| MoneroError::FormatError)?;
+        let scalar = Option::<Scalar>::from(Scalar::from_canonical_bytes(bytes))
+            .filter(|s| *s != Scalar::ZERO)
+            .ok_or(MoneroError::InvalidPrivateViewKey)?;
+        Ok(PrivateKey { scalar })
     }
 
     pub fn to_bytes(&self) -> [u8; PUBKEY_LEH] {
@@ -54,10 +69,20 @@ impl PublicKey {
         Ok(pub_key)
     }
 
+    pub fn validate_for_address(&self) -> Result<EdwardsPoint> {
+        use curve25519_dalek::traits::IsIdentity;
+        let point = self
+            .point
+            .decompress()
+            .ok_or(MoneroError::PublicKeyFromBytesError)?;
+        if point.compress() != self.point || point.is_identity() || !point.is_torsion_free() {
+            return Err(MoneroError::PublicKeyFromBytesError);
+        }
+        Ok(point)
+    }
+
     pub fn from_str(s: &str) -> Result<PublicKey> {
-        let bytes = hex::decode(s)
-            .map_err(|e| format!("decode error: {e:?}"))
-            .unwrap();
+        let bytes = hex::decode(s).map_err(|_| MoneroError::PublicKeyFromBytesError)?;
         PublicKey::from_bytes(&bytes)
     }
 }

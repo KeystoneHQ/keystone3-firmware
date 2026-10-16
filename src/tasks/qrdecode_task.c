@@ -164,6 +164,10 @@ void ProcessQr(uint32_t count)
                 }
             } else if (retFromRust == 0U) {
                 retFromRust = urResult->error_code;
+                printf("QR first frame rejected: bytes=%lu, error code=%d\r\n",
+                       (unsigned long)qrLength, (int)urResult->error_code);
+                printf("error message: %s\r\n",
+                       urResult->error_message != NULL ? urResult->error_message : "(none)");
             }
 
         } else {

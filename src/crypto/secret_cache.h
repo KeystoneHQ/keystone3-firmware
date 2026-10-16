@@ -54,5 +54,6 @@ void SecretCacheSetExtendable(bool flag);
 bool SecretCacheGetExtendable(void);
 
 void ClearSecretCache(void);
+void WipeSecretCacheOnFatalError(void);
 
 #endif

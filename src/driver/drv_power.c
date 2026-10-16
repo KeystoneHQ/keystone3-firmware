@@ -1,6 +1,7 @@
 #include "drv_power.h"
 #include "mhscpu.h"
 #include "stdio.h"
+#include "diagnostic_location.h"
 
 #define POWER_CTRL_VCC33_PORT               GPIOE
 #define POWER_CTRL_VCC33_PIN                GPIO_Pin_13
@@ -57,11 +58,11 @@ void PowerTest(int argc, char *argv[])
     if (strcmp(argv[0], "vcc33") == 0) {
         if (strcmp(argv[1], "open") == 0) {
             OpenPower(POWER_TYPE_VCC33);
-            line = __LINE__;
+            line = DIAGNOSTIC_LINE;
         }
         if (strcmp(argv[1], "close") == 0) {
             ClosePower(POWER_TYPE_VCC33);
-            line = __LINE__;
+            line = DIAGNOSTIC_LINE;
         }
     }
     printf("power test,execute line=%d\r\n", (int)line);

@@ -45,8 +45,10 @@ void *GuiGetZcashGUIData(void)
     if (g_checkedPczt == NULL) {
         return NULL;
     }
-    uint8_t sfp[32];
-    GetZcashSFP(GetCurrentAccountIndex(), sfp);
+    uint8_t sfp[ZCASH_SFP_LEN] = {0};
+    if (GetZcashSFP(GetCurrentAccountIndex(), sfp) != SUCCESS_CODE) {
+        return NULL;
+    }
 
     PtrT_TransactionParseResult_DisplayPczt parseResult = NULL;
     do {
@@ -55,7 +57,9 @@ void *GuiGetZcashGUIData(void)
 #endif
 #ifdef CYPHERPUNK_VERSION
         char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {'\0'};
-        GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
+        if (GetZcashUFVK(GetCurrentAccountIndex(), ufvk) != SUCCESS_CODE) {
+            break;
+        }
         parseResult = parse_zcash_tx_cypherpunk(g_checkedPczt, ufvk, sfp);
 #endif
         CHECK_CHAIN_BREAK(parseResult);
@@ -332,7 +336,7 @@ static lv_obj_t* GuiZcashOverviewTo(lv_obj_t *parent, VecFFI_DisplayTo *to, lv_o
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 {
     void *data = g_isMulti ? g_urMultiResult->data : g_urResult->data;
-    uint8_t sfp[32];
+    uint8_t sfp[ZCASH_SFP_LEN] = {0};
     GetZcashSFP(GetCurrentAccountIndex(), sfp);
     uint32_t zcash_account_index = 0;
     MnemonicType mnemonicType = GetMnemonicType();

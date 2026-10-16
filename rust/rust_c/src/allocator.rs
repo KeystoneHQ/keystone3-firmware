@@ -15,10 +15,29 @@ fn oom(_layout: core::alloc::Layout) -> ! {
 
 #[panic_handler]
 fn panic(e: &PanicInfo) -> ! {
-    let message = match e.location() {
-        Some(location) => alloc::format!("rust panic at {}:{}", location.file(), location.line()),
-        None => alloc::string::String::from("rust panic"),
-    };
-    unsafe { crate::bindings::LogRustPanic(crate::common::utils::convert_c_char(message)) }
+    #[cfg(any(
+        feature = "production-multi-coins",
+        feature = "production-btc-only",
+        feature = "production-cypherpunk"
+    ))]
+    {
+        let _ = e;
+        static PANIC_MESSAGE: &[u8] = b"rust panic\0";
+        unsafe { crate::bindings::LogRustPanic(PANIC_MESSAGE.as_ptr() as *mut cty::c_char) };
+    }
+    #[cfg(not(any(
+        feature = "production-multi-coins",
+        feature = "production-btc-only",
+        feature = "production-cypherpunk"
+    )))]
+    {
+        let message = match e.location() {
+            Some(location) => {
+                alloc::format!("rust panic at {}:{}", location.file(), location.line())
+            }
+            None => alloc::string::String::from("rust panic"),
+        };
+        unsafe { crate::bindings::LogRustPanic(crate::common::utils::convert_c_char(message)) }
+    }
     loop {}
 }

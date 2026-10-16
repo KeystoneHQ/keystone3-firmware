@@ -58,20 +58,6 @@ static lv_obj_t *g_setPinTile = NULL;
 static lv_obj_t *g_repeatPinTile = NULL;
 static lv_obj_t *g_noticeWindow = NULL;
 
-static void SetNoticeConfirmButtonState(lv_obj_t *button, bool enabled)
-{
-    if (enabled) {
-        lv_obj_clear_state(button, LV_STATE_DISABLED);
-        lv_obj_set_style_bg_color(button, ORANGE_COLOR, LV_PART_MAIN);
-        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_100, LV_PART_MAIN);
-    } else {
-        lv_obj_add_state(button, LV_STATE_DISABLED);
-        lv_obj_set_style_bg_color(button, WHITE_COLOR_OPA20, LV_PART_MAIN | LV_STATE_DISABLED);
-        lv_obj_set_style_bg_opa(button, LV_OPA_100, LV_PART_MAIN | LV_STATE_DISABLED);
-        lv_obj_set_style_text_opa(lv_obj_get_child(button, 0), LV_OPA_60, LV_PART_MAIN | LV_STATE_DISABLED);
-    }
-}
 
 static void NoticeCheckHandler(lv_event_t *e)
 {
@@ -92,7 +78,7 @@ static void NoticeCheckHandler(lv_event_t *e)
             break;
         }
     }
-    SetNoticeConfirmButtonState(g_createWalletTileView.noticeConfirm, allChecked);
+    GuiSetConfirmButtonEnabled(g_createWalletTileView.noticeConfirm, allChecked);
 }
 static char g_pinBuf[PASSWORD_MAX_LEN + 1];
 static lv_obj_t *g_openMoreHintBox;
@@ -218,7 +204,7 @@ static void GuiResetNoticeConfirmation(void)
     for (size_t i = 0; i < NUMBER_OF_ARRAYS(g_createWalletTileView.noticeChecks); i++) {
         lv_obj_clear_state(g_createWalletTileView.noticeChecks[i], LV_STATE_CHECKED);
     }
-    SetNoticeConfirmButtonState(g_createWalletTileView.noticeConfirm, false);
+    GuiSetConfirmButtonEnabled(g_createWalletTileView.noticeConfirm, false);
 }
 
 static void GuiCreateNoticeWidget(lv_obj_t *parent)
@@ -261,7 +247,7 @@ static void GuiCreateNoticeWidget(lv_obj_t *parent)
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -24);
     lv_obj_add_event_cb(button, NoticeConfirmHandler, LV_EVENT_CLICKED, NULL);
     g_createWalletTileView.noticeConfirm = button;
-    SetNoticeConfirmButtonState(button, false);
+    GuiSetConfirmButtonEnabled(button, false);
 }
 
 static void OpenSecretShareHandler(lv_event_t *e)

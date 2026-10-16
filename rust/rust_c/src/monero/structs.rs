@@ -22,12 +22,15 @@ pub struct DisplayMoneroUnsignedTxOutput {
     address: PtrString,
     amount: PtrString,
     is_change: bool,
+    is_integrated: bool,
+    payment_id: PtrString,
 }
 
 impl Free for DisplayMoneroUnsignedTxOutput {
     unsafe fn free(&self) {
         free_str_ptr!(self.address);
         free_str_ptr!(self.amount);
+        free_str_ptr!(self.payment_id);
     }
 }
 
@@ -61,9 +64,11 @@ impl From<DisplayTransactionInfo> for DisplayMoneroUnsignedTx {
                     .outputs
                     .iter()
                     .map(|output| DisplayMoneroUnsignedTxOutput {
-                        address: convert_c_char(output.0.to_string()),
-                        amount: convert_c_char(output.1.to_string()),
-                        is_change: output.2,
+                        address: convert_c_char(output.address.clone()),
+                        amount: convert_c_char(output.amount.clone()),
+                        is_change: output.is_change,
+                        is_integrated: output.is_integrated,
+                        payment_id: convert_c_char(output.payment_id.clone()),
                     })
                     .collect::<Vec<DisplayMoneroUnsignedTxOutput>>(),
             )

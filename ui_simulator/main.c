@@ -22,6 +22,7 @@
 #include "gui_api.h"
 #include "gui_framework.h"
 #include "gui_views.h"
+extern bool g_reboot;
 
 /*********************
  *      DEFINES
@@ -120,6 +121,12 @@ int main(int argc, char **argv)
         /* Periodically call the lv_task handler.
          * It could be done in a timer interrupt or an OS task too.*/
         lv_timer_handler();
+        if (g_reboot) {
+            SDL_Quit();
+            execvp(argv[0], argv);
+            perror("simulator restart");
+            return EXIT_FAILURE;
+        }
         usleep(5 * 1000);
     }
 

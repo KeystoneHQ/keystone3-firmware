@@ -39,6 +39,7 @@ impl Parser {
         let data_slice = if is_tx(data) { &data[32..] } else { data };
         let tx: RawTransaction = bcs::from_bytes(data_slice)
             .map_err(|err| AptosError::ParseTxError(format!("bcs deserialize failed {err}")))?;
+        tx.validate_for_review()?;
         Ok(AptosTx::new(tx))
     }
     pub fn parse_msg(data: &[u8]) -> Result<String> {
@@ -92,6 +93,97 @@ mod tests {
     extern crate std;
     use super::*;
     use hex;
+
+    // Synthetic vectors generated with @aptos-labs/ts-sdk 7.5.0:
+    // RawTransaction(0x11..11, 7, MultiSig(0x22..22, EntryFunction(
+    //   0x1::example::do_something, [], [U32(30378)])), 2000, 100, 2000000000, 1).
+    // No real wallet addresses, signatures, or keys are used.
+    const MULTISIG_ENTRY: &str = "1111111111111111111111111111111111111111111111111111111111111111070000000000000003222222222222222222222222222222222222222222222222222222222222222201000000000000000000000000000000000000000000000000000000000000000001076578616d706c650c646f5f736f6d657468696e67000104aa760000d0070000000000006400000000000000009435770000000001";
+    const MULTISIG_WITHOUT_PAYLOAD: &str = "1111111111111111111111111111111111111111111111111111111111111111070000000000000003222222222222222222222222222222222222222222222222222222222222222200d0070000000000006400000000000000009435770000000001";
+    const ORDINARY_ENTRY: &str = "11111111111111111111111111111111111111111111111111111111111111110700000000000000020000000000000000000000000000000000000000000000000000000000000001076578616d706c650c646f5f736f6d657468696e67000104aa760000d0070000000000006400000000000000009435770000000001";
+
+    #[test]
+    fn test_multisig_entry_function_review_and_roundtrip() {
+        let bytes = hex::decode(MULTISIG_ENTRY).unwrap();
+        let tx = Parser::parse_tx(&bytes).unwrap();
+        assert_eq!(bcs::to_bytes(&tx.tx).unwrap(), bytes);
+        let value = tx.get_raw_json().unwrap();
+        assert_eq!(value["sender"], "11".repeat(32));
+        assert_eq!(
+            value["payload"]["Multisig"]["multisig_address"],
+            "22".repeat(32)
+        );
+        let entry = &value["payload"]["Multisig"]["transaction_payload"]["EntryFunction"];
+        assert_eq!(entry["module"]["address"], format!("{}1", "0".repeat(63)));
+        assert_eq!(entry["module"]["name"], "example");
+        assert_eq!(entry["function"], "do_something");
+        assert_eq!(entry["args"], json!([[170, 118, 0, 0]]));
+        assert_eq!(value["max_gas_amount"], 2000);
+        assert_eq!(value["gas_unit_price"], 100);
+        assert_eq!(value["chain_id"], 1);
+        let formatted = tx.get_formatted_json().unwrap();
+        let displayed: Value = serde_json::from_str(formatted.as_str().unwrap()).unwrap();
+        assert_eq!(displayed, value);
+    }
+
+    #[test]
+    fn test_multisig_with_signing_prefix() {
+        let mut bytes =
+            hex::decode("b5e97db07fa0bd0e5598aa3643a9bc6f6693bddc1a9fec9e674a461eaa00b193")
+                .unwrap();
+        bytes.extend(hex::decode(MULTISIG_ENTRY).unwrap());
+        assert!(Parser::parse_tx(&bytes).is_ok());
+    }
+
+    #[test]
+    fn test_multisig_without_payload_rejected() {
+        let err = Parser::parse_tx(&hex::decode(MULTISIG_WITHOUT_PAYLOAD).unwrap()).unwrap_err();
+        assert!(err
+            .to_string()
+            .contains("multisig execution requires an inline entry function"));
+    }
+
+    #[test]
+    fn test_multisig_script_rejected() {
+        let mut bytes = hex::decode(MULTISIG_WITHOUT_PAYLOAD).unwrap();
+        // After sender, sequence, outer variant, vault: Some(Script(empty)).
+        bytes.splice(73..74, [1, 1, 0, 0, 0]);
+        let err = Parser::parse_tx(&bytes).unwrap_err();
+        assert!(err
+            .to_string()
+            .contains("multisig execution requires an inline entry function"));
+    }
+
+    #[test]
+    fn test_multisig_malformed_rejected() {
+        let bytes = hex::decode(MULTISIG_ENTRY).unwrap();
+        for end in 0..bytes.len() {
+            assert!(Parser::parse_tx(&bytes[..end]).is_err());
+        }
+        let mut trailing = bytes.clone();
+        trailing.push(0);
+        assert!(Parser::parse_tx(&trailing).is_err());
+        let mut invalid_option = bytes.clone();
+        invalid_option[73] = 2;
+        assert!(Parser::parse_tx(&invalid_option).is_err());
+        let mut invalid_inner = bytes.clone();
+        invalid_inner[74] = 2;
+        assert!(Parser::parse_tx(&invalid_inner).is_err());
+        let mut invalid_outer = bytes;
+        invalid_outer[40] = 4;
+        assert!(Parser::parse_tx(&invalid_outer).is_err());
+    }
+
+    #[test]
+    fn test_existing_entry_function_encoding_unchanged() {
+        let bytes = hex::decode(ORDINARY_ENTRY).unwrap();
+        let tx = Parser::parse_tx(&bytes).unwrap();
+        assert_eq!(bcs::to_bytes(&tx.tx).unwrap(), bytes);
+        assert_eq!(
+            tx.get_raw_json().unwrap()["payload"]["EntryFunction"]["function"],
+            "do_something"
+        );
+    }
 
     #[test]
     fn test_decode_utf8_valid_ascii() {

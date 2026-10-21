@@ -1,6 +1,6 @@
 use crate::address::Address;
 use crate::errors::{AvaxError, Result};
-use crate::transactions::structs::{LengthPrefixedVec, ParsedSizeAble};
+use crate::transactions::structs::LengthPrefixedVec;
 use crate::transactions::transferable::OutputTrait;
 use alloc::string::{String, ToString};
 use alloc::vec::Vec;

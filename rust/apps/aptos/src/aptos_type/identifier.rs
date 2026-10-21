@@ -36,16 +36,15 @@ pub const fn is_valid(s: &str) -> bool {
     }
 }
 
-#[cfg(any(test, feature = "fuzzing"))]
+#[cfg(test)]
 #[allow(dead_code)]
 pub(crate) static ALLOWED_IDENTIFIERS: &str =
     r"(?:[a-zA-Z][a-zA-Z0-9_]*)|(?:_[a-zA-Z0-9_]+)|(?:<SELF>)";
-#[cfg(any(test, feature = "fuzzing"))]
+#[cfg(test)]
 pub(crate) static ALLOWED_NO_SELF_IDENTIFIERS: &str =
     r"(?:[a-zA-Z][a-zA-Z0-9_]*)|(?:_[a-zA-Z0-9_]+)";
 
 #[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize, Deserialize)]
-#[cfg_attr(feature = "fuzzing", derive(arbitrary::Arbitrary))]
 pub struct Identifier(Box<str>);
 
 impl Identifier {

@@ -158,8 +158,8 @@ static void RespondZcashBatchUsbParseError(const char *errorMessage)
     }
 
     const char *data = (errorMessage != NULL && strlen(errorMessage) > 0)
-                           ? errorMessage
-                           : "UR parsing failed";
+                       ? errorMessage
+                       : "UR parsing failed";
     HandleURResultViaUSBFunc(data, strlen(data), GetCurrentUSParsingRequestID(), PRS_PARSING_ERROR);
 }
 
@@ -306,15 +306,15 @@ static void CloseParseErrorHandler(lv_event_t *e)
 static lv_obj_t *GuiCreateZcashBatchParseErrorWindow(const char *errorMessage)
 {
     const char *descText = (errorMessage != NULL && strlen(errorMessage) > 0)
-                               ? errorMessage
-                               : _("scan_qr_code_error_invalid_qrcode_desc");
+                           ? errorMessage
+                           : _("scan_qr_code_error_invalid_qrcode_desc");
     lv_obj_t *cont = GuiCreateConfirmHintBox(
-        &imgFailed,
-        _("scan_qr_code_error_invalid_qrcode"),
-        descText,
-        NULL,
-        _("OK"),
-        WHITE_COLOR_OPA20);
+                         &imgFailed,
+                         _("scan_qr_code_error_invalid_qrcode"),
+                         descText,
+                         NULL,
+                         _("OK"),
+                         WHITE_COLOR_OPA20);
     lv_obj_add_event_cb(GuiGetHintBoxRightBtn(cont), CloseParseErrorHandler, LV_EVENT_CLICKED, cont);
     return cont;
 }
@@ -444,10 +444,10 @@ static void *GuiParseZcashBatchData(void)
         return NULL;
     }
     g_parseResult = parse_zcash_batch_tx_cypherpunk(
-        g_checkedBatch,
-        ufvk,
-        sfp,
-        !IsZcashSupportedForCurrentMnemonic());
+                        g_checkedBatch,
+                        ufvk,
+                        sfp,
+                        !IsZcashSupportedForCurrentMnemonic());
 
     return g_parseResult;
 }

@@ -6,9 +6,17 @@ use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct Validator {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     pub node_id: NodeId,
     pub start_time: i64,
     pub end_time: i64,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     pub weight: u64,
 }
 

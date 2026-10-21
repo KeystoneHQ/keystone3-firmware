@@ -9,8 +9,20 @@ use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct OutputOwner {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     type_id: TypeId,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     locktime: u64,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     threshold: u32,
     pub addresses: LengthPrefixedVec<Address>,
 }

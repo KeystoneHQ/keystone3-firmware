@@ -339,7 +339,7 @@ int32_t VerifyPasswordAndLogin(uint8_t *accountIndex, const char *password)
     uint8_t zcashCacheKey[AES_KEY_LEN];
     CLEAR_ARRAY(zcashCacheKey);
     ret = FindAccountByPasswordAndDeriveZcashCacheKey(
-        &tempIndex, password, zcashCacheKey);
+              &tempIndex, password, zcashCacheKey);
 #else
     ret = FindAccountByPassword(&tempIndex, password);
 #endif
@@ -985,7 +985,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password,
             ret = SUCCESS_CODE;
         } else {
             ret = VerifyAccountPasswordAndDeriveZcashCacheKey(
-                accountIndex, password, cacheKey);
+                      accountIndex, password, cacheKey);
             CHECK_ERRCODE_BREAK("derive zcash cache key", ret);
         }
 
@@ -1028,7 +1028,7 @@ int32_t SetupZcashCache(uint8_t accountIndex, const char* password,
             ret = GetAccountSeed(accountIndex, seed, password);
             CHECK_ERRCODE_BREAK("load seed for zcash z3 migration", ret);
             ret = MigrateLegacyZcashPublicInfoToV3(
-                accountIndex, seed, seedLen, cacheKey, ufvk, sizeof(ufvk));
+                      accountIndex, seed, seedLen, cacheKey, ufvk, sizeof(ufvk));
             CLEAR_ARRAY(seed);
             CHECK_ERRCODE_BREAK("migrate zcash public info to z3", ret);
             if (!GetCurrentAccountZcashSFP(sfp)) {

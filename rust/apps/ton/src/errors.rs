@@ -1,4 +1,6 @@
-use alloc::string::{String, ToString};
+use alloc::string::String;
+#[cfg(test)]
+use alloc::string::ToString;
 use thiserror;
 use thiserror::Error;
 
@@ -24,6 +26,7 @@ pub enum TonError {
     TransactionJsonError(String),
 }
 
+#[cfg(test)]
 #[derive(Debug, Error)]
 pub(crate) enum MnemonicError {
     #[error("Invalid mnemonic word count (count: {0})")]
@@ -39,6 +42,7 @@ pub(crate) enum MnemonicError {
     InvalidPasswordlessMenmonicFirstByte(u8),
 }
 
+#[cfg(test)]
 impl From<MnemonicError> for TonError {
     fn from(value: MnemonicError) -> Self {
         TonError::MnemonicError(value.to_string())

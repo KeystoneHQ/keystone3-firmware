@@ -119,7 +119,7 @@ lv_obj_t *CreateTransactionItemViewWithHintAndWidth(lv_obj_t *parent, const char
 
     //render value
     lv_obj_t *valueLabel = GuiCreateLabelWithFont(container, value,
-        GetTransactionValueFont(value, g_defIllustrateFont, &openSansEnIllustrate));
+                           GetTransactionValueFont(value, g_defIllustrateFont, &openSansEnIllustrate));
     lv_obj_update_layout(valueLabel);
     uint16_t valueWidth = lv_obj_get_width(valueLabel);
     uint16_t valueHeight = lv_obj_get_height(valueLabel);
@@ -201,7 +201,7 @@ lv_obj_t *CreateTransactionOverviewCardWithWidth(lv_obj_t *parent, const char* t
     uint16_t titleWidth = lv_obj_get_self_width(label);
 
     label = GuiCreateLabelWithFont(container, text2,
-        GetTransactionValueFont(text2, g_defIllustrateFont, &openSansEnIllustrate));
+                                   GetTransactionValueFont(text2, g_defIllustrateFont, &openSansEnIllustrate));
     lv_obj_set_style_text_color(label, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_update_layout(label);
     lv_obj_t *valueLabel = label;
@@ -424,8 +424,8 @@ static size_t GuiPagedMessageFindBreak(const GuiPagedMessageState_t *state,
                                        size_t offset, size_t length, bool newlineOnly)
 {
     size_t minimum = length > GUI_PAGED_MESSAGE_BREAK_SEARCH_BYTES
-        ? length - GUI_PAGED_MESSAGE_BREAK_SEARCH_BYTES
-        : 0;
+                     ? length - GUI_PAGED_MESSAGE_BREAK_SEARCH_BYTES
+                     : 0;
     for (size_t i = length; i > minimum; i--) {
         char value = state->source.byte_at(state->source.context, offset + i - 1);
         if (value == '\n' || (!newlineOnly && (value == ' ' || value == '\t'))) {
@@ -442,8 +442,8 @@ static size_t GuiPagedMessagePageEnd(const GuiPagedMessageState_t *state, size_t
     }
     size_t remaining = state->source.length - offset;
     size_t length = remaining < GUI_PAGED_MESSAGE_BYTES
-        ? remaining
-        : GUI_PAGED_MESSAGE_BYTES;
+                    ? remaining
+                    : GUI_PAGED_MESSAGE_BYTES;
     size_t byteLimit = length;
 
     if (offset + length < state->source.length && state->source.utf8) {
@@ -455,7 +455,7 @@ static size_t GuiPagedMessagePageEnd(const GuiPagedMessageState_t *state, size_t
             length = semanticBreak;
         }
         while (length > 0 && GuiPagedMessageIsUtf8Continuation(
-                   state->source.byte_at(state->source.context, offset + length))) {
+                    state->source.byte_at(state->source.context, offset + length))) {
             length--;
         }
         if (length == 0) {
@@ -613,7 +613,7 @@ void GuiShowPagedMessage(lv_obj_t *parent, const GuiPagedMessageSource_t *source
 
     if (source->warning_title != NULL && source->warning_content != NULL) {
         state->warning = GuiPagedMessageWarning(
-            state->viewport, source->warning_title, source->warning_content, contentWidth);
+                             state->viewport, source->warning_title, source->warning_content, contentWidth);
         lv_obj_set_pos(state->warning, 0, 0);
     }
 
@@ -622,7 +622,7 @@ void GuiShowPagedMessage(lv_obj_t *parent, const GuiPagedMessageSource_t *source
     lv_obj_set_width(state->label, contentWidth);
     lv_obj_set_height(state->label, LV_SIZE_CONTENT);
     lv_obj_set_style_text_font(state->label,
-        source->font != NULL ? source->font : g_defIllustrateFont, LV_PART_MAIN);
+                               source->font != NULL ? source->font : g_defIllustrateFont, LV_PART_MAIN);
     lv_obj_set_style_text_color(state->label, WHITE_COLOR, LV_PART_MAIN);
     lv_label_set_long_mode(state->label, LV_LABEL_LONG_WRAP);
 

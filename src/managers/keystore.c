@@ -62,11 +62,11 @@ static int32_t LoadAccountSecretFromSE(uint8_t accountIndex, AccountSecret_t *ac
 #endif
 static int32_t AccountExists(uint8_t accountIndex, bool *exists);
 static int32_t FindAccountByPasswordInternal(uint8_t *matchedAccountIndex, const char *password,
-                                             const uint8_t *subkeyDomain,
-                                             uint8_t *derivedKey);
+    const uint8_t *subkeyDomain,
+    uint8_t *derivedKey);
 static int32_t VerifyAccountPasswordInternal(uint8_t accountIndex, const char *password,
-                                             const uint8_t *subkeyDomain,
-                                             uint8_t *derivedKey);
+    const uint8_t *subkeyDomain,
+    uint8_t *derivedKey);
 static void DeriveAccountSubkeyFromAccountBlobAuthKey(
     const uint8_t accountBlobAuthKey[AUTH_KEY_LEN], uint8_t accountIndex,
     const uint8_t domain[ACCOUNT_SUBKEY_DOMAIN_LEN],
@@ -353,8 +353,8 @@ int32_t FindAccountByPassword(uint8_t *matchedAccountIndex, const char *password
 }
 
 static int32_t FindAccountByPasswordInternal(uint8_t *matchedAccountIndex, const char *password,
-                                             const uint8_t *subkeyDomain,
-                                             uint8_t *derivedKey)
+    const uint8_t *subkeyDomain,
+    uint8_t *derivedKey)
 {
     uint8_t tryOrder[3];
     uint8_t lastAccountIndex;
@@ -368,7 +368,7 @@ static int32_t FindAccountByPasswordInternal(uint8_t *matchedAccountIndex, const
     uint8_t *resultAccountIndex = matchedAccountIndex == NULL ? &simulatorAccountIndex : matchedAccountIndex;
     if (derivedKey != NULL) {
         ret = SimulatorVerifyPasswordAndDeriveSubkey(
-            resultAccountIndex, password, subkeyDomain, derivedKey);
+                  resultAccountIndex, password, subkeyDomain, derivedKey);
     } else {
         ret = SimulatorVerifyPassword(resultAccountIndex, password);
     }
@@ -395,7 +395,7 @@ static int32_t FindAccountByPasswordInternal(uint8_t *matchedAccountIndex, const
         }
 
         ret = VerifyAccountPasswordInternal(
-            tryOrder[i], password, subkeyDomain, derivedKey);
+                  tryOrder[i], password, subkeyDomain, derivedKey);
         if (ret == SUCCESS_CODE) {
             if (matchedAccountIndex != NULL) {
                 *matchedAccountIndex = tryOrder[i];
@@ -418,8 +418,8 @@ int32_t VerifyAccountPassword(uint8_t accountIndex, const char *password)
 }
 
 static int32_t VerifyAccountPasswordInternal(uint8_t accountIndex, const char *password,
-                                             const uint8_t *subkeyDomain,
-                                             uint8_t *derivedKey)
+    const uint8_t *subkeyDomain,
+    uint8_t *derivedKey)
 {
     int32_t ret;
 
@@ -428,7 +428,7 @@ static int32_t VerifyAccountPasswordInternal(uint8_t accountIndex, const char *p
 #ifdef COMPILE_SIMULATOR
     if (derivedKey != NULL) {
         ret = SimulatorVerifyCurrentPasswordAndDeriveSubkey(
-            accountIndex, password, subkeyDomain, derivedKey);
+                  accountIndex, password, subkeyDomain, derivedKey);
     } else {
         ret = SimulatorVerifyCurrentPassword(accountIndex, password);
     }
@@ -436,7 +436,7 @@ static int32_t VerifyAccountPasswordInternal(uint8_t accountIndex, const char *p
     VerifiedAccountBlob_t verified;
     CLEAR_OBJECT(verified);
     ret = VerifyAccountBlobFromSE(
-        accountIndex, password, &verified, subkeyDomain, derivedKey);
+              accountIndex, password, &verified, subkeyDomain, derivedKey);
     CLEAR_OBJECT(verified);
 #endif
     if (ret != SUCCESS_CODE && derivedKey != NULL) {
@@ -454,7 +454,7 @@ int32_t FindAccountByPasswordAndDeriveSubkey(
     ASSERT(derivedKey != NULL);
     memset_s(derivedKey, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
     return FindAccountByPasswordInternal(
-        matchedAccountIndex, password, domain, derivedKey);
+               matchedAccountIndex, password, domain, derivedKey);
 }
 
 int32_t VerifyAccountPasswordAndDeriveSubkey(
@@ -466,7 +466,7 @@ int32_t VerifyAccountPasswordAndDeriveSubkey(
     ASSERT(derivedKey != NULL);
     memset_s(derivedKey, AUTH_KEY_LEN, 0, AUTH_KEY_LEN);
     return VerifyAccountPasswordInternal(
-        accountIndex, password, domain, derivedKey);
+               accountIndex, password, domain, derivedKey);
 }
 
 static void DeriveAccountSubkeyFromAccountBlobAuthKey(
@@ -1218,7 +1218,7 @@ void KeyStoreTest(int argc, char *argv[])
         for (accountIndex = 0; accountIndex < 3; accountIndex++) {
             printf("accountIndex %d:\r\n", accountIndex);
             printf("passphrase=%s\r\n", g_passphraseInfo[accountIndex].passphrase);
-            printf("mfp=0x%08X\r\n", (unsigned int)*((uint32_t *)(g_passphraseInfo[accountIndex].mfp)));
+            printf("mfp=0x%08X\r\n", (unsigned int) * ((uint32_t *)(g_passphraseInfo[accountIndex].mfp)));
         }
     } else if (strcmp(argv[0], "set_fp_info") == 0) {
         printf("set fp info test\r\n");

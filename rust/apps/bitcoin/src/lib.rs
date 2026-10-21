@@ -157,11 +157,19 @@ pub fn check_psbt(psbt_hex: Vec<u8>, context: ParseContext) -> Result<()> {
     wpsbt.check(Left(&context))
 }
 
+#[allow(
+    deprecated,
+    reason = "Retain the legacy raw-transaction compatibility entry point"
+)]
 pub fn parse_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<ParsedTx> {
     let tx_data = TxData::from_payload(raw_tx, &context)?;
     tx_data.parse(None)
 }
 
+#[allow(
+    deprecated,
+    reason = "Retain the legacy raw-transaction compatibility entry point"
+)]
 pub fn sign_raw_tx(
     raw_tx: protoc::Payload,
     context: keystone::ParseContext,
@@ -175,6 +183,10 @@ pub fn sign_raw_tx(
     ))
 }
 
+#[allow(
+    deprecated,
+    reason = "Retain the legacy raw-transaction compatibility entry point"
+)]
 pub fn check_raw_tx(raw_tx: protoc::Payload, context: keystone::ParseContext) -> Result<()> {
     let tx_data = TxData::from_payload(raw_tx, &context)?;
     tx_data.check(Right(&context))

@@ -415,10 +415,10 @@ static bool ModelParseQRHardwareCall(void)
 
     Response_QRHardwareCallData *data = parse_qr_hardware_call(g_data);
     if (data == NULL || data->error_code != 0 || data->data == NULL ||
-        data->data->key_derivation == NULL ||
-        data->data->key_derivation->schemas == NULL ||
-        data->data->key_derivation->schemas->data == NULL ||
-        data->data->version == NULL || data->data->origin == NULL) {
+            data->data->key_derivation == NULL ||
+            data->data->key_derivation->schemas == NULL ||
+            data->data->key_derivation->schemas->data == NULL ||
+            data->data->version == NULL || data->data->origin == NULL) {
         g_callData = NULL;
         g_response = data;
         SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
@@ -514,7 +514,7 @@ static HardwareCallResult_t CheckHardWareCallV0AdaPathIsLegal(char *path)
 static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 {
     if (g_callData->key_derivation->schemas->size == 0U ||
-        g_callData->key_derivation->schemas->size > MAX_KEY_DERIVATION_SCHEMAS) {
+            g_callData->key_derivation->schemas->size > MAX_KEY_DERIVATION_SCHEMAS) {
         SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
             false, _("invaild_schemas_size"), _("invaild_schemas_size_big")
         });
@@ -551,7 +551,7 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
             // Check whether the requested derivation path is supported.
             Response_bool *response = check_hardware_call_path(g_response->data->key_derivation->schemas->data[i].key_path);
             if (response == NULL || response->error_code != 0 ||
-                response->data == NULL || *response->data == false) {
+                    response->data == NULL || *response->data == false) {
                 SetHardwareCallParamsCheckResult((HardwareCallResult_t) {
                     false, _("invaild_account_path"),  _("invaild_account_path_notice")
                 });
@@ -569,9 +569,9 @@ static HardwareCallResult_t CheckHardwareCallRequestIsLegal(void)
 static UREncodeResult *ModelGenerateSyncUR(void)
 {
     if (g_callData == NULL || g_callData->version == NULL ||
-        g_callData->key_derivation == NULL ||
-        g_callData->key_derivation->schemas == NULL ||
-        g_callData->key_derivation->schemas->data == NULL) {
+            g_callData->key_derivation == NULL ||
+            g_callData->key_derivation->schemas == NULL ||
+            g_callData->key_derivation->schemas->data == NULL) {
         return NULL;
     }
 

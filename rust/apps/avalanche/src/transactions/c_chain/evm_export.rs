@@ -18,9 +18,17 @@ use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct EvmInput {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     address: Address,
     amount: u64,
     asset_id: AssetId,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     nonce: u64,
 }
 
@@ -55,6 +63,10 @@ impl EvmInput {
 
 #[derive(Debug, Clone)]
 pub struct ExportTx {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     codec_id: u16,
     type_id: TypeId,
     tx_header: Header,

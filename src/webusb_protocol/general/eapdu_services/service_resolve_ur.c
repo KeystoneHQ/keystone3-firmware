@@ -60,7 +60,7 @@ static void BasicHandlerFunc(const void *data, uint32_t data_len, uint16_t reque
 
     root = cJSON_CreateObject();
     if (root == NULL ||
-        cJSON_AddStringToObject(root, "payload", data != NULL ? (char *)data : "") == NULL) {
+            cJSON_AddStringToObject(root, "payload", data != NULL ? (char *)data : "") == NULL) {
         goto cleanup;
     }
     json_str = cJSON_PrintBuffered(root, BUFFER_SIZE_1024 * 4, false);
@@ -281,7 +281,8 @@ void ProcessURService(EAPDURequestPayload_t *payload)
 
         UrViewType_t urViewType = {
             .viewType = urResult->t,
-            .urType = urResult->ur_type};
+            .urType = urResult->ur_type
+        };
 
         if (urResult->ur_type == QRHardwareCall) {
             HandleHardwareCall(urResult);

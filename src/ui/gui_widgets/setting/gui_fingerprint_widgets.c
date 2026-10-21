@@ -122,7 +122,8 @@ void GuiWalletFingerOpenSign(void)
             .obj = img,
             .align = LV_ALIGN_DEFAULT,
             .position = {14, 14},
-        }};
+        }
+    };
     lv_obj_t *button = GuiCreateButton(cont, 64, 64, table, 1, CancelVerifyFingerHandler, NULL);
     lv_obj_align(button, LV_ALIGN_DEFAULT, 384, 394);
 
@@ -323,7 +324,8 @@ void GuiWalletFingerAddWidget(lv_obj_t *parent)
             .obj = label,
             .align = LV_ALIGN_BOTTOM_MID,
             .position = {0, -15},
-        }};
+        }
+    };
     static uint32_t walletSetting = DEVICE_SETTING_FINGER_ADD_SUCCESS;
     lv_obj_t *button = NULL;
     button = GuiCreateButton(parent, 408, 66, table, 1, WalletSettingHandler, &walletSetting);
@@ -355,7 +357,8 @@ void GuiFingerMangerStructureCb(void *obj, void *param)
     static uint32_t walletSetting[3] = {
         DEVICE_SETTING_FINGER_ADD_ENTER,
         DEVICE_SETTING_FINGER_DELETE,
-        DEVICE_SETTING_FINGER_SET_PATTERN};
+        DEVICE_SETTING_FINGER_SET_PATTERN
+    };
     static uint16_t walletUnlock = SIG_FINGER_SET_UNLOCK;
     static uint16_t walletSign = SIG_FINGER_SET_SIGN_TRANSITIONS;
 
@@ -465,7 +468,8 @@ void GuiWalletFingerDeleteWidget(lv_obj_t *parent)
             .obj = label,
             .align = LV_ALIGN_BOTTOM_MID,
             .position = {0, -15},
-        }};
+        }
+    };
     lv_obj_t *button = GuiCreateButton(parent, 282, 66, table, NUMBER_OF_ARRAYS(table), FingerDeleteDialogsHandler, &g_deleteFingerIndex);
     lv_obj_align(button, LV_ALIGN_BOTTOM_MID, 0, -64);
 }
@@ -474,7 +478,8 @@ void GuiWalletSetFingerPassCodeWidget(lv_obj_t *parent)
 {
     static uint32_t walletSetting[2] = {
         SIG_FINGER_FINGER_SETTING,
-        SIG_SETTING_CHANGE_PASSWORD};
+        SIG_SETTING_CHANGE_PASSWORD
+    };
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_SCROLLED);
     lv_obj_set_style_bg_opa(parent, LV_OPA_0, LV_PART_SCROLLBAR | LV_STATE_DEFAULT);
 

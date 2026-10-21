@@ -287,7 +287,7 @@ static void PasscodeNoticeContinueHandler(lv_event_t *e)
     if (GetCurrentDisplayPercent() < 20) {
         GUI_DEL_OBJ(g_hintBox)
         g_hintBox = GuiCreateConfirmHintBox(&imgWarn, _("error_box_low_power"),
-            _("passcode_change_low_power_desc"), NULL, _("OK"), ORANGE_COLOR);
+                                            _("passcode_change_low_power_desc"), NULL, _("OK"), ORANGE_COLOR);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_hintBox), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_hintBox);
         return;
     }

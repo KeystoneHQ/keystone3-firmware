@@ -356,9 +356,9 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 
 #ifdef CYPHERPUNK_VERSION
 UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
-        bool unlimited,
-        ZcashCypherpunkSignFunc signFunc,
-        ZcashCypherpunkSignFunc unlimitedSignFunc)
+    bool unlimited,
+    ZcashCypherpunkSignFunc signFunc,
+    ZcashCypherpunkSignFunc unlimitedSignFunc)
 {
     bool enable = IsPreviousLockScreenEnable();
     SetLockScreen(false);

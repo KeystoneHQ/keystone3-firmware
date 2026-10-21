@@ -1,6 +1,8 @@
 // checking logic for PCZT
 
-use alloc::{format, string::ToString, vec};
+#[cfg(feature = "cypherpunk")]
+use alloc::vec;
+use alloc::{format, string::ToString};
 
 use crate::errors::ZcashError;
 

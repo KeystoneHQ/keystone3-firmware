@@ -1,4 +1,3 @@
-#![feature(vec_into_raw_parts)]
 #![cfg_attr(feature = "use-allocator", no_std)]
 #![cfg_attr(feature = "use-allocator", feature(alloc_error_handler))]
 

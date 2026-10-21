@@ -353,7 +353,7 @@ void GuiShowXmrTransactionOverview(lv_obj_t *parent, void *totalData)
 }
 
 static lv_coord_t AddXmrDetailLabel(lv_obj_t *parent, const char *text, lv_coord_t y,
-                                  bool muted, bool amount)
+                                    bool muted, bool amount)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(parent, text);
     lv_obj_set_width(label, 360);

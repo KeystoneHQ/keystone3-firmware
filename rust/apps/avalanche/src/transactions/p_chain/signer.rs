@@ -5,7 +5,15 @@ use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct Signer {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     pubkey: [u8; PROOF_OF_POSESSION_PUBKEY_LEN],
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     signature: [u8; PROOF_OF_POSESSION_SIGNATURE_LEN],
 }
 

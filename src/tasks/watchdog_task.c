@@ -12,7 +12,7 @@ static void WatchdogTask(void *argument);
 static StaticTask_t g_watchdogTaskBuffer __attribute__((section("privileged_data")));
 static osThreadId_t g_watchdogTaskHandle __attribute__((section("privileged_data")));
 static StackType_t g_watchdogTaskStack[configMINIMAL_STACK_SIZE]
-    __attribute__((section("privileged_data")));
+__attribute__((section("privileged_data")));
 
 bool WatchdogTaskCreate(void)
 {
@@ -45,7 +45,7 @@ static void WatchdogTask(void *argument)
 {
     (void)argument;
 
-    while(1) {
+    while (1) {
         WDT_ReloadCounter();
         osDelay(WATCHDOG_FEED_INTERVAL_MS);
     }

@@ -142,12 +142,12 @@ void GuiArTxOverview(lv_obj_t *parent, void *totalData)
     GuiArPrepareComponentParent(parent, 444);
 
     lv_obj_t *lastView = CreateTransactionOverviewCardWithWidth(
-        parent,
-        _("Value"),
-        txData->value,
-        _("Fee"),
-        txData->fee,
-        AR_COMPONENT_WIDTH);
+                             parent,
+                             _("Value"),
+                             txData->value,
+                             _("Fee"),
+                             txData->fee,
+                             AR_COMPONENT_WIDTH);
     lastView = CreateTransactionItemViewWithWidth(parent, _("From"), txData->from, lastView, AR_COMPONENT_WIDTH);
     CreateTransactionItemViewWithWidth(parent, _("Destination"), txData->to, lastView, AR_COMPONENT_WIDTH);
 }

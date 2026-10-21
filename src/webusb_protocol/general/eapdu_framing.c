@@ -48,8 +48,8 @@ static uint16_t ReadU16(const uint8_t *data, size_t offset)
 }
 
 static EapduFramingResult_t ResetWithError(EapduFramingState_t *state,
-                                           EapduFramingResult_t result,
-                                           EapduFramingStatus_t status)
+    EapduFramingResult_t result,
+    EapduFramingStatus_t status)
 {
     result.status = status;
     EapduFramingReset(state);

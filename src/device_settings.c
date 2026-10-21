@@ -226,14 +226,14 @@ int SaveBootParam(void)
     }
 
     if (Gd25FlashWriteBuffer(BOOT_SECURE_PARAM_FLAG, cipher, sizeof(cipher)) !=
-        (int32_t)sizeof(cipher)) {
+            (int32_t)sizeof(cipher)) {
         ret = ERR_GD25_BAD_PARAM;
         goto cleanup;
     }
 
     if (Gd25FlashReadBuffer(BOOT_SECURE_PARAM_FLAG, verifyBuffer,
-                           sizeof(verifyBuffer)) !=
-        (int32_t)sizeof(verifyBuffer)) {
+                            sizeof(verifyBuffer)) !=
+            (int32_t)sizeof(verifyBuffer)) {
         ret = ERR_GD25_BAD_PARAM;
         goto cleanup;
     }
@@ -591,7 +591,7 @@ static int32_t VerifyDeviceSettingsWrite(const char *jsonString, uint32_t size)
             chunkSize = sizeof(verifyBuffer);
         }
         readSize = Gd25FlashReadBuffer(SPI_FLASH_ADDR_NORMAL_PARAM + sizeof(savedSize) + offset,
-                                      verifyBuffer, chunkSize);
+                                       verifyBuffer, chunkSize);
         if (readSize != chunkSize || memcmp(verifyBuffer, jsonString + offset, chunkSize) != 0) {
             return ERR_GD25_BAD_PARAM;
         }

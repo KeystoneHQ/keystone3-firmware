@@ -62,7 +62,7 @@ static cJSON *GetCosmosParsedDetailRoot(DisplayCosmosTx *tx);
 static lv_obj_t *CreateCosmosMessageTitle(lv_obj_t *parent, size_t index, lv_obj_t *lastView);
 static lv_obj_t *CreateCosmosJsonItem(lv_obj_t *parent, const char *key, const cJSON *value, lv_obj_t *lastView);
 static lv_obj_t *CreateCosmosHighlightedJsonItem(lv_obj_t *parent, const char *key,
-                                                 const cJSON *value, lv_obj_t *lastView);
+    const cJSON *value, lv_obj_t *lastView);
 static lv_obj_t *CreateCosmosJsonFields(lv_obj_t *parent, const cJSON *object, lv_obj_t *lastView,
                                         bool overview, bool showMessageIndex);
 static lv_obj_t *CreateCosmosDetailsMessageCard(
@@ -484,7 +484,7 @@ void GuiCosmosTxDetails(lv_obj_t *parent, void *totalData)
 }
 
 static uint16_t CreateCosmosDetailInlineValue(lv_obj_t *container, const char *titleText,
-                                              const char *valueText, uint16_t y, bool highlight)
+    const char *valueText, uint16_t y, bool highlight)
 {
     if (valueText == NULL) {
         return y;
@@ -523,11 +523,11 @@ static lv_obj_t *CreateCosmosVoteDetails(lv_obj_t *parent, const cJSON *message,
 
     uint16_t y = 16;
     y = CreateCosmosDetailInlineValue(
-        container, "Proposal", GetCosmosJsonString(message, "Proposal"), y, true);
+            container, "Proposal", GetCosmosJsonString(message, "Proposal"), y, true);
     y = CreateCosmosDetailInlineValue(
-        container, "Voted", GetCosmosJsonString(message, "Voted"), y, true);
+            container, "Voted", GetCosmosJsonString(message, "Voted"), y, true);
     y = CreateCosmosDetailInlineValue(
-        container, "Method", GetCosmosJsonString(message, "Method"), y, false);
+            container, "Method", GetCosmosJsonString(message, "Method"), y, false);
 
     lv_obj_t *voterTitle = GuiCreateIllustrateLabel(container, _("Voter"));
     lv_obj_align(voterTitle, LV_ALIGN_TOP_LEFT, 24, y);
@@ -560,7 +560,7 @@ static lv_obj_t *CreateCosmosFeeDetails(lv_obj_t *parent, const cJSON *common, l
     y = CreateCosmosDetailInlineValue(container, "Max Fee", maxFee, y, false);
     if (maxFee != NULL) {
         lv_obj_t *description = GuiCreateLabelWithFont(
-            container, "  ·  Max Fee Price * Gas Limit", &openSansDesc);
+                                    container, "  ·  Max Fee Price * Gas Limit", &openSansDesc);
         lv_obj_set_style_text_opa(description, LV_OPA_64, LV_PART_MAIN);
         lv_obj_align(description, LV_ALIGN_TOP_LEFT, 24, y);
         lv_obj_update_layout(description);
@@ -627,7 +627,7 @@ static lv_obj_t *CreateCosmosJsonItem(lv_obj_t *parent, const char *key, const c
 }
 
 static lv_obj_t *CreateCosmosHighlightedJsonItem(lv_obj_t *parent, const char *key,
-                                                 const cJSON *value, lv_obj_t *lastView)
+    const cJSON *value, lv_obj_t *lastView)
 {
     lv_obj_t *view = CreateCosmosJsonItem(parent, key, value, lastView);
     if (view != lastView) {
@@ -655,7 +655,7 @@ static bool IsCosmosHighlightedDetailField(const char *key)
 static bool AppendCosmosDetailsField(lv_obj_t *container, const cJSON *field, uint16_t *y)
 {
     if (field == NULL || field->string == NULL || !cJSON_IsString(field) ||
-        field->valuestring == NULL || field->valuestring[0] == '\0') {
+            field->valuestring == NULL || field->valuestring[0] == '\0') {
         return false;
     }
 
@@ -748,11 +748,11 @@ static lv_obj_t *CreateCosmosDetailsMessageCard(
 
     for (size_t i = 0; i < preferredCount; i++) {
         hasField |= AppendCosmosDetailsField(
-            container, cJSON_GetObjectItem(object, preferredKeys[i]), &y);
+                        container, cJSON_GetObjectItem(object, preferredKeys[i]), &y);
     }
     for (const cJSON *field = object->child; field != NULL; field = field->next) {
         if (field->string == NULL ||
-            IsCosmosPreferredDetailField(field->string, preferredKeys, preferredCount)) {
+                IsCosmosPreferredDetailField(field->string, preferredKeys, preferredCount)) {
             continue;
         }
         hasField |= AppendCosmosDetailsField(container, field, &y);
@@ -882,7 +882,7 @@ static lv_obj_t *CreateCosmosOverviewCommonFields(
     cJSON *network = cJSON_GetObjectItem(common, "Network");
     lastView = CreateCosmosJsonItem(parent, "Network", network, lastView);
     if (cJSON_IsString(network) && network->valuestring != NULL &&
-        strcmp(network->valuestring, "Unknown Network") == 0) {
+            strcmp(network->valuestring, "Unknown Network") == 0) {
         lastView = CreateCosmosJsonItem(parent, "Chain ID",
                                         cJSON_GetObjectItem(common, "Chain ID"), lastView);
     }

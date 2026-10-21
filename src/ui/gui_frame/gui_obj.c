@@ -75,7 +75,7 @@ void *GuiCreateWhiteOpa12Container(lv_obj_t *parent, int w, int h)
 }
 
 void *GuiCreateLabelWithFontAndTextColor(lv_obj_t *parent, const char *text,
-        const lv_font_t *font, int color)
+    const lv_font_t *font, int color)
 {
     lv_obj_t *label = lv_label_create(parent);
     lv_label_set_text(label, text);
@@ -192,7 +192,7 @@ void *GuiCreateCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
 }
 
 void *GuiCreateBlindSigningCheckBoxWithFont(lv_obj_t *parent, const char *text, bool single,
-        const lv_font_t *font)
+    const lv_font_t *font)
 {
     lv_obj_t *checkBox = lv_checkbox_create(parent);
     lv_obj_add_flag(checkBox, LV_OBJ_FLAG_EVENT_BUBBLE);

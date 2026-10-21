@@ -17,6 +17,10 @@ use cryptoxide::hashing::sha256;
 
 #[derive(Debug, Clone)]
 pub struct BaseTx {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     codec_id: u16,
     pub type_id: TypeId,
     pub tx_header: Header,
@@ -73,8 +77,6 @@ pub fn avax_base_sign(
     paths: Vec<String>,
     unsigned_data: Vec<u8>,
 ) -> Result<Vec<[u8; 65]>> {
-    let mut bytes: [u8; 65] = [0; 65];
-
     let msg = Message::from_digest_slice(&sha256(unsigned_data.as_slice()))
         .map_err(|_| AvaxError::InvalidHex("invalid sha256 length".to_string()))?;
 

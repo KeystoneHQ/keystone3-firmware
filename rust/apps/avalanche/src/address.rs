@@ -53,9 +53,6 @@ pub fn get_address(
         Network::AvaxMainNet => "avax",
         #[cfg(feature = "testnet")]
         Network::AvaxTestNet => "fuji",
-        _ => {
-            return Err(AvaxError::UnsupportedNetwork(format!("{network:?}")));
-        }
     };
 
     let root_path = if !root_path.ends_with('/') {

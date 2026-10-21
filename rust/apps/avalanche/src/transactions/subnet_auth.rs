@@ -5,6 +5,10 @@ use core::convert::TryFrom;
 
 #[derive(Debug, Clone)]
 pub struct SubnetAuth {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     subnet_auth: [u8; SUBNET_AUTH_LEN],
 }
 

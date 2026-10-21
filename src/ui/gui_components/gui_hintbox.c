@@ -279,7 +279,7 @@ static void BackupConfirmationCheckHandler(lv_event_t *e)
         lv_obj_add_state(hintBox->checkBox, LV_STATE_CHECKED);
     }
     GuiSetConfirmButtonEnabled(hintBox->continueButton,
-                                     lv_obj_has_state(hintBox->checkBox, LV_STATE_CHECKED));
+                               lv_obj_has_state(hintBox->checkBox, LV_STATE_CHECKED));
 }
 
 lv_obj_t *GuiCreateSdCardErrorHintBox(bool cardMissing, lv_event_cb_t closeCallback)
@@ -288,9 +288,9 @@ lv_obj_t *GuiCreateSdCardErrorHintBox(bool cardMissing, lv_event_cb_t closeCallb
     lv_obj_t *img = GuiCreateImg(window, &imgFailed);
     lv_obj_align(img, LV_ALIGN_DEFAULT, 38, 492);
     const char *title = cardMissing ? _("firmware_update_sd_failed_access_title") :
-                                     _("multisig_export_to_sdcard_failed");
+                        _("multisig_export_to_sdcard_failed");
     const char *description = cardMissing ? _("firmware_update_sd_failed_access_desc") :
-                                           _("multisig_export_to_sdcard_failed_desc");
+                              _("multisig_export_to_sdcard_failed_desc");
     lv_obj_t *label = GuiCreateLittleTitleLabel(window, title);
     lv_obj_align(label, LV_ALIGN_DEFAULT, 36, 588);
     label = GuiCreateIllustrateLabel(window, description);

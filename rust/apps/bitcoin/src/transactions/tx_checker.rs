@@ -29,6 +29,10 @@ pub mod psbt {
     }
 }
 
+#[allow(
+    deprecated,
+    reason = "Compatibility checker for legacy raw transactions"
+)]
 pub mod raw_tx {
     use super::*;
     use crate::transactions::legacy::TxData;

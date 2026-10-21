@@ -77,17 +77,17 @@ static StaticTask_t g_mpuSandboxTaskBuffer __attribute__((section("privileged_da
 static TaskHandle_t g_mpuSandboxTaskHandle __attribute__((section("privileged_data")));
 static uint32_t g_mpuSandboxNextRequestId __attribute__((section("privileged_data"))) = 1U;
 static MpuSandboxIpcMetadata_t g_mpuSandboxIpc
-    __attribute__((section("privileged_data")));
+__attribute__((section("privileged_data")));
 static StackType_t g_mpuSandboxStack[MPU_SANDBOX_STACK_WORDS]
-    __attribute__((section(".mpu_sandbox_stack"), aligned(4096)));
+__attribute__((section(".mpu_sandbox_stack"), aligned(4096)));
 MpuSandboxInput_t g_mpuSandboxInput
-    __attribute__((section(".mpu_sandbox_input"), aligned(256)));
+__attribute__((section(".mpu_sandbox_input"), aligned(256)));
 MpuSandboxRw_t g_mpuSandboxRw
-    __attribute__((section(".mpu_sandbox_rw"), aligned(MPU_SANDBOX_RW_REGION_SIZE)));
+__attribute__((section(".mpu_sandbox_rw"), aligned(MPU_SANDBOX_RW_REGION_SIZE)));
 #ifndef BTC_ONLY
 static uint8_t g_mpuSandboxTrustedPayload[EAPDU_FRAMING_MAX_PAYLOAD_SIZE + 1U];
 static MpuSandboxTrustedFrame_t g_mpuSandboxTrustedFrame
-    __attribute__((section("privileged_data")));
+__attribute__((section("privileged_data")));
 static bool g_mpuSandboxEapduSuspended __attribute__((section("privileged_data")));
 #endif
 
@@ -121,11 +121,11 @@ static const TaskParameters_t g_mpuSandboxTaskParameters = {
 };
 
 BaseType_t xApplicationIsSystemCallAllowed(TaskHandle_t task, BaseType_t task_is_privileged,
-                                            uint8_t system_call_number)
-    PRIVILEGED_FUNCTION;
+    uint8_t system_call_number)
+PRIVILEGED_FUNCTION;
 
 BaseType_t xApplicationIsSystemCallAllowed(TaskHandle_t task, BaseType_t task_is_privileged,
-                                            uint8_t system_call_number)
+    uint8_t system_call_number)
 {
     if (task == (TaskHandle_t)&g_mpuSandboxTaskBuffer) {
         if (system_call_number == SYSTEM_CALL_xTaskGenericNotifyWait) {

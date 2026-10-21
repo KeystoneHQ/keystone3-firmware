@@ -1,15 +1,5 @@
 use alloc::{string::String, vec::Vec};
-use cryptoxide::{
-    digest::Digest,
-    hmac::Hmac,
-    pbkdf2,
-    sha2::{Sha256, Sha512},
-};
-
-pub(crate) fn pbkdf2_sha512(key: &[u8], salt: &[u8], iterations: u32, output: &mut [u8]) {
-    let mut hmac = Hmac::new(Sha512::new(), key);
-    pbkdf2::pbkdf2(&mut hmac, salt, iterations, output)
-}
+use cryptoxide::{digest::Digest, sha2::Sha256};
 
 pub(crate) fn sha256(data: &[u8]) -> Vec<u8> {
     let mut hasher = Sha256::new();

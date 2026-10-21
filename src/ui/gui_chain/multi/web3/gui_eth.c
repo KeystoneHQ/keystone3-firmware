@@ -752,7 +752,7 @@ static bool isErc20Transfer(void *param)
     const size_t erc20TransferCalldataLen = 136;
     const char *erc20TransferSelector = "a9059cbb";
     if (strnlen_s(input, erc20TransferCalldataLen + 1) != erc20TransferCalldataLen ||
-        strncmp(input, erc20TransferSelector, 8) != 0) {
+            strncmp(input, erc20TransferSelector, 8) != 0) {
         return false;
     }
 
@@ -873,7 +873,7 @@ void *GuiGetEthTypeData(void)
             break;
         }
         if (parseResult->data == NULL || parseResult->data->message == NULL ||
-            parseResult->data->primary_type == NULL) {
+                parseResult->data->primary_type == NULL) {
             free_TransactionParseResult_DisplayETHTypedData(parseResult);
             break;
         }
@@ -886,7 +886,7 @@ void *GuiGetEthTypeData(void)
         }
 
         if (strcmp(parseResult->data->primary_type, "SafeTx") == 0 &&
-            !ParseSafeTxOperation(json, &g_isOperation)) {
+                !ParseSafeTxOperation(json, &g_isOperation)) {
             cJSON_Delete(json);
             free_TransactionParseResult_DisplayETHTypedData(parseResult);
             break;
@@ -1258,7 +1258,7 @@ void GuiEthTxOverview(lv_obj_t *parent, void *totalData)
     }
     if (eth->overview->from == NULL) {
         lv_obj_t *notice = CreateNoticeCardWithWidth(
-            parent, _("custom_path_parse_notice"), ETH_COMPONENT_WIDTH);
+                               parent, _("custom_path_parse_notice"), ETH_COMPONENT_WIDTH);
         if (lastView != NULL) {
             lv_obj_align_to(notice, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
         }
@@ -1283,7 +1283,7 @@ void GuiEthTxDetails(lv_obj_t *parent, void *totalData)
     }
     if (eth->overview->from == NULL) {
         lv_obj_t *notice = CreateNoticeCardWithWidth(
-            parent, _("custom_path_parse_notice"), ETH_COMPONENT_WIDTH);
+                               parent, _("custom_path_parse_notice"), ETH_COMPONENT_WIDTH);
         if (lastView != NULL) {
             lv_obj_align_to(notice, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
         }
@@ -1296,11 +1296,11 @@ void GuiEthTxDetails(lv_obj_t *parent, void *totalData)
         char method[96] = {0};
         GetEthMethodName(method, eth, sizeof(method));
         lastView = CreateTransactionItemViewWithWidth(
-            parent, _("Method"), method, lastView, ETH_COMPONENT_WIDTH);
+                       parent, _("Method"), method, lastView, ETH_COMPONENT_WIDTH);
     }
 
     lastView = CreateTransactionItemViewWithWidth(
-        parent, _("nonce"), eth->detail->nonce, lastView, ETH_COMPONENT_WIDTH);
+                   parent, _("nonce"), eth->detail->nonce, lastView, ETH_COMPONENT_WIDTH);
     lastView = CreateEthAddressView(parent, eth, lastView, true);
     lastView = CreateEthDetailsContractViews(parent, eth, lastView);
     lv_obj_update_layout(parent);
@@ -1320,7 +1320,7 @@ static lv_obj_t *CreateEthOverviewValueView(lv_obj_t *parent, DisplayETH *eth, l
     }
 
     lv_obj_t *container = CreateRelativeTransactionContentContainer(
-        parent, ETH_COMPONENT_WIDTH, 144, lastView);
+                              parent, ETH_COMPONENT_WIDTH, 144, lastView);
     lv_obj_t *label = GuiCreateIllustrateLabel(container, title);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, 16);
     lv_obj_set_style_text_opa(label, LV_OPA_64, LV_PART_MAIN);
@@ -1374,13 +1374,13 @@ static lv_obj_t *CreateEthOverviewNetworkView(lv_obj_t *parent, DisplayETH *eth,
     char network[64] = {0};
     GetEthNetWork(network, eth, sizeof(network));
     return CreateTransactionItemViewWithWidth(
-        parent, _("Network"), network, lastView, ETH_COMPONENT_WIDTH);
+               parent, _("Network"), network, lastView, ETH_COMPONENT_WIDTH);
 }
 
 static lv_obj_t *CreateEthReplayProtectionWarning(lv_obj_t *parent, lv_obj_t *lastView)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ETH_COMPONENT_WIDTH, 128, lastView);
+                         parent, ETH_COMPONENT_WIDTH, 128, lastView);
     lv_obj_set_style_bg_color(card, lv_color_hex(0xF55831), LV_PART_MAIN);
     lv_obj_set_style_bg_opa(card, LV_OPA_20, LV_PART_MAIN);
 
@@ -1486,7 +1486,7 @@ static uint16_t CreateEthDetailsPair(lv_obj_t *container, const char *title, con
     uint16_t titleHeight = lv_obj_get_height(titleLabel);
     uint16_t valueHeight = lv_obj_get_height(valueLabel);
     if (24 + titleWidth + 16 + valueWidth + 24 <= ETH_COMPONENT_WIDTH &&
-        valueHeight <= TEXT_LINE_HEIGHT) {
+            valueHeight <= TEXT_LINE_HEIGHT) {
         lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
         return y + (titleHeight > valueHeight ? titleHeight : valueHeight) + 8;
     }
@@ -1499,7 +1499,7 @@ static uint16_t CreateEthDetailsPair(lv_obj_t *container, const char *title, con
 }
 
 static uint16_t CreateEthDetailsDescription(lv_obj_t *container, const char *text,
-                                            uint16_t y, const lv_font_t *font)
+    uint16_t y, const lv_font_t *font)
 {
     lv_obj_t *label = GuiCreateIllustrateLabel(container, text);
     lv_obj_align(label, LV_ALIGN_TOP_LEFT, 24, y);
@@ -1519,7 +1519,7 @@ static lv_obj_t *CreateEthDetailsFeeView(lv_obj_t *parent, DisplayETH *eth, lv_o
     bool erc20Transfer = isErc20Transfer(eth);
     uint16_t y = 16;
     lv_obj_t *container = CreateRelativeTransactionContentContainer(
-        parent, ETH_COMPONENT_WIDTH, 24, lastView);
+                              parent, ETH_COMPONENT_WIDTH, 24, lastView);
     char value[96] = {0};
 
     if (erc20Transfer) {
@@ -1530,21 +1530,21 @@ static lv_obj_t *CreateEthDetailsFeeView(lv_obj_t *parent, DisplayETH *eth, lv_o
     } else {
         GetEthValue(value, eth, sizeof(value));
         y = CreateEthDetailsPair(
-            container,
-            strlen(eth->detail->input) > 0 ? _("Native Transfer") : _("Value"),
-            value, y, true);
+                container,
+                strlen(eth->detail->input) > 0 ? _("Native Transfer") : _("Value"),
+                value, y, true);
     }
 
     if (feeMarket) {
         GetEthMaxFee(value, eth, sizeof(value));
         y = CreateEthDetailsPair(container, _("Max Fee"), value, y, false);
         y = CreateEthDetailsDescription(
-            container, "  ·  Max Fee Price * Gas Limit", y, NULL);
+                container, "  ·  Max Fee Price * Gas Limit", y, NULL);
 
         GetEthMaxPriority(value, eth, sizeof(value));
         y = CreateEthDetailsPair(container, _("Max Priority Fee"), value, y, false);
         y = CreateEthDetailsDescription(
-            container, "  ·  Max Priority Fee Price * Gas Limit", y, NULL);
+                container, "  ·  Max Priority Fee Price * Gas Limit", y, NULL);
 
         GetEthMaxFeePrice(value, eth, sizeof(value));
         y = CreateEthDetailsPair(container, _("Max Fee Price"), value, y, false);
@@ -1555,12 +1555,12 @@ static lv_obj_t *CreateEthDetailsFeeView(lv_obj_t *parent, DisplayETH *eth, lv_o
         GetEthTxFee(value, eth, sizeof(value));
         y = CreateEthDetailsPair(container, _("Max Txn Fee"), value, y, false);
         y = CreateEthDetailsDescription(
-            container, "  ·  Max Txn Fee = Gas Price * Gas Limit", y,
-            &openSansDesc);
+                container, "  ·  Max Txn Fee = Gas Price * Gas Limit", y,
+                &openSansDesc);
         y = CreateEthDetailsPair(
-            container, _("Gas Price"), eth->overview->gas_price, y, false);
+                container, _("Gas Price"), eth->overview->gas_price, y, false);
         y = CreateEthDetailsPair(
-            container, _("Gas Limit"), eth->overview->gas_limit, y, false);
+                container, _("Gas Limit"), eth->overview->gas_limit, y, false);
     }
     lv_obj_set_height(container, y + 8);
     return container;
@@ -1593,7 +1593,7 @@ static lv_obj_t *CreateEthUnknownContractView(
     GetEthTransactionData(input, eth, sizeof(input));
 
     lv_obj_t *container = CreateRelativeTransactionContentContainer(
-        parent, ETH_COMPONENT_WIDTH, 0, lastView);
+                              parent, ETH_COMPONENT_WIDTH, 0, lastView);
     uint16_t y = 16;
 
     lv_obj_t *title = GuiCreateIllustrateLabel(container, _("InputData"));
@@ -1620,7 +1620,7 @@ static lv_obj_t *CreateEthUnknownContractView(
     // Keep the learn-more action inside the InputData card, matching the
     // original layout while allowing the rows above it to grow dynamically.
     lv_obj_t *learnMore = GuiCreateContainerWithParent(
-        container, ETH_COMPONENT_CONTENT_WIDTH, 30);
+                              container, ETH_COMPONENT_CONTENT_WIDTH, 30);
     lv_obj_set_style_bg_opa(learnMore, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_border_width(learnMore, 0, LV_PART_MAIN);
     lv_obj_set_style_pad_all(learnMore, 0, LV_PART_MAIN);
@@ -1669,7 +1669,7 @@ static lv_obj_t *CreateEthParsedContractView(
     }
 
     lv_obj_t *container = CreateTransactionContentContainer(
-        parent, ETH_COMPONENT_WIDTH, 0);
+                              parent, ETH_COMPONENT_WIDTH, 0);
     lv_obj_align_to(container, sectionTitle, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);
 
     char method[96] = {0};
@@ -1678,7 +1678,7 @@ static lv_obj_t *CreateEthParsedContractView(
 
     Response_DisplayContractData *contractData = (Response_DisplayContractData *)g_contractData;
     if (contractData != NULL && contractData->data != NULL &&
-        contractData->data->params != NULL) {
+            contractData->data->params != NULL) {
         char truncatedValue[BUFFER_SIZE_512 + 1] = {0};
         for (size_t i = 0; i < contractData->data->params->size; i++) {
             DisplayContractParam *param = &contractData->data->params->data[i];
@@ -1693,7 +1693,7 @@ static lv_obj_t *CreateEthParsedContractView(
     }
 
     lv_obj_t *rawDataButton = GuiCreateBtnWithFont(
-        container, _("Check the Raw Data"), &openSansEnIllustrate);
+                                  container, _("Check the Raw Data"), &openSansEnIllustrate);
     lv_obj_t *rawDataLabel = lv_obj_get_child(rawDataButton, 0);
     lv_obj_set_size(rawDataButton, ETH_COMPONENT_CONTENT_WIDTH, 46);
     lv_obj_set_style_bg_opa(rawDataButton, LV_OPA_TRANSP, LV_PART_MAIN);
@@ -1956,8 +1956,8 @@ static void FixRecipientAndValueWhenErc20Contract(const char *inputdata, uint8_t
 {
     const size_t erc20TransferCalldataLen = 136;
     if (inputdata == NULL ||
-        strnlen_s(inputdata, erc20TransferCalldataLen + 1) != erc20TransferCalldataLen ||
-        strncmp(inputdata, "a9059cbb", 8) != 0) {
+            strnlen_s(inputdata, erc20TransferCalldataLen + 1) != erc20TransferCalldataLen ||
+            strncmp(inputdata, "a9059cbb", 8) != 0) {
         return;
     }
 

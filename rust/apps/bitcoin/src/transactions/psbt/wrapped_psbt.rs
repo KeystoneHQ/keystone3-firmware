@@ -1203,7 +1203,7 @@ impl WrappedPsbt {
                         )));
                     }
                     None => {
-                        for (_i, (parent_path, xpub)) in
+                        for (_i, (parent_path, _xpub)) in
                             context.extended_public_keys.iter().enumerate()
                         {
                             if child.starts_with(&parent_path.to_string()) {

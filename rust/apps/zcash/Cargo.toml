@@ -29,8 +29,8 @@ zeroize = { workspace = true }
 
 [dev-dependencies]
 keystore = { path = "../../keystore" }
-pczt = { version = "=0.10.0-pre.2", default-features = false, features = ["io-finalizer", "orchard", "sapling", "spend-finalizer", "transparent", "zcp-builder"] }
-zcash_primitives = { version = "=0.31.0-pre.2", default-features = false, features = ["circuits", "test-dependencies", "transparent-inputs"] }
+pczt = { version = "0.10", default-features = false, features = ["io-finalizer", "orchard", "sapling", "spend-finalizer", "transparent", "zcp-builder"] }
+zcash_primitives = { version = "0.31", default-features = false, features = ["circuits", "test-dependencies", "transparent-inputs"] }
 incrementalmerkletree = { version = "0.9", default-features = false }
 shardtree = "0.8"
 # Nameable only so the transparent-only `legacy_test_support` can spell the

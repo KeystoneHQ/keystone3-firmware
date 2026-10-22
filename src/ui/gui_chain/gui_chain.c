@@ -3,6 +3,7 @@
 #include "define.h"
 #include "keystore.h"
 #include "user_memory.h"
+#include "screen_manager.h"
 #ifdef COMPILE_SIMULATOR
 #include "simulator_model.h"
 #endif

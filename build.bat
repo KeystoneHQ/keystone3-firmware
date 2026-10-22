@@ -10,7 +10,7 @@ SET MAKE_PADDING_FILE_PATH=%TOOLS_FOLDER%\padding_bin_file
 SET ASTYLE_PATH=%TOOLS_FOLDER%\AStyle.bat
 SET PACK_PATH=%CD%\pack.bat
 SET LANGUAGE_PATH=%CD%\src\ui\lv_i18n
-SET LANGUAGE_SCRIPT=python data_loader.py
+SET LANGUAGE_SCRIPT=python3 data_loader.py
 SET RUST_C_PATH=%CD%\rust\rust_c
 
 SET "build_options=log copy production screen debug format release rebuild btc_only cypherpunk simulator language clean"
@@ -81,7 +81,7 @@ IF "%build_simulator%"=="true" (
         cmake --build .
     )
     IF ERRORLEVEL 1 EXIT /B 1
-    python padding_bin_file.py mh1903.bin
+    python3 padding_bin_file.py mh1903.bin
     IF ERRORLEVEL 1 EXIT /B 1
     popd
 )

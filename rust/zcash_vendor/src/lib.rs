@@ -9,6 +9,7 @@ pub use orchard;
 pub use pasta_curves;
 pub use pczt;
 pub use ripemd;
+pub use secp256k1;
 pub use sha2;
 pub use transparent;
 pub use zcash_address;

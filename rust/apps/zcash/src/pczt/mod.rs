@@ -31,7 +31,7 @@ impl PcztEncoding {
     ) -> core::result::Result<Vec<u8>, zcash_vendor::pczt::EncodingError> {
         match self {
             Self::V1 => Ok(zcash_vendor::pczt::v1::Pczt::try_from(pczt)?.serialize()),
-            Self::V2 => pczt.serialize(),
+            Self::V2 => Ok(zcash_vendor::pczt::v2::Pczt::try_from(pczt)?.serialize()),
         }
     }
 }
@@ -340,12 +340,12 @@ mod consistency_tests {
             ShieldedPool::Orchard => BranchId::Nu6,
             ShieldedPool::Ironwood => BranchId::Nu6_3,
         };
-        let bytes = Creator::new(branch_id.into(), 10, MainNetwork.coin_type(), None, None)
+        let pczt = Creator::new(branch_id.into(), 10, MainNetwork.coin_type(), None, None)
             .unwrap()
             .build()
-            .unwrap()
-            .serialize()
             .unwrap();
+        // The wire mirror below is the v2 encoding.
+        let bytes = ::pczt::v2::Pczt::try_from(pczt).unwrap().serialize();
         let mut wire: EmptyPcztWire = postcard::from_bytes(&bytes[8..]).unwrap();
         let bundle = EmptyShieldedBundleWire {
             actions: Vec::new(),
@@ -371,6 +371,31 @@ mod consistency_tests {
     }
 
     #[test]
+    fn serializes_in_the_requested_encoding() {
+        // A v5 PCZT fits the v1 encoding, so `Pczt::serialize` alone would pick v1.
+        let pczt = Creator::new(
+            BranchId::Nu6.into(),
+            10,
+            MainNetwork.coin_type(),
+            None,
+            None,
+        )
+        .unwrap()
+        .build()
+        .unwrap();
+        for (encoding, version) in [(PcztEncoding::V1, 1u32), (PcztEncoding::V2, 2)] {
+            let bytes = encoding.serialize(pczt.clone()).unwrap();
+            let (parsed, parsed_encoding) = parse_pczt_with_encoding(&bytes).unwrap();
+            assert_eq!(u32::from_le_bytes(bytes[4..8].try_into().unwrap()), version);
+            assert!(matches!(
+                (encoding, parsed_encoding),
+                (PcztEncoding::V1, PcztEncoding::V1) | (PcztEncoding::V2, PcztEncoding::V2)
+            ));
+            assert_eq!(parsed.global().tx_version(), pczt.global().tx_version());
+        }
+    }
+
+    #[test]
     fn rejects_nonzero_value_sum_on_empty_orchard_protocol_bundles() {
         for pool in [ShieldedPool::Orchard, ShieldedPool::Ironwood] {
             let pczt = parse_pczt(&empty_bundle_with_nonzero_value_sum(pool)).unwrap();
@@ -389,14 +414,14 @@ mod consistency_tests {
 pub(crate) mod test_support {
     use alloc::{string::String, vec, vec::Vec};
 
+    use crate::rng::DeviceRng;
     use ::pczt::roles::{creator::Creator, updater::Updater};
     use incrementalmerkletree::Retention;
     use keystore::algorithms::zcash::{calculate_seed_fingerprint, derive_ufvk};
-    use rand_core::OsRng;
     use shardtree::{store::memory::MemoryShardStore, ShardTree};
     use zcash_note_encryption::try_note_decryption;
     use zcash_primitives::transaction::{
-        builder::{BuildConfig, Builder, PcztParts, PcztResult},
+        builder::{BuildConfig, Builder, BundlePadding, PcztParts, PcztResult},
         fees::zip317,
         TxVersion,
     };
@@ -542,7 +567,10 @@ pub(crate) mod test_support {
             orchard_builder
                 .add_output(None, recipient, value, Memo::Empty.encode().into_bytes())
                 .unwrap();
-            let (bundle, meta) = orchard_builder.build::<i64>(&mut OsRng).unwrap().unwrap();
+            let (bundle, meta) = orchard_builder
+                .build::<i64>(&mut DeviceRng)
+                .unwrap()
+                .unwrap();
             let action = bundle
                 .actions()
                 .get(meta.output_action_index(0).unwrap())
@@ -577,7 +605,8 @@ pub(crate) mod test_support {
                 sapling_anchor: None,
                 orchard_anchor: None,
                 ironwood_anchor: Some(anchor),
-                orchard_pool_bundle_type: orchard::builder::BundleType::DEFAULT,
+                orchard_padding: BundlePadding::DEFAULT,
+                ironwood_padding: BundlePadding::DEFAULT,
             },
         );
         builder
@@ -596,7 +625,7 @@ pub(crate) mod test_support {
             ironwood_meta,
             ..
         } = builder
-            .build_for_pczt(OsRng, &zip317::FeeRule::standard())
+            .build_for_pczt(DeviceRng, &zip317::FeeRule::standard())
             .unwrap();
         let spend_action_index = ironwood_meta.spend_action_index(0).unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
@@ -720,7 +749,10 @@ pub(crate) mod test_support {
                     Memo::Empty.encode().into_bytes(),
                 )
                 .unwrap();
-            let (bundle, meta) = orchard_builder.build::<i64>(&mut OsRng).unwrap().unwrap();
+            let (bundle, meta) = orchard_builder
+                .build::<i64>(&mut DeviceRng)
+                .unwrap()
+                .unwrap();
             let action = bundle
                 .actions()
                 .get(meta.output_action_index(0).unwrap())
@@ -755,7 +787,8 @@ pub(crate) mod test_support {
                 sapling_anchor: None,
                 orchard_anchor: Some(anchor),
                 ironwood_anchor: Some(orchard::Anchor::empty_tree()),
-                orchard_pool_bundle_type: orchard::builder::BundleType::DEFAULT,
+                orchard_padding: BundlePadding::DEFAULT,
+                ironwood_padding: BundlePadding::DEFAULT,
             },
         );
         builder
@@ -785,7 +818,7 @@ pub(crate) mod test_support {
             ironwood_meta,
             ..
         } = builder
-            .build_for_pczt(OsRng, &zip317::FeeRule::standard())
+            .build_for_pczt(DeviceRng, &zip317::FeeRule::standard())
             .unwrap();
         let spend_action_index = orchard_meta.spend_action_index(0).unwrap();
         let displayable_zero_action = match zero_output.as_ref() {
@@ -995,7 +1028,10 @@ pub(crate) mod test_support {
                     Memo::Empty.encode().into_bytes(),
                 )
                 .unwrap();
-            let (bundle, meta) = orchard_builder.build::<i64>(&mut OsRng).unwrap().unwrap();
+            let (bundle, meta) = orchard_builder
+                .build::<i64>(&mut DeviceRng)
+                .unwrap()
+                .unwrap();
             let action = bundle
                 .actions()
                 .get(meta.output_action_index(0).unwrap())
@@ -1042,7 +1078,7 @@ pub(crate) mod test_support {
                 Memo::Empty.encode().into_bytes(),
             )
             .unwrap();
-        let (orchard_bundle, _) = builder.build_for_pczt(&mut OsRng).unwrap();
+        let (orchard_bundle, _) = builder.build_for_pczt(&mut DeviceRng).unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
         let pczt = Creator::build_from_parts(PcztParts {
             params,
@@ -1107,14 +1143,13 @@ pub(crate) mod legacy_test_support {
     use alloc::string::{String, ToString};
     use alloc::{vec, vec::Vec};
 
+    use crate::rng::DeviceRng;
     use ::pczt::roles::{creator::Creator, updater::Updater};
-    use bitcoin::secp256k1::Secp256k1;
     #[cfg(feature = "multi_coins")]
     use keystore::algorithms::secp256k1::get_extended_public_key_by_seed;
     use keystore::algorithms::zcash::calculate_seed_fingerprint;
-    use rand_core::OsRng;
     use zcash_primitives::transaction::{
-        builder::{BuildConfig, Builder, PcztResult},
+        builder::{BuildConfig, Builder, BundlePadding, PcztResult},
         fees::zip317,
     };
     #[cfg(feature = "multi_coins")]
@@ -1220,8 +1255,7 @@ pub(crate) mod legacy_test_support {
             .unwrap()
             .default_address();
         let input_sk = account.derive_external_secret_key(address_index).unwrap();
-        let secp = Secp256k1::signing_only();
-        let input_pubkey = input_sk.public_key(&secp);
+        let input_pubkey = input_sk.public_key();
 
         let recipient_account =
             AccountPrivKey::from_seed(&params, &[8u8; 32], zip32::AccountId::ZERO).unwrap();
@@ -1230,7 +1264,10 @@ pub(crate) mod legacy_test_support {
             .derive_external_ivk()
             .unwrap()
             .default_address();
-        let transparent_recipient = recipient.to_zcash_address(params.network_type()).encode();
+        let transparent_recipient =
+            zcash_vendor::zcash_keys::address::Receiver::Transparent(recipient)
+                .to_zcash_address(params.network_type())
+                .encode();
 
         let coin = transparent::TxOut::new(
             Zatoshis::const_from_u64(1_000_000),
@@ -1243,7 +1280,8 @@ pub(crate) mod legacy_test_support {
                 sapling_anchor: None,
                 orchard_anchor,
                 ironwood_anchor: None,
-                orchard_pool_bundle_type: orchard::builder::BundleType::DEFAULT,
+                orchard_padding: BundlePadding::DEFAULT,
+                ironwood_padding: BundlePadding::DEFAULT,
             },
         );
         builder
@@ -1258,7 +1296,7 @@ pub(crate) mod legacy_test_support {
             .unwrap();
 
         let PcztResult { pczt_parts, .. } = builder
-            .build_for_pczt(OsRng, &zip317::FeeRule::standard())
+            .build_for_pczt(DeviceRng, &zip317::FeeRule::standard())
             .unwrap();
         let seed_fingerprint = calculate_seed_fingerprint(&seed).unwrap();
         let input_pubkey = input_pubkey.serialize();

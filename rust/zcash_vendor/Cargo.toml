@@ -10,29 +10,29 @@ bech32 = { workspace = true }
 rand_chacha = { version = "0.3.1", default-features = false }
 sha2 = { version = "0.10.6", default-features = false, features = ["oid"] }
 # zcash
-reddsa = { version = "0.5.1", default-features = false, features = ["alloc"] }
+reddsa = { version = "0.6", default-features = false, features = ["alloc"] }
 blake2b_simd = { workspace = true }
-ff = { version = "0.13.0", default-features = false, features = [
+ff = { version = "0.14", default-features = false, features = [
     "alloc",
     "bits",
 ] }
-pasta_curves = { version = "0.5.1", default-features = false, features = [
+pasta_curves = { version = "0.6", default-features = false, features = [
     "alloc",
     "bits",
 ] }
-sinsemilla = "0.1"
+sinsemilla = "0.2"
 subtle = { version = "2.6", default-features = false }
-group = { version = "0.13.0" }
+group = { version = "0.14" }
 fpe = { version = "0.6", default-features = false, features = ["alloc"] }
 f4jumble = { version = "0.1.1", default-features = false, features = ["alloc"] }
 byteorder = { version = "1", default-features = false }
 ripemd = { version = "0.1", default-features = false, features = ["oid"] }
 bs58 = { version = "0.5", default-features = false, features = ["alloc"] }
-bip32 = { version = "=0.6.0-pre.1", default-features = false, features = [
+bip32 = { version = "0.6", default-features = false, features = [
     "alloc",
     "secp256k1-ffi",
 ] }
-secp256k1 = { version = "0.29", default-features = false, features = ["alloc"] }
+secp256k1 = { version = "0.33", default-features = false, features = ["alloc"] }
 core2 = { workspace = true }
 hex = { workspace = true }
 bitvec = { version = "1.0.1", default-features = false, features = ["alloc"] }
@@ -41,21 +41,21 @@ chacha20poly1305 = { version = "0.10.1", default-features = false, features = [
 ] }
 postcard = { version = "1.0.3", features = ["alloc"] }
 getset = { version = "0.1.3" }
-orchard = { version = "0.15.1", default-features = false, optional = true }
-pczt = { version = "0.8.0-rc.1", default-features = false }
+orchard = { version = "0.16", default-features = false, features = ["zeroize"], optional = true }
+pczt = { version = "0.10", default-features = false }
 serde = { workspace = true }
 serde_with = { version = "3.11.0", features = [
     "alloc",
     "macros",
 ], default-features = false }
-transparent = { package = "zcash_transparent", version = "0.9.0", default-features = false, features = [
+transparent = { package = "zcash_transparent", version = "0.11", default-features = false, features = [
     "transparent-inputs",
 ] }
-zcash_address = { version = "0.13.0", default-features = false }
-zcash_encoding = { version = "0.4", default-features = false }
-zcash_keys = { version = "0.15.0", default-features = false }
-zcash_protocol = { version = "0.10.0", default-features = false }
-zip32 = { version = "0.2", default-features = false }
+zcash_address = { version = "0.14", default-features = false }
+zcash_encoding = { version = "0.5", default-features = false }
+zcash_keys = { version = "0.17", default-features = false }
+zcash_protocol = { version = "0.11", default-features = false }
+zip32 = { version = "0.3", default-features = false, features = ["zeroize"] }
 rust_tools = { workspace = true }
 #zcash end
 
@@ -65,11 +65,11 @@ unexpected_cfgs = { level = "warn", check-cfg = [
 ] }
 
 [dev-dependencies]
-transparent = { package = "zcash_transparent", version = "0.9.0", default-features = false, features = [
+transparent = { package = "zcash_transparent", version = "0.11", default-features = false, features = [
     "transparent-inputs",
     "test-dependencies",
 ] }
-incrementalmerkletree-testing = { version = "0.3" }
+incrementalmerkletree-testing = { version = "0.4" }
 
 
 [features]

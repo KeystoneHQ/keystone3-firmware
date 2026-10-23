@@ -23,6 +23,9 @@ rsa = { workspace = true }
 zcash_vendor = { workspace = true }
 zeroize = { workspace = true }
 
+[dev-dependencies]
+rand_chacha_010 = { package = "rand_chacha", version = "0.10" }
+
 [features]
 default = ["std", "multi_coins"]
 std = []

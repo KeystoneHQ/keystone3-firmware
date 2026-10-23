@@ -5,6 +5,8 @@ extern crate alloc;
 pub mod address_verification;
 pub mod errors;
 pub mod pczt;
+#[cfg(any(feature = "cypherpunk", test))]
+mod rng;
 pub mod version;
 
 use errors::{Result, ZcashError};
@@ -144,7 +146,7 @@ fn check_pczt_cypherpunk_with_policy<P: consensus::Parameters>(
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     let ufvk = UnifiedFullViewingKey::decode(params, ufvk_text)
         .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
-    let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
+    let xpub = ufvk.p2pkh().ok_or(ZcashError::InvalidDataError(
         "transparent xpub is not present".to_string(),
     ))?;
     pczt::check::check_pczt_orchard(params, seed_fingerprint, account_index, &ufvk, &pczt)?;
@@ -217,7 +219,7 @@ fn transparent_account_pubkey_from_xpub(
     use core::str::FromStr;
     use zcash_vendor::{bip32, transparent};
 
-    let xpub: bip32::ExtendedPublicKey<bitcoin::secp256k1::PublicKey> =
+    let xpub: bip32::ExtendedPublicKey<zcash_vendor::secp256k1::PublicKey> =
         bip32::ExtendedPublicKey::from_str(xpub)
             .map_err(|e| ZcashError::InvalidDataError(e.to_string()))?;
 
@@ -344,7 +346,7 @@ fn check_and_parse_batch_pczt_internal<P: consensus::Parameters>(
     let account_index = zip32::AccountId::try_from(account_index)
         .map_err(|_e| ZcashError::InvalidDataError("invalid account index".to_string()))?;
     let ufvk = ctx.ufvk(params)?;
-    let xpub = ufvk.transparent().ok_or(ZcashError::InvalidDataError(
+    let xpub = ufvk.p2pkh().ok_or(ZcashError::InvalidDataError(
         "transparent xpub is not present".to_string(),
     ))?;
     // `validate_supported_pczt` stays ahead of the wallet-key derivation so the
@@ -1673,7 +1675,7 @@ mod tests {
         use ::pczt::roles::creator::Creator;
         use zcash_vendor::zcash_protocol::consensus::{BranchId, NetworkConstants};
 
-        let bytes = Creator::new(
+        let pczt = Creator::new(
             BranchId::Nu6.into(),
             10,
             MainNetwork.coin_type(),
@@ -1682,9 +1684,9 @@ mod tests {
         )
         .unwrap()
         .build()
-        .unwrap()
-        .serialize()
         .unwrap();
+        // The wire mirror below is the v2 encoding.
+        let bytes = ::pczt::v2::Pczt::try_from(pczt).unwrap().serialize();
         let (mut prefix, rest) = postcard::take_from_bytes::<PcztWirePrefix>(&bytes[8..]).unwrap();
         // v2 omits empty bundles, so the freshly created PCZT has no Sapling bundle.
         // Attach one that is empty except for a non-zero value sum, which `check` rejects.
@@ -1729,11 +1731,10 @@ mod tests {
     /// sees) and the check path (pre-sign validation) must reject it.
     #[test]
     fn test_parse_pczt_rejects_orchard_internal_ovk_change_spoofing() {
+        use crate::rng::DeviceRng;
         use ::pczt::roles::creator::Creator;
-        use bitcoin::secp256k1::Secp256k1;
-        use rand_core::OsRng;
         use zcash_primitives::transaction::{
-            builder::{BuildConfig, Builder, PcztResult},
+            builder::{BuildConfig, Builder, BundlePadding, PcztResult},
             fees::zip317,
         };
         use zcash_vendor::{
@@ -1763,8 +1764,7 @@ mod tests {
         let victim_sk = victim_account
             .derive_external_secret_key(address_index)
             .unwrap();
-        let secp = Secp256k1::signing_only();
-        let victim_pubkey = victim_sk.public_key(&secp);
+        let victim_pubkey = victim_sk.public_key();
 
         // Attacker-controlled Orchard recipient that does NOT belong to the victim wallet.
         let attacker_sk = orchard::keys::SpendingKey::from_bytes([2; 32]).unwrap();
@@ -1785,7 +1785,8 @@ mod tests {
                 sapling_anchor: None,
                 orchard_anchor: Some(orchard::Anchor::empty_tree()),
                 ironwood_anchor: None,
-                orchard_pool_bundle_type: orchard::builder::BundleType::DEFAULT,
+                orchard_padding: BundlePadding::DEFAULT,
+                ironwood_padding: BundlePadding::DEFAULT,
             },
         );
         builder
@@ -1815,7 +1816,7 @@ mod tests {
             .unwrap();
 
         let PcztResult { pczt_parts, .. } = builder
-            .build_for_pczt(OsRng, &zip317::FeeRule::standard())
+            .build_for_pczt(DeviceRng, &zip317::FeeRule::standard())
             .unwrap();
         let pczt_bytes = Creator::build_from_parts(pczt_parts)
             .unwrap()
@@ -2362,8 +2363,12 @@ mod tests {
         let mut signer = Signer::new(original).expect("sample PCZT should be signable");
         let action_index = required_actions[0].index;
         let signing_result = match pool {
-            SignableShieldedPool::Orchard => signer.sign_orchard(action_index, &ask),
-            SignableShieldedPool::Ironwood => signer.sign_ironwood(action_index, &ask),
+            SignableShieldedPool::Orchard => {
+                signer.sign_orchard(crate::rng::DeviceRng, action_index, &ask)
+            }
+            SignableShieldedPool::Ironwood => {
+                signer.sign_ironwood(crate::rng::DeviceRng, action_index, &ask)
+            }
         };
         signing_result.expect("funded action should sign");
         let pczt = signer.finish();

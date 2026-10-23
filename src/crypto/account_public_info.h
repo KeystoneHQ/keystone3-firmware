@@ -282,8 +282,8 @@ int32_t VerifyAccountPasswordAndDeriveZcashCacheKey(
     uint8_t accountIndex, const char *password,
     uint8_t cacheKey[32]);
 int32_t MigrateLegacyZcashPublicInfoToV3(uint8_t accountIndex, uint8_t *seed, int seedLen,
-                                        const uint8_t *cacheKey, char *ufvkOut,
-                                        uint32_t ufvkOutLen);
+    const uint8_t *cacheKey, char *ufvkOut,
+    uint32_t ufvkOutLen);
 int32_t RegenerateZcashUFVKV3(uint8_t accountIndex, const uint8_t *seed, int seedLen,
                               const char *password);
 #endif

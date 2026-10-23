@@ -20,11 +20,23 @@ use core::convert::TryFrom;
 pub struct AddPermissionlessValidatorTx {
     base_tx: BaseTx,
     validator: Validator,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     subnet_id: SubnetId,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     signer: Signer,
     stake_out: LengthPrefixedVec<TransferableOutput>,
     validator_owner: OutputOwner,
     delegator_owner: OutputOwner,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     delegator_share: u32,
 }
 

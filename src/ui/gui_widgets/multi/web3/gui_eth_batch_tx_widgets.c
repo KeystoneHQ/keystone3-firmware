@@ -277,9 +277,9 @@ static void ParseErc20ContractData(const char* inputData, const uint8_t decimals
 void GuiEthBatchTxWidgetsRefresh()
 {
     if (g_parseResult == NULL || g_parseResult->error_code != 0 ||
-        g_displayEthBatchTx == NULL || g_displayEthBatchTx->txs == NULL ||
-        g_displayEthBatchTx->txs->data == NULL || g_txCount == 0 ||
-        g_currentTxIndex >= g_txCount) {
+            g_displayEthBatchTx == NULL || g_displayEthBatchTx->txs == NULL ||
+            g_displayEthBatchTx->txs->data == NULL || g_txCount == 0 ||
+            g_currentTxIndex >= g_txCount) {
         return;
     }
 
@@ -445,7 +445,7 @@ static bool HandleCurrentTransaction(uint32_t index)
     g_currentTransaction = &g_displayEthBatchTx->txs->data[g_currentTxIndex];
     g_currentNetwork = FindEvmNetwork(g_currentTransaction->chain_id);
     if (g_currentTransaction->detail->input == NULL ||
-        g_currentTransaction->detail->input[0] == '\0') {
+            g_currentTransaction->detail->input[0] == '\0') {
         return true;
     }
 
@@ -476,8 +476,8 @@ void GuiEthBatchTxWidgetsTransactionParseSuccess(void *params)
     (void)params;
 #endif
     if (g_parseResult == NULL || g_parseResult->error_code != 0 ||
-        g_parseResult->data == NULL || g_parseResult->data->txs == NULL ||
-        g_parseResult->data->txs->data == NULL || g_parseResult->data->txs->size == 0) {
+            g_parseResult->data == NULL || g_parseResult->data->txs == NULL ||
+            g_parseResult->data->txs->data == NULL || g_parseResult->data->txs->size == 0) {
         GuiEthBatchTxWidgetsTransactionParseFail(NULL);
         return;
     }
@@ -641,8 +641,8 @@ static void GuiRenderApprovalOverview(lv_obj_t *parent, bool showSwapHint)
 
     char nativeValue[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
     bool nativeValueFormatted = FormatAssetAmount(nativeValue, sizeof(nativeValue),
-                                                  g_currentTransaction->overview->value,
-                                                  g_currentNetwork.symbol);
+                                g_currentTransaction->overview->value,
+                                g_currentNetwork.symbol);
     last_view = CreateTransactionItemView(parent, _("Native Transfer"),
                                           nativeValueFormatted ? nativeValue : _("Invalid Amount"),
                                           last_view);
@@ -765,8 +765,8 @@ static void GuiRenderSwapOverview(lv_obj_t *parent)
 
     char nativeValue[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
     bool nativeValueFormatted = FormatAssetAmount(nativeValue, sizeof(nativeValue),
-                                                  g_currentTransaction->overview->value,
-                                                  g_currentNetwork.symbol);
+                                g_currentTransaction->overview->value,
+                                g_currentNetwork.symbol);
     last_view = CreateTransactionItemView(parent, _("Native Transfer"),
                                           nativeValueFormatted ? nativeValue : _("Invalid Amount"),
                                           last_view);
@@ -803,16 +803,16 @@ static void GuiRenderGeneralOverview(lv_obj_t *parent)
     char nativeValue[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
     char maxTxnFee[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
     bool nativeValueFormatted = FormatAssetAmount(
-        nativeValue, sizeof(nativeValue),
-        g_currentTransaction->overview->value, g_currentNetwork.symbol);
+                                    nativeValue, sizeof(nativeValue),
+                                    g_currentTransaction->overview->value, g_currentNetwork.symbol);
     bool maxTxnFeeFormatted = FormatAssetAmount(
-        maxTxnFee, sizeof(maxTxnFee),
-        g_currentTransaction->overview->max_txn_fee, g_currentNetwork.symbol);
+                                  maxTxnFee, sizeof(maxTxnFee),
+                                  g_currentTransaction->overview->max_txn_fee, g_currentNetwork.symbol);
     last_view = CreateTransactionOvewviewCard(
-        parent, valueTitle,
-        nativeValueFormatted ? nativeValue : _("Invalid Amount"),
-        _("Max Txn Fee"),
-        maxTxnFeeFormatted ? maxTxnFee : _("Invalid Amount"));
+                    parent, valueTitle,
+                    nativeValueFormatted ? nativeValue : _("Invalid Amount"),
+                    _("Max Txn Fee"),
+                    maxTxnFeeFormatted ? maxTxnFee : _("Invalid Amount"));
 
     last_view = CreateTransactionItemView(parent, _("Network"), g_currentNetwork.name, last_view);
 
@@ -882,10 +882,10 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
 
     char maxTxnFee[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
     bool maxTxnFeeFormatted = FormatAssetAmount(
-        maxTxnFee, sizeof(maxTxnFee),
-        g_currentTransaction->detail->max_txn_fee, g_currentNetwork.symbol);
+                                  maxTxnFee, sizeof(maxTxnFee),
+                                  g_currentTransaction->detail->max_txn_fee, g_currentNetwork.symbol);
     valueLabel = GuiCreateIllustrateLabel(
-        container, maxTxnFeeFormatted ? maxTxnFee : _("Invalid Amount"));
+                     container, maxTxnFeeFormatted ? maxTxnFee : _("Invalid Amount"));
     lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
     height += 30 + 8;
@@ -902,11 +902,11 @@ static lv_obj_t *GuiRenderDetailTransactionInfoCard(lv_obj_t *parent, lv_obj_t *
 
         char maxPriorityFee[ETH_BATCH_ASSET_AMOUNT_BUFFER_SIZE] = {0};
         bool maxPriorityFeeFormatted = FormatAssetAmount(
-            maxPriorityFee, sizeof(maxPriorityFee),
-            g_currentTransaction->detail->max_priority, g_currentNetwork.symbol);
+                                           maxPriorityFee, sizeof(maxPriorityFee),
+                                           g_currentTransaction->detail->max_priority, g_currentNetwork.symbol);
         valueLabel = GuiCreateIllustrateLabel(
-            container,
-            maxPriorityFeeFormatted ? maxPriorityFee : _("Invalid Amount"));
+                         container,
+                         maxPriorityFeeFormatted ? maxPriorityFee : _("Invalid Amount"));
         lv_obj_align_to(valueLabel, titleLabel, LV_ALIGN_OUT_RIGHT_MID, 16, 0);
 
         height += 30 + 8;
@@ -1106,7 +1106,7 @@ static void GuiRenderDetail(lv_obj_t *parent)
     last_view = GuiRenderDetailFromTo(parent, last_view);
 
     if (g_currentTransaction->detail->input != NULL &&
-        g_currentTransaction->detail->input[0] != '\0') {
+            g_currentTransaction->detail->input[0] != '\0') {
         if (g_contractData != NULL && g_contractData->error_code == 0) {
             last_view = GuiRenderDetailContractData(parent, last_view);
         } else {

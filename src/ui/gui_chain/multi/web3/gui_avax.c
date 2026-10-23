@@ -98,7 +98,7 @@ static lv_obj_t *GuiAvaxCreateDetailsAddressCard(
     const DisplayUtxoFromTo *item)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, AVAX_COMPONENT_WIDTH, 0, lastView);
+                         parent, AVAX_COMPONENT_WIDTH, 0, lastView);
     uint16_t height = 16;
 
     lv_obj_t *label = GuiCreateIllustrateLabel(card, title);
@@ -159,11 +159,11 @@ static lv_obj_t *GuiAvaxAppendAddresses(
             lastView = GuiAvaxCreateDetailsAddressCard(parent, lastView, title, &ptr[i]);
         } else {
             lastView = CreateTransactionItemViewWithWidth(
-                parent,
-                title,
-                ptr[i].address,
-                lastView,
-                AVAX_COMPONENT_WIDTH);
+                           parent,
+                           title,
+                           ptr[i].address,
+                           lastView,
+                           AVAX_COMPONENT_WIDTH);
         }
     }
     return lastView;
@@ -175,37 +175,37 @@ void GuiAvaxTxOverview(lv_obj_t *parent, void *totalData)
     GuiAvaxPrepareComponentParent(parent);
 
     lv_obj_t *lastView = CreateTransactionOverviewCardWithWidth(
-        parent,
-        _("Value"),
-        txData->data->amount,
-        _("Fee"),
-        txData->data->fee_amount,
-        AVAX_COMPONENT_WIDTH);
+                             parent,
+                             _("Value"),
+                             txData->data->amount,
+                             _("Fee"),
+                             txData->data->fee_amount,
+                             AVAX_COMPONENT_WIDTH);
 
     if (txData->data->network != NULL) {
         lastView = CreateTransactionItemViewWithWidth(
-            parent,
-            txData->data->network_key,
-            txData->data->network,
-            lastView,
-            AVAX_COMPONENT_WIDTH);
+                       parent,
+                       txData->data->network_key,
+                       txData->data->network,
+                       lastView,
+                       AVAX_COMPONENT_WIDTH);
         if (txData->data->subnet_id != NULL) {
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Subnet ID"), txData->data->subnet_id, lastView, AVAX_COMPONENT_WIDTH);
+                           parent, _("Subnet ID"), txData->data->subnet_id, lastView, AVAX_COMPONENT_WIDTH);
         }
     }
 
     if (txData->data->method != NULL) {
         lastView = CreateTransactionItemViewWithWidth(
-            parent,
-            txData->data->method->method_key,
-            txData->data->method->method,
-            lastView,
-            AVAX_COMPONENT_WIDTH);
+                       parent,
+                       txData->data->method->method_key,
+                       txData->data->method->method,
+                       lastView,
+                       AVAX_COMPONENT_WIDTH);
     }
 
     lastView = GuiAvaxAppendAddresses(
-        parent, lastView, _("From"), txData->data->from->data, txData->data->from->size, false);
+                   parent, lastView, _("From"), txData->data->from->data, txData->data->from->size, false);
     GuiAvaxAppendAddresses(
         parent, lastView, _("To"), txData->data->to->data, txData->data->to->size, false);
 }
@@ -218,49 +218,49 @@ void GuiAvaxTxRawData(lv_obj_t *parent, void *totalData)
     lv_obj_t *lastView = NULL;
     if (txData->data->network != NULL) {
         lastView = CreateTransactionItemViewWithWidth(
-            parent,
-            txData->data->network_key,
-            txData->data->network,
-            lastView,
-            AVAX_COMPONENT_WIDTH);
+                       parent,
+                       txData->data->network_key,
+                       txData->data->network,
+                       lastView,
+                       AVAX_COMPONENT_WIDTH);
         if (txData->data->subnet_id != NULL) {
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Subnet ID"), txData->data->subnet_id, lastView, AVAX_COMPONENT_WIDTH);
+                           parent, _("Subnet ID"), txData->data->subnet_id, lastView, AVAX_COMPONENT_WIDTH);
         }
     }
 
     if (txData->data->method != NULL) {
         char startTime[BUFFER_SIZE_64] = {0}, endTime[BUFFER_SIZE_64] = {0};
         lastView = CreateTransactionItemViewWithWidth(
-            parent,
-            txData->data->method->method_key,
-            txData->data->method->method,
-            lastView,
-            AVAX_COMPONENT_WIDTH);
+                       parent,
+                       txData->data->method->method_key,
+                       txData->data->method->method,
+                       lastView,
+                       AVAX_COMPONENT_WIDTH);
         if (txData->data->method->start_time != 0 && txData->data->method->end_time != 0) {
             StampTimeToUtcTime(txData->data->method->start_time, startTime, sizeof(startTime));
             StampTimeToUtcTime(txData->data->method->end_time, endTime, sizeof(endTime));
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Start time"), startTime, lastView, AVAX_COMPONENT_WIDTH);
+                           parent, _("Start time"), startTime, lastView, AVAX_COMPONENT_WIDTH);
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("End Time"), endTime, lastView, AVAX_COMPONENT_WIDTH);
+                           parent, _("End Time"), endTime, lastView, AVAX_COMPONENT_WIDTH);
         }
     }
 
     lastView = CreateTransactionItemViewWithWidth(
-        parent, _("Total Input"), txData->data->total_input_amount, lastView, AVAX_COMPONENT_WIDTH);
+                   parent, _("Total Input"), txData->data->total_input_amount, lastView, AVAX_COMPONENT_WIDTH);
     lastView = CreateTransactionItemViewWithWidth(
-        parent, _("Total Output"), txData->data->total_output_amount, lastView, AVAX_COMPONENT_WIDTH);
+                   parent, _("Total Output"), txData->data->total_output_amount, lastView, AVAX_COMPONENT_WIDTH);
     lastView = CreateTransactionItemViewWithWidth(
-        parent, _("Fee"), txData->data->fee_amount, lastView, AVAX_COMPONENT_WIDTH);
+                   parent, _("Fee"), txData->data->fee_amount, lastView, AVAX_COMPONENT_WIDTH);
 
     if (txData->data->reward_address != NULL) {
         lastView = CreateTransactionItemViewWithWidth(
-            parent, _("Reward Address"), txData->data->reward_address, lastView, AVAX_COMPONENT_WIDTH);
+                       parent, _("Reward Address"), txData->data->reward_address, lastView, AVAX_COMPONENT_WIDTH);
     }
 
     lastView = GuiAvaxAppendAddresses(
-        parent, lastView, _("From"), txData->data->from->data, txData->data->from->size, true);
+                   parent, lastView, _("From"), txData->data->from->data, txData->data->from->size, true);
     GuiAvaxAppendAddresses(
         parent, lastView, _("To"), txData->data->to->data, txData->data->to->size, true);
 }

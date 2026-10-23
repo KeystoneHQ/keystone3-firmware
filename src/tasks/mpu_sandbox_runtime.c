@@ -14,10 +14,10 @@ typedef enum {
     MPU_SANDBOX_VALIDATION_EIP712_JSON,
 } MpuSandboxValidationKind_t;
 static bool MpuSandboxProcessValidationChunk(MpuSandboxInput_t *input,
-                                             MpuSandboxOutput_t *output,
-                                             uint8_t *data, size_t capacity,
-                                             uint16_t *length, uint16_t *total_length,
-                                             bool *active, MpuSandboxValidationKind_t kind);
+    MpuSandboxOutput_t *output,
+    uint8_t *data, size_t capacity,
+    uint16_t *length, uint16_t *total_length,
+    bool *active, MpuSandboxValidationKind_t kind);
 static void SandboxCopy(void *destination, const void *source, size_t length)
 {
     uint8_t *destinationBytes = destination;
@@ -104,12 +104,12 @@ static void MpuSandboxProcessRequest(MpuSandboxInput_t *input, MpuSandboxRw_t *r
             rw->payload_mode = MPU_SANDBOX_PAYLOAD_EAPDU;
         }
         EapduFramingResult_t framing = EapduFramingPush(&rw->payload.eapdu, input->input,
-                                                        inputLength,
-                                                        request.tick);
+                                       inputLength,
+                                       request.tick);
         if ((framing.status == EAPDU_FRAMING_COMPLETE) &&
                 (framing.command_type == MPU_SANDBOX_RESOLVE_UR_COMMAND)) {
             urValidationStatus = mpu_sandbox_validate_ur(rw->payload.eapdu.packet_data,
-                                                         framing.payload_length);
+                                 framing.payload_length);
         }
         MpuSandboxEapduResult_t result = {
             .framing_status = (uint32_t)framing.status,
@@ -148,9 +148,9 @@ static void MpuSandboxProcessUrChunk(MpuSandboxInput_t *input, MpuSandboxRw_t *r
 }
 
 static void MpuSandboxProcessPayloadValidationChunk(MpuSandboxInput_t *input,
-                                                    MpuSandboxRw_t *rw,
-                                                    MpuSandboxPayloadMode_t mode,
-                                                    MpuSandboxValidationKind_t kind)
+    MpuSandboxRw_t *rw,
+    MpuSandboxPayloadMode_t mode,
+    MpuSandboxValidationKind_t kind)
 {
     MpuSandboxPayloadValidationState_t *state = &rw->payload.validation;
     bool firstChunk = (input->request.input_length >= MPU_SANDBOX_UR_CHUNK_HEADER_SIZE) &&
@@ -239,10 +239,10 @@ static void MpuSandboxProcessEip712JsonChunk(MpuSandboxInput_t *input, MpuSandbo
 }
 
 static bool MpuSandboxProcessValidationChunk(MpuSandboxInput_t *input,
-                                             MpuSandboxOutput_t *output,
-                                             uint8_t *data, size_t capacity,
-                                             uint16_t *length, uint16_t *total_length,
-                                             bool *active, MpuSandboxValidationKind_t kind)
+    MpuSandboxOutput_t *output,
+    uint8_t *data, size_t capacity,
+    uint16_t *length, uint16_t *total_length,
+    bool *active, MpuSandboxValidationKind_t kind)
 {
     uint32_t inputLength = input->request.input_length;
     MpuSandboxUrChunkResult_t result = {

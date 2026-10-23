@@ -187,7 +187,7 @@ void GuiSDCardExportHandler(lv_event_t *e)
 }
 
 int32_t GuiHandleWriteSeResult(uint16_t event, const void *param, uint16_t len,
-                              void (*handler)(bool, int32_t))
+                               void (*handler)(bool, int32_t))
 {
     if (handler == NULL) {
         return ERR_GUI_ERROR;
@@ -289,7 +289,7 @@ void GuiWalletOperationAborted(bool passcodeFailure)
         lv_obj_set_style_text_align(title, LV_TEXT_ALIGN_CENTER, 0);
         lv_obj_align(title, LV_ALIGN_TOP_MID, 0, 330);
         lv_obj_t *description = GuiCreateIllustrateLabel(cover,
-            _("passcode_update_failed_delete_desc"));
+                                _("passcode_update_failed_delete_desc"));
         lv_obj_set_width(description, 384);
         lv_label_set_long_mode(description, LV_LABEL_LONG_WRAP);
         lv_obj_set_style_text_align(description, LV_TEXT_ALIGN_CENTER, 0);

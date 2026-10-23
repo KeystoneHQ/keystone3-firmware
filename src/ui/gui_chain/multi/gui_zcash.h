@@ -10,15 +10,15 @@ void GuiZcashOverview(lv_obj_t *parent, void *totalData);
 PtrT_TransactionCheckResult GuiGetZcashCheckResult(void);
 #ifdef CYPHERPUNK_VERSION
 typedef UREncodeResult *(*ZcashCypherpunkSignFunc)(void *data,
-        PtrBytes seedFingerprint,
-        uint32_t accountIndex,
-        bool disabled,
-        PtrBytes seed,
-        uint32_t seedLen);
+    PtrBytes seedFingerprint,
+    uint32_t accountIndex,
+    bool disabled,
+    PtrBytes seed,
+    uint32_t seedLen);
 UREncodeResult *GuiSignZcashCypherpunkWithSeed(void *data,
-        bool unlimited,
-        ZcashCypherpunkSignFunc signFunc,
-        ZcashCypherpunkSignFunc unlimitedSignFunc);
+    bool unlimited,
+    ZcashCypherpunkSignFunc signFunc,
+    ZcashCypherpunkSignFunc unlimitedSignFunc);
 #endif
 UREncodeResult *GuiGetZcashSignQrCodeData(void);
 UREncodeResult *GuiGetZcashSignUrDataUnlimited(void);

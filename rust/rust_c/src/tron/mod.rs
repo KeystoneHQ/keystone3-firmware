@@ -154,6 +154,10 @@ pub unsafe extern "C" fn tron_sign_request(
         let signed_tx_bytes = hex::decode(signed_tx_hex)
             .map_err(|_| KeystoneError::SignTxFailed("Invalid Hex output".to_string()))?;
         let sig_obj = TronSignature::new(request_id, signed_tx_bytes);
+        #[allow(
+            deprecated,
+            reason = "ur-registry 1.0.9 TronSignature only implements To"
+        )]
         sig_obj
             .to_bytes()
             .map_err(|e| KeystoneError::SignTxFailed(e.to_string()))

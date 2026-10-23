@@ -131,6 +131,7 @@ pub(crate) fn pczt_is_v6(pczt: &Pczt) -> bool {
         && *pczt.global().version_group_id() == constants::V6_VERSION_GROUP_ID
 }
 
+#[cfg(feature = "cypherpunk")]
 pub(crate) fn pczt_should_process_ironwood(pczt: &Pczt) -> bool {
     pczt_is_v6(pczt) || pczt_has_ironwood_actions(pczt)
 }

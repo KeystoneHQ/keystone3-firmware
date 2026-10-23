@@ -1201,9 +1201,7 @@ impl UnsignedTx {
 
             let msg = tx.signature_hash().ok_or(MoneroError::FormatError)?;
             let clsags_and_pseudo_outs = Clsag::sign(&mut OsRng, clsag_signs, mask_sum, msg)
-                .map_err(|_| {
-                    MoneroError::FormatError
-                })?;
+                .map_err(|_| MoneroError::FormatError)?;
 
             let mut tx = tx.clone();
             let inputs_len = tx.prefix().inputs.len();

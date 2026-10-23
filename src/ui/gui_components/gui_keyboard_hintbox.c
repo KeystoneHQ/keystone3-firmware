@@ -115,7 +115,7 @@ void SetKeyboardWidgetSelf(KeyboardWidget_t *keyboardWidget, KeyboardWidget_t **
 }
 
 static void SetKeyboardWidgetBoundedLabelText(lv_obj_t *label, const char *text,
-        lv_label_long_mode_t longMode)
+    lv_label_long_mode_t longMode)
 {
     lv_label_set_text(label, text);
     if (lv_obj_get_self_width(label) > KEYBOARD_WIDGET_TEXT_WIDTH) {
@@ -477,7 +477,7 @@ void GuiShowErrorNumber(KeyboardWidget_t *keyboardWidget, PasswordVerifyResult_t
     uint16_t signal = passwordVerifyResult->signal;
     bool proveOwnership = (signal == SIG_FORGET_PASSWORD_PROVE_OWNERSHIP);
     uint8_t maxCount = proveOwnership ? MAX_LOGIN_PASSWORD_ERROR_COUNT
-                                      : MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
+                       : MAX_CURRENT_PASSWORD_ERROR_COUNT_SHOW_HINTBOX;
     printf("GuiShowErrorNumber signal=%u proveOwnership=%d maxCount=%u lock=%d forget=%d wipe=%d\r\n",
            (unsigned int)signal, proveOwnership, (unsigned int)maxCount, g_lockView.isActive, g_forgetPassView.isActive,
            g_wipeDeviceView.isActive);

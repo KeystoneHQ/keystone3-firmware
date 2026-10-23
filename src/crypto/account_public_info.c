@@ -931,7 +931,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
                 break;
             }
             ledgerBitbox02Response = get_ledger_bitbox02_master_key(
-                mnemonic, GetPassphrase(accountIndex));
+                                         mnemonic, GetPassphrase(accountIndex));
             if (ledgerBitbox02Response == NULL || ledgerBitbox02Response->error_code != 0) {
                 ret = ledgerBitbox02Response == NULL ? ERR_GENERAL_FAIL : ledgerBitbox02Response->error_code;
                 break;
@@ -1167,7 +1167,7 @@ int32_t FindAccountByPasswordAndDeriveZcashCacheKey(
     uint8_t cacheKey[AES_KEY_LEN])
 {
     return FindAccountByPasswordAndDeriveSubkey(
-        matchedAccountIndex, password, ZCASH_CACHE_V3_DOMAIN, cacheKey);
+               matchedAccountIndex, password, ZCASH_CACHE_V3_DOMAIN, cacheKey);
 }
 
 int32_t VerifyAccountPasswordAndDeriveZcashCacheKey(
@@ -1175,7 +1175,7 @@ int32_t VerifyAccountPasswordAndDeriveZcashCacheKey(
     uint8_t cacheKey[AES_KEY_LEN])
 {
     return VerifyAccountPasswordAndDeriveSubkey(
-        accountIndex, password, ZCASH_CACHE_V3_DOMAIN, cacheKey);
+               accountIndex, password, ZCASH_CACHE_V3_DOMAIN, cacheKey);
 }
 
 /// @brief Check a stored Zcash UFVK blob has an acceptable layout.
@@ -1202,7 +1202,7 @@ static SimpleResponse_c_char *DeriveEncryptedZcashUFVKV3WithCacheKey(
     uint32_t ufvkOutLen)
 {
     SimpleResponse_c_char *ufvkResponse = derive_zcash_ufvk(
-        (uint8_t *)seed, seedLen, g_chainTable[ZCASH_UFVK_ENCRYPTED_0].path);
+            (uint8_t *)seed, seedLen, g_chainTable[ZCASH_UFVK_ENCRYPTED_0].path);
     if (ufvkResponse == NULL || ufvkResponse->error_code != 0) {
         return ufvkResponse;
     }
@@ -1210,7 +1210,7 @@ static SimpleResponse_c_char *DeriveEncryptedZcashUFVKV3WithCacheKey(
     uint8_t ivBytes[16];
     TrngGet(ivBytes, sizeof(ivBytes));
     SimpleResponse_c_char *encryptResult = rust_encrypt_ufvk_blob_v3(
-        ufvkResponse->data, (uint8_t *)cacheKey, AES_KEY_LEN, ivBytes, sizeof(ivBytes));
+            ufvkResponse->data, (uint8_t *)cacheKey, AES_KEY_LEN, ivBytes, sizeof(ivBytes));
     CLEAR_ARRAY(ivBytes);
     if (ufvkOut != NULL && encryptResult != NULL && encryptResult->error_code == 0) {
         strcpy_s(ufvkOut, ufvkOutLen, ufvkResponse->data);
@@ -1228,13 +1228,13 @@ static SimpleResponse_c_char *DeriveEncryptedZcashUFVKV3(
 {
     uint8_t cacheKey[AES_KEY_LEN] = {0};
     int32_t ret = VerifyAccountPasswordAndDeriveZcashCacheKey(
-        accountIndex, password, cacheKey);
+                      accountIndex, password, cacheKey);
     if (ret != SUCCESS_CODE) {
         CLEAR_ARRAY(cacheKey);
         return NULL;
     }
     SimpleResponse_c_char *encryptResult = DeriveEncryptedZcashUFVKV3WithCacheKey(
-        seed, seedLen, cacheKey, ufvkOut, ufvkOutLen);
+            seed, seedLen, cacheKey, ufvkOut, ufvkOutLen);
     CLEAR_ARRAY(cacheKey);
     return encryptResult;
 }
@@ -1268,8 +1268,8 @@ static int32_t ReplaceStoredZcashUFVK(uint8_t accountIndex, const SimpleResponse
 }
 
 int32_t MigrateLegacyZcashPublicInfoToV3(uint8_t accountIndex, uint8_t *seed, int seedLen,
-                                        const uint8_t *cacheKey, char *ufvkOut,
-                                        uint32_t ufvkOutLen)
+    const uint8_t *cacheKey, char *ufvkOut,
+    uint32_t ufvkOutLen)
 {
     ASSERT(accountIndex <= 2);
     if (GetIsTempAccount()) {
@@ -1277,7 +1277,7 @@ int32_t MigrateLegacyZcashPublicInfoToV3(uint8_t accountIndex, uint8_t *seed, in
     }
 
     SimpleResponse_c_char *encryptResult = DeriveEncryptedZcashUFVKV3WithCacheKey(
-        seed, seedLen, cacheKey, ufvkOut, ufvkOutLen);
+            seed, seedLen, cacheKey, ufvkOut, ufvkOutLen);
     int32_t ret = ERR_GENERAL_FAIL;
     if (encryptResult != NULL && encryptResult->error_code == 0) {
         ret = CalculateAndStoreZcashSFP(seed, seedLen);
@@ -1302,7 +1302,7 @@ int32_t RegenerateZcashUFVKV3(uint8_t accountIndex, const uint8_t *seed, int see
     }
 
     SimpleResponse_c_char *encryptResult = DeriveEncryptedZcashUFVKV3(
-        accountIndex, seed, seedLen, password, NULL, 0);
+            accountIndex, seed, seedLen, password, NULL, 0);
     int32_t ret = ReplaceStoredZcashUFVK(accountIndex, encryptResult);
     if (encryptResult != NULL) {
         free_simple_response_c_char(encryptResult);
@@ -1364,13 +1364,13 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 ret = bip39_mnemonic_from_bytes(NULL, entropy, entropyLen, &mnemonic);
                 CHECK_ERRCODE_BREAK("derive temp account mnemonic", ret);
                 cip3Response = get_icarus_master_key(
-                    entropy, entropyLen, GetPassphrase(accountIndex));
+                                   entropy, entropyLen, GetPassphrase(accountIndex));
                 if (cip3Response == NULL || cip3Response->error_code != 0) {
                     ret = cip3Response == NULL ? ERR_GENERAL_FAIL : cip3Response->error_code;
                     break;
                 }
                 ledgerBitbox02Response = get_ledger_bitbox02_master_key(
-                    mnemonic, GetPassphrase(accountIndex));
+                                             mnemonic, GetPassphrase(accountIndex));
                 if (ledgerBitbox02Response == NULL || ledgerBitbox02Response->error_code != 0) {
                     ret = ledgerBitbox02Response == NULL ? ERR_GENERAL_FAIL : ledgerBitbox02Response->error_code;
                     break;
@@ -1396,7 +1396,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
 #ifdef CYPHERPUNK_VERSION
                 if (g_chainTable[i].cryptoKey == ZCASH_UFVK_ENCRYPTED) {
                     xPubResult = DeriveEncryptedZcashUFVKV3(
-                        accountIndex, seed, seedLen, password, NULL, 0);
+                                     accountIndex, seed, seedLen, password, NULL, 0);
                 } else {
                     xPubResult = ProcessKeyType(seed, seedLen, g_chainTable[i].cryptoKey,
                                                 g_chainTable[i].path, icarusMasterKey,
@@ -1430,7 +1430,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
                 }
                 ASSERT(xPubResult->data);
                 uint32_t valueLen = strnlen_s(
-                    xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1;
+                                        xPubResult->data, SIMPLERESPONSE_C_CHAR_MAX_LEN) + 1;
                 g_accountPublicInfo[i].value = SRAM_MALLOC(valueLen);
                 if (g_accountPublicInfo[i].value == NULL) {
                     ret = ERR_GENERAL_FAIL;

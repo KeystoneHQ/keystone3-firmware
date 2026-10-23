@@ -166,8 +166,8 @@ void *GuiGetAdaSignDataData(void)
     do {
         TransactionParseResult_DisplayCardanoSignData *parseResult =
             g_viewTypeIndex == CardanoSignCip8Data
-                ? cardano_parse_sign_cip8_data(data)
-                : cardano_parse_sign_data(data);
+            ? cardano_parse_sign_cip8_data(data)
+            : cardano_parse_sign_data(data);
         CHECK_CHAIN_BREAK(parseResult);
         g_parseResult = (void *)parseResult;
     } while (0);
@@ -506,7 +506,7 @@ void GuiShowAdaMultiAssetsWarning(lv_obj_t *parent, void *totalData)
     lv_obj_align_to(title, warning_icon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
     lv_obj_t *content = GuiCreateIllustrateLabel(
-        card, "This transaction contains native assets. Review them in Outputs before signing.");
+                            card, "This transaction contains native assets. Review them in Outputs before signing.");
     lv_obj_set_width(content, ADA_TAB_CONTENT_WIDTH - 48);
     lv_label_set_long_mode(content, LV_LABEL_LONG_WRAP);
     lv_obj_align(content, LV_ALIGN_TOP_LEFT, 24, 64);
@@ -515,7 +515,7 @@ void GuiShowAdaMultiAssetsWarning(lv_obj_t *parent, void *totalData)
 }
 
 static lv_obj_t *GuiShowAdaReviewWarning(lv_obj_t *parent,
-                                         DisplayCardanoTx *tx)
+    DisplayCardanoTx *tx)
 {
     bool hasAdvanced = tx->advanced_data != NULL && tx->advanced_data[0] != '\0';
     const char *message = NULL;
@@ -540,7 +540,7 @@ static lv_obj_t *GuiShowAdaReviewWarning(lv_obj_t *parent,
         return NULL;
     }
     lv_obj_t *card = GuiCreateContainerWithParent(
-        parent, ADA_TAB_CONTENT_WIDTH, LV_SIZE_CONTENT);
+                         parent, ADA_TAB_CONTENT_WIDTH, LV_SIZE_CONTENT);
     lv_obj_align(card, LV_ALIGN_TOP_MID, 0, 16);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
@@ -585,8 +585,8 @@ static void GuiAdaAppendDetailValue(lv_obj_t *card, uint16_t *height,
 }
 
 static void GuiAdaAppendAssetDetailValue(lv_obj_t *card, uint16_t *height,
-                                         const char *labelText,
-                                         const char *value, bool highlight)
+    const char *labelText,
+    const char *value, bool highlight)
 {
     if (value == NULL) {
         return;
@@ -669,7 +669,7 @@ static void GuiAdaAppendAssets(lv_obj_t *card, uint16_t *height,
     }
     for (size_t i = start; i < end; i++) {
         lv_obj_t *assetCard = GuiCreateContainerWithParent(
-            card, ADA_TAB_CONTENT_WIDTH - 48, 0);
+                                  card, ADA_TAB_CONTENT_WIDTH - 48, 0);
         lv_obj_align(assetCard, LV_ALIGN_TOP_LEFT, 24, *height);
         lv_obj_clear_flag(assetCard, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_clear_flag(assetCard, LV_OBJ_FLAG_CLICKABLE);
@@ -764,7 +764,7 @@ static bool GuiAdaOutputIsMine(const DisplayCardanoTx *tx,
     for (size_t i = 0; i < tx->from->size; i++) {
         const DisplayCardanoFrom *input = &tx->from->data[i];
         if (input->has_path && input->address != NULL &&
-            strcmp(input->address, output->address) == 0) {
+                strcmp(input->address, output->address) == 0) {
             return true;
         }
     }
@@ -777,7 +777,7 @@ static lv_obj_t *GuiAdaCreateOutputCard(lv_obj_t *parent, lv_obj_t *lastView,
                                         size_t assetStart, size_t assetCount)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                         parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
     uint16_t height = 16;
@@ -813,7 +813,7 @@ static lv_obj_t *GuiAdaCreateInputCard(lv_obj_t *parent, lv_obj_t *lastView,
                                        DisplayCardanoFrom *input, size_t index)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                         parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
     uint16_t height = 16;
@@ -860,8 +860,8 @@ static size_t GuiAdaOutputPageCount(const DisplayCardanoTo *output)
 {
     size_t assetCount = output->assets == NULL ? 0 : output->assets->size;
     return assetCount == 0 ? 1
-                           : (assetCount + ADA_ASSETS_PER_PAGE - 1) /
-                                 ADA_ASSETS_PER_PAGE;
+           : (assetCount + ADA_ASSETS_PER_PAGE - 1) /
+           ADA_ASSETS_PER_PAGE;
 }
 
 static bool GuiAdaResolveOutputPage(const DisplayCardanoTx *tx, size_t page,
@@ -931,7 +931,7 @@ static void GuiAdaAssetPagerRefresh(GuiAdaAssetPager_t *state)
             lv_obj_t *child = lv_obj_get_child(parent, i);
             if (afterSection) {
                 lv_obj_set_y(child, lv_obj_get_y(child) +
-                                        newSectionHeight - oldSectionHeight);
+                             newSectionHeight - oldSectionHeight);
             } else if (child == state->section) {
                 afterSection = true;
             }
@@ -985,13 +985,13 @@ static lv_obj_t *GuiAdaAppendAssetPager(
     }
     bool singleAsset = assets->size == 1;
     lv_obj_t *section = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                            parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(section, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(section, LV_OBJ_FLAG_CLICKABLE);
 
     const char *sectionTitle = showMintAction
-                                   ? GuiAdaMintAction(assets->data[0].amount)
-                                   : title;
+                               ? GuiAdaMintAction(assets->data[0].amount)
+                               : title;
     lv_obj_t *titleLabel = GuiCreateIllustrateLabel(section, sectionTitle);
     lv_obj_set_style_text_color(titleLabel, ORANGE_COLOR, LV_PART_MAIN);
     lv_obj_align(titleLabel, LV_ALIGN_TOP_LEFT, 24, 16);
@@ -1014,7 +1014,7 @@ static lv_obj_t *GuiAdaAppendAssetPager(
     state->section = section;
     state->title_label = titleLabel;
     state->viewport = GuiCreateContainerWithParent(
-        section, ADA_TAB_CONTENT_WIDTH, 1);
+                          section, ADA_TAB_CONTENT_WIDTH, 1);
     lv_obj_align(state->viewport, LV_ALIGN_TOP_LEFT, 0, 58);
     lv_obj_set_style_bg_opa(state->viewport, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_pad_all(state->viewport, 0, LV_PART_MAIN);
@@ -1108,11 +1108,11 @@ static void GuiAdaUtxoPagerDelete(lv_event_t *event)
 static void GuiShowAdaUtxos(lv_obj_t *parent, DisplayCardanoTx *tx, bool outputs)
 {
     size_t count = outputs ? (tx->to == NULL ? 0 : tx->to->size)
-                           : (tx->from == NULL ? 0 : tx->from->size);
+                   : (tx->from == NULL ? 0 : tx->from->size);
     if (count == 0) {
         if (outputs) {
             lv_obj_t *emptyCard = CreateTransactionItemViewWithWidth(
-                parent, "Outputs", "No outputs", NULL, ADA_TAB_CONTENT_WIDTH);
+                                      parent, "Outputs", "No outputs", NULL, ADA_TAB_CONTENT_WIDTH);
             lv_obj_align(emptyCard, LV_ALIGN_TOP_MID, 0, 0);
             lv_obj_clear_flag(emptyCard, LV_OBJ_FLAG_SCROLLABLE);
             lv_obj_clear_flag(emptyCard, LV_OBJ_FLAG_CLICKABLE);
@@ -1140,7 +1140,7 @@ static void GuiShowAdaUtxos(lv_obj_t *parent, DisplayCardanoTx *tx, bool outputs
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(parent, LV_OBJ_FLAG_CLICKABLE);
     state->viewport = GuiCreateContainerWithParent(
-        parent, ADA_TAB_CONTENT_WIDTH, ADA_TX_PAGER_HEIGHT);
+                          parent, ADA_TAB_CONTENT_WIDTH, ADA_TX_PAGER_HEIGHT);
     lv_obj_align(state->viewport, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_opa(state->viewport, LV_OPA_TRANSP, LV_PART_MAIN);
     lv_obj_set_style_pad_all(state->viewport, 0, LV_PART_MAIN);
@@ -1177,10 +1177,10 @@ void GuiShowAdaOutputs(lv_obj_t *parent, void *totalData)
 }
 
 static lv_obj_t *GuiAdaAppendOverviewItem(lv_obj_t *parent, lv_obj_t *lastView,
-                                           const char *title, const char *value)
+    const char *title, const char *value)
 {
     lv_obj_t *card = CreateTransactionItemViewWithWidth(
-        parent, title, value == NULL ? "" : value, lastView, ADA_TAB_CONTENT_WIDTH);
+                         parent, title, value == NULL ? "" : value, lastView, ADA_TAB_CONTENT_WIDTH);
     if (lastView == NULL) {
         lv_obj_align(card, LV_ALIGN_TOP_MID, 0, 0);
     }
@@ -1194,7 +1194,7 @@ static lv_obj_t *GuiAdaAppendCertificateCard(
     const DisplayCardanoCertificate *certificate, size_t index)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                         parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
     uint16_t height = 16;
@@ -1221,7 +1221,7 @@ static lv_obj_t *GuiAdaAppendWithdrawalCard(
     const DisplayCardanoWithdrawal *withdrawal, size_t index)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                         parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
     uint16_t height = 16;
@@ -1243,7 +1243,7 @@ static lv_obj_t *GuiAdaAppendVotingProcedureCard(
     const DisplayVotingProcedure *procedure, size_t index)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                         parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
     uint16_t height = 16;
@@ -1271,7 +1271,7 @@ static lv_obj_t *GuiAdaAppendVotingProposalCard(
     const DisplayVotingProposal *proposal, size_t index)
 {
     lv_obj_t *card = CreateRelativeTransactionContentContainer(
-        parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
+                         parent, ADA_TAB_CONTENT_WIDTH, 0, lastView);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
     lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
     uint16_t height = 16;
@@ -1315,7 +1315,7 @@ void GuiShowAdaSignData(lv_obj_t *parent, void *totalData)
     lv_obj_t *lastView = NULL;
     if (data->payload_is_hex) {
         lv_obj_t *card = GuiCreateContainerWithParent(
-            parent, ADA_TAB_CONTENT_WIDTH, LV_SIZE_CONTENT);
+                             parent, ADA_TAB_CONTENT_WIDTH, LV_SIZE_CONTENT);
         lv_obj_align(card, LV_ALIGN_TOP_MID, 0, 0);
         lv_obj_clear_flag(card, LV_OBJ_FLAG_SCROLLABLE);
         lv_obj_clear_flag(card, LV_OBJ_FLAG_CLICKABLE);
@@ -1329,7 +1329,7 @@ void GuiShowAdaSignData(lv_obj_t *parent, void *totalData)
         lv_obj_set_style_text_color(title, YELLOW_COLOR, LV_PART_MAIN);
         lv_obj_align_to(title, icon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
         lv_obj_t *content = GuiCreateIllustrateLabel(
-            card, "This message cannot be displayed as text. Verify the raw hex before signing.");
+                                card, "This message cannot be displayed as text. Verify the raw hex before signing.");
         lv_obj_set_width(content, ADA_TAB_CONTENT_WIDTH - 48);
         lv_label_set_long_mode(content, LV_LABEL_LONG_WRAP);
         lv_obj_align(content, LV_ALIGN_TOP_LEFT, 24, 64);
@@ -1339,13 +1339,13 @@ void GuiShowAdaSignData(lv_obj_t *parent, void *totalData)
     }
 
     lastView = GuiAdaAppendOverviewItem(
-        parent, lastView, "Signing type",
-        g_viewTypeIndex == CardanoSignCip8Data ? "CIP-8 message" : "Cardano sign data");
+                   parent, lastView, "Signing type",
+                   g_viewTypeIndex == CardanoSignCip8Data ? "CIP-8 message" : "Cardano sign data");
     lastView = GuiAdaAppendOverviewItem(parent, lastView, "Path", data->derivation_path);
     lastView = GuiAdaAppendOverviewItem(parent, lastView, "Public key", data->xpub);
     if (data->hash_payload) {
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Signing hash", data->message_hash);
+                       parent, lastView, "Signing hash", data->message_hash);
     }
     GuiAdaAppendOverviewItem(parent, lastView, "Message", data->payload);
     lv_obj_update_layout(parent);
@@ -1364,48 +1364,48 @@ static void GuiShowAdaOverview(lv_obj_t *parent, DisplayCardanoTx *tx)
     lv_obj_t *lastView = GuiShowAdaReviewWarning(parent, tx);
     lastView = GuiAdaAppendOverviewItem(parent, lastView, "Network", tx->network);
     lastView = GuiAdaAppendOverviewItem(
-        parent, lastView, tx->has_unknown_inputs ? "Known input total" : "Total input",
-        tx->total_input);
+                   parent, lastView, tx->has_unknown_inputs ? "Known input total" : "Total input",
+                   tx->total_input);
     if (tx->withdrawals_total != NULL && tx->withdrawals_total[0] != '\0') {
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Withdrawals total", tx->withdrawals_total);
+                       parent, lastView, "Withdrawals total", tx->withdrawals_total);
     }
     lastView = GuiAdaAppendOverviewItem(parent, lastView, "Total output", tx->total_output);
     lastView = GuiAdaAppendOverviewItem(parent, lastView, "Fee", tx->fee);
     char countText[BUFFER_SIZE_32] = {0};
     if (tx->validity_start != NULL && tx->validity_start[0] != '\0') {
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Validity start", tx->validity_start);
+                       parent, lastView, "Validity start", tx->validity_start);
     }
     if (tx->ttl != NULL && tx->ttl[0] != '\0') {
         lastView = GuiAdaAppendOverviewItem(parent, lastView, "TTL", tx->ttl);
     }
     lastView = GuiAdaAppendOverviewItem(
-        parent, lastView, "Script validity",
-        tx->transaction_is_valid ? "Valid flag" : "Invalid flag");
+                   parent, lastView, "Script validity",
+                   tx->transaction_is_valid ? "Valid flag" : "Invalid flag");
     lastView = GuiAdaAppendAssetPager(
-        parent, lastView, "Mint / burn", tx->mint_assets, true);
+                   parent, lastView, "Mint / burn", tx->mint_assets, true);
     if (tx->collateral_inputs_count > 0) {
         snprintf_s(countText, sizeof(countText), "%u",
                    (unsigned)tx->collateral_inputs_count);
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Collateral inputs", countText);
+                       parent, lastView, "Collateral inputs", countText);
     }
     if (tx->total_collateral != NULL && tx->total_collateral[0] != '\0') {
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Total collateral", tx->total_collateral);
+                       parent, lastView, "Total collateral", tx->total_collateral);
     }
     if (tx->collateral_return != NULL && tx->collateral_return[0] != '\0') {
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Collateral return", tx->collateral_return);
+                       parent, lastView, "Collateral return", tx->collateral_return);
     }
     lastView = GuiAdaAppendAssetPager(
-        parent, lastView, "Collateral return assets", tx->collateral_assets, false);
+                   parent, lastView, "Collateral return assets", tx->collateral_assets, false);
     if (tx->reference_inputs_count > 0) {
         snprintf_s(countText, sizeof(countText), "%u",
                    (unsigned)tx->reference_inputs_count);
         lastView = GuiAdaAppendOverviewItem(
-            parent, lastView, "Reference inputs", countText);
+                       parent, lastView, "Reference inputs", countText);
     }
     if (tx->donation != NULL && tx->donation[0] != '\0') {
         lastView = GuiAdaAppendOverviewItem(parent, lastView, "Donation", tx->donation);
@@ -1413,25 +1413,25 @@ static void GuiShowAdaOverview(lv_obj_t *parent, DisplayCardanoTx *tx)
     if (tx->certificates != NULL && tx->certificates->size > 0) {
         for (size_t i = 0; i < tx->certificates->size; i++) {
             lastView = GuiAdaAppendCertificateCard(
-                parent, lastView, &tx->certificates->data[i], i);
+                           parent, lastView, &tx->certificates->data[i], i);
         }
     }
     if (tx->withdrawals != NULL && tx->withdrawals->size > 0) {
         for (size_t i = 0; i < tx->withdrawals->size; i++) {
             lastView = GuiAdaAppendWithdrawalCard(
-                parent, lastView, &tx->withdrawals->data[i], i);
+                           parent, lastView, &tx->withdrawals->data[i], i);
         }
     }
     if (tx->voting_procedures != NULL && tx->voting_procedures->size > 0) {
         for (size_t i = 0; i < tx->voting_procedures->size; i++) {
             lastView = GuiAdaAppendVotingProcedureCard(
-                parent, lastView, &tx->voting_procedures->data[i], i);
+                           parent, lastView, &tx->voting_procedures->data[i], i);
         }
     }
     if (tx->voting_proposals != NULL && tx->voting_proposals->size > 0) {
         for (size_t i = 0; i < tx->voting_proposals->size; i++) {
             lastView = GuiAdaAppendVotingProposalCard(
-                parent, lastView, &tx->voting_proposals->data[i], i);
+                           parent, lastView, &tx->voting_proposals->data[i], i);
         }
     }
     if (tx->required_signers_count > 0) {
@@ -1513,8 +1513,8 @@ void GuiShowAdaTx(lv_obj_t *parent, void *totalData)
     lv_obj_t *inputs = lv_tabview_add_tab(tabview, "Inputs");
     lv_obj_t *outputs = lv_tabview_add_tab(tabview, "Outputs");
     lv_obj_t *advanced = hasAdvanced
-                             ? lv_tabview_add_tab(tabview, "Advanced")
-                             : NULL;
+                         ? lv_tabview_add_tab(tabview, "Advanced")
+                         : NULL;
     lv_obj_t *raw = lv_tabview_add_tab(tabview, "Raw");
     lv_btnmatrix_set_btn_width(tabButtons, 0, 7);
     lv_btnmatrix_set_btn_width(tabButtons, 1, 5);
@@ -1550,8 +1550,8 @@ static void GuiShowAdaJsonData(lv_obj_t *parent, const char *json)
 
     lv_obj_set_height(parent, ADA_TX_CONTENT_HEIGHT);
     lv_obj_t *content = GuiCreateContainerWithParent(
-        parent, ADA_TAB_CONTENT_WIDTH,
-        ADA_TX_CONTENT_HEIGHT - ADA_TAB_CONTENT_TOP_GAP);
+                            parent, ADA_TAB_CONTENT_WIDTH,
+                            ADA_TX_CONTENT_HEIGHT - ADA_TAB_CONTENT_TOP_GAP);
     lv_obj_align(content, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_opa(content, LV_OPA_TRANSP, LV_PART_MAIN);
     GuiShowPagedMessageText(content, json, true, NULL, NULL);
@@ -1566,8 +1566,8 @@ void GuiShowAdaRawData(lv_obj_t *parent, void *totalData)
 
     lv_obj_set_height(parent, ADA_TX_CONTENT_HEIGHT);
     lv_obj_t *content = GuiCreateContainerWithParent(
-        parent, ADA_TAB_CONTENT_WIDTH,
-        ADA_TX_CONTENT_HEIGHT - ADA_TAB_CONTENT_TOP_GAP);
+                            parent, ADA_TAB_CONTENT_WIDTH,
+                            ADA_TX_CONTENT_HEIGHT - ADA_TAB_CONTENT_TOP_GAP);
     lv_obj_align(content, LV_ALIGN_TOP_MID, 0, 0);
     lv_obj_set_style_bg_opa(content, LV_OPA_TRANSP, LV_PART_MAIN);
     GuiShowPagedMessageText(content, tx->raw_data, true, NULL, NULL);
@@ -1930,8 +1930,8 @@ lv_obj_t* GuiCreateAdaNoticeCard(lv_obj_t* parent)
     lv_obj_align_to(title_label, warningIcon, LV_ALIGN_OUT_RIGHT_MID, 8, 0);
 
     lv_obj_t* content_label = GuiCreateIllustrateLabel(
-        card,
-        "Only the transaction hash is available. The recipient, amount, and other transaction details cannot be verified on this device.");
+                                  card,
+                                  "Only the transaction hash is available. The recipient, amount, and other transaction details cannot be verified on this device.");
     lv_obj_set_style_text_color(content_label, lv_color_hex(0xFFFFFF), LV_PART_MAIN);
     lv_obj_set_width(content_label, 360);
     lv_label_set_long_mode(content_label, LV_LABEL_LONG_WRAP);
@@ -2008,8 +2008,8 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     Ptr_VecFFI_PtrString addressList = hashData->address_list;
     Ptr_VecFFI_PtrString pathList = hashData->path;
     if (addressList == NULL || pathList == NULL ||
-        (addressList->size > 0 && addressList->data == NULL) ||
-        (pathList->size > 0 && pathList->data == NULL)) {
+            (addressList->size > 0 && addressList->data == NULL) ||
+            (pathList->size > 0 && pathList->data == NULL)) {
         return;
     }
     for (size_t i = 0; i < addressList->size; i++) {
@@ -2062,8 +2062,8 @@ void GuiShowAdaSignTxHashDetails(lv_obj_t *parent, void *totalData)
     lv_label_set_long_mode(tx_hash_value, LV_LABEL_LONG_WRAP);
 
     lv_obj_t *tx_hash_notice_content = GuiCreateIllustrateLabel(
-        tx_hash_card,
-        "Blind signing: verify this hash with the software wallet before signing.");
+                                           tx_hash_card,
+                                           "Blind signing: verify this hash with the software wallet before signing.");
     lv_obj_set_width(tx_hash_notice_content, lv_pct(90));
     lv_obj_set_style_text_color(tx_hash_notice_content, lv_color_hex(0xF5C131), LV_PART_MAIN);
     lv_obj_align_to(tx_hash_notice_content, tx_hash_value, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 8);

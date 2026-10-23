@@ -121,7 +121,9 @@ static int32_t Gen1OnUnlockSuccess(uint8_t accountIndex)
 }
 static int32_t Gen1RecoverResetKey(uint8_t existingIdx, const char *existingPassword, uint8_t *R_out)
 {
-    (void)existingIdx; (void)existingPassword; (void)R_out;
+    (void)existingIdx;
+    (void)existingPassword;
+    (void)R_out;
     return SUCCESS_CODE;        // no-op on gen-1
 }
 static int32_t Gen1PrepareChangePin(uint8_t accountIndex, const char *oldPassword)

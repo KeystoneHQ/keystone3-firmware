@@ -266,7 +266,7 @@ void ToggleSwitchBoxHandler(lv_event_t *e);
 void GuiWriteSeWidget(lv_obj_t *parent);
 void GuiWriteSeResult(bool en, int32_t errorCode);
 int32_t GuiHandleWriteSeResult(uint16_t event, const void *param, uint16_t len,
-                              void (*handler)(bool, int32_t));
+                               void (*handler)(bool, int32_t));
 void GuiWalletOperationAborted(bool passcodeFailure);
 void GuiWriteSeLowPower(void);
 void CloseWaringPageHandler(lv_event_t *e);

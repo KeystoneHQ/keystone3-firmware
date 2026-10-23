@@ -170,11 +170,11 @@ static void DataParserTask(void *argument)
 }
 
 static void MemManageFaultHandler(uint32_t *stackFrame, uint32_t excReturn)
-    __attribute__((noreturn, noinline, used));
+__attribute__((noreturn, noinline, used));
 
 __attribute__((naked)) void MemManage_Handler(void)
 {
-    __asm volatile (
+    __asm volatile(
         "tst lr, #4\n"
         "ite eq\n"
         "mrseq r0, msp\n"

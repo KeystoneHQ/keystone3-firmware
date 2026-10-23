@@ -173,10 +173,10 @@ static void GuiCreateNameWalletWidget(lv_obj_t *parent)
 static void OpenNoticeHandler(lv_event_t *e)
 {
     g_noticeWindow = GuiCreateConfirmHintBox(&imgRedEye,
-                                             _("single_backup_notice_title"),
-                                             _("single_backup_notice_desc1"),
-                                             _("single_backup_notice_desc2"),
-                                             USR_SYMBOL_CHECK, ORANGE_COLOR);
+                     _("single_backup_notice_title"),
+                     _("single_backup_notice_desc1"),
+                     _("single_backup_notice_desc2"),
+                     USR_SYMBOL_CHECK, ORANGE_COLOR);
     lv_obj_add_event_cb(lv_obj_get_child(g_noticeWindow, 0), CloseHintBoxHandler,
                         LV_EVENT_CLICKED, &g_noticeWindow);
 

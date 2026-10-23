@@ -45,7 +45,15 @@ impl ParsedSizeAble for EvmOutput {
 
 #[derive(Debug, Clone)]
 pub struct ImportTx {
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     codec_id: u16,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     type_id: TypeId,
     tx_header: Header,
     source_chain: [u8; BLOCKCHAIN_ID_LEN],

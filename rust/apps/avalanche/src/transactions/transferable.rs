@@ -73,7 +73,7 @@ pub trait OutputTrait {
 #[derive(Debug, Clone)]
 pub struct TransferableOutput {
     asset_id: AssetId,
-    pub output: OutputType,
+    output: OutputType,
 }
 
 impl TransferableOutput {
@@ -118,7 +118,7 @@ pub struct TransferableInput {
     pub tx_id: TxId,
     pub utxo_index: u32,
     pub asset_id: AssetId,
-    pub input: InputType,
+    input: InputType,
 }
 
 impl TransferableInput {

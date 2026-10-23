@@ -646,7 +646,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     char *xPub, hdPath[BUFFER_SIZE_128];
     xPub = GetCurrentAccountPublicKey(g_pathTypeList[pathType].pubkeyType);
     bool xpubValid = xPub != NULL && xPub[0] != '\0';
-    if(!xpubValid) {
+    if (!xpubValid) {
         ClearSecretCache();
     }
     ASSERT(xpubValid);
@@ -673,7 +673,7 @@ static void ModelGetUtxoAddress(char *dest, uint8_t pathType, uint32_t index, ui
     rootPath = g_isTest ? g_btcTestNetPath[pathType] : g_pathTypeList[pathType].path;
     xPub = GetCurrentAccountPublicKey(chainType);
     bool xpubValid = xPub != NULL && xPub[0] != '\0';
-    if(!xpubValid) {
+    if (!xpubValid) {
         ClearSecretCache();
     }
     ASSERT(xpubValid);

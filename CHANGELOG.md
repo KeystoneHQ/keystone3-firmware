@@ -1,3 +1,24 @@
+## 3.2.0(2026-10-21)
+
+**Web3:**
+
+### Improvements
+
+1. Improved UI performance
+
+**Cypherpunk:**
+
+### Improvements
+
+1. Improved UI performance
+
+**BTC Only:**
+
+### Improvements
+
+1. Improved UI performance
+
+
 ## 3.1.4(2026-10-15)
 
 **Web3:**

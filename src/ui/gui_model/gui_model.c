@@ -262,7 +262,7 @@ static int32_t ModelSaveMnemonicWallet(bool slip39, bool forget, const uint8_t *
             setupCheckpointed = true;
         }
         ret = slip39 ? CreateNewSlip39Account(target, ems, entropy, len, password, id, eb, ie, &cleanupRequired) :
-                       CreateNewAccount(target, entropy, len, password, &cleanupRequired);
+              CreateNewAccount(target, entropy, len, password, &cleanupRequired);
         CHECK_ERRCODE_BREAK("create account", ret);
         ClearAccountPassphrase(target);
         const char *passphrase = SecretCacheGetPassphrase();
@@ -387,7 +387,7 @@ static void EnqueueAsync(AsyncQueueNode_t *node)
 int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t inDataLen)
 {
     if (g_walletOperationAborted || func == NULL || (inDataLen > 0 && inData == NULL) ||
-        inDataLen > SIZE_MAX - sizeof(AsyncQueueNode_t))
+            inDataLen > SIZE_MAX - sizeof(AsyncQueueNode_t))
         return ERR_GENERAL_FAIL;
     AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
     if (node == NULL) {
@@ -407,7 +407,7 @@ int32_t AsyncExecute(BackgroundAsyncFunc_t func, const void *inData, uint32_t in
 int32_t AsyncExecuteRunnable(BackgroundAsyncFuncWithRunnable_t func, const void *inData, uint32_t inDataLen, BackgroundAsyncRunnable_t runnable)
 {
     if (g_walletOperationAborted || func == NULL || runnable == NULL || (inDataLen > 0 && inData == NULL) ||
-        inDataLen > SIZE_MAX - sizeof(AsyncQueueNode_t))
+            inDataLen > SIZE_MAX - sizeof(AsyncQueueNode_t))
         return ERR_GENERAL_FAIL;
     AsyncQueueNode_t *node = malloc(sizeof(*node) + inDataLen);
     if (node == NULL) {
@@ -1176,12 +1176,12 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
     char *words[SLIP39_MAX_MEMBER] = {0};
     do {
         if (inData == NULL || inDataLen != sizeof(uint8_t) || entropy == NULL || ems == NULL ||
-            entropyLen != emsLen || (entropyLen != 16 && entropyLen != 32)) {
+                entropyLen != emsLen || (entropyLen != 16 && entropyLen != 32)) {
             break;
         }
         uint8_t count = *(const uint8_t *)inData;
         if ((count != 20 && count != 33) || entropyLen != (count == 20 ? 16 : 32) ||
-            SecretCacheGetSlip39Mnemonic(0) == NULL) {
+                SecretCacheGetSlip39Mnemonic(0) == NULL) {
             break;
         }
         ret = Slip39CheckFirstWordList(SecretCacheGetSlip39Mnemonic(0), count, &threshold);
@@ -1201,7 +1201,7 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen)
         }
         ret = Slip39GetMasterSecret(threshold, count, emsCheck, entropyCheck, words, &id, &eb, &ie);
         if (ret != SUCCESS_CODE || memcmp(entropyCheck, entropy, entropyLen) != 0 ||
-            memcmp(emsCheck, ems, entropyLen) != 0) {
+                memcmp(emsCheck, ems, entropyLen) != 0) {
             ret = ERR_GENERAL_FAIL;
             break;
         }
@@ -1237,7 +1237,7 @@ static int32_t ModelSlip39CalWriteEntropyAndSeed(const void *inData, uint32_t in
     }
     const Slip39Data_t *data = inData;
     if ((data->wordCnt != 20 && data->wordCnt != 33) ||
-        data->threShold == 0 || data->threShold > SLIP39_MAX_MEMBER) {
+            data->threShold == 0 || data->threShold > SLIP39_MAX_MEMBER) {
         ModelAbortWallet(ret, 0xFF, false);
         goto cleanup;
     }
@@ -1283,7 +1283,7 @@ static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen)
         }
         const Slip39Data_t *data = inData;
         if ((data->wordCnt != 20 && data->wordCnt != 33) ||
-            data->threShold == 0 || data->threShold > SLIP39_MAX_MEMBER)
+                data->threShold == 0 || data->threShold > SLIP39_MAX_MEMBER)
             break;
         for (uint8_t i = 0; i < data->threShold; i++) {
             words[i] = SecretCacheGetSlip39Mnemonic(i);
@@ -1589,7 +1589,7 @@ static void ModelVerifyPassSuccess(uint16_t *param)
         ret = SetSetupPassphrase(GetCurrentAccountIndex(), SecretCacheGetPassphrase(), SecretCacheGetPassword());
 #ifdef BTC_ONLY
         if (ret == SUCCESS_CODE &&
-            strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
+                strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) == 0) {
             ret = AccountPublicInfoSwitch(GetCurrentAccountIndex(), SecretCacheGetPassword(), false);
         }
 #endif
@@ -1732,24 +1732,24 @@ static int32_t ModelVerifyAccountPass(const void *inData, uint32_t inDataLen)
 
     // some scene would need clear secret after check
     if (*param != SIG_SETTING_CHANGE_PASSWORD &&
-        *param != SIG_SETTING_WRITE_PASSPHRASE &&
-        *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
-        *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
-        *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
-        *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
-        *param != SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD &&
-        *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
-        *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
-        *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
-        *param != SIG_INIT_CONNECT_USB &&
-        // forget-pass prove-ownership: the user already entered the seed; clearing it here would blank the
-        // mnemonic before the upcoming re-save (it would fail with "mnemonic error"). The other wallet's PIN
-        // we just verified is already captured in the dedicated provision-recovery holder; the forget-pass
-        // DeInit clears the cache.
-        *param != SIG_FORGET_PASSWORD_PROVE_OWNERSHIP &&
-        !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
-        !GuiCheckIfViewOpened(&g_createWalletView) &&
-        !ModelGetPassphraseQuickAccess()) {
+            *param != SIG_SETTING_WRITE_PASSPHRASE &&
+            *param != SIG_LOCK_VIEW_SCREEN_ON_VERIFY_PASSPHRASE &&
+            *param != SIG_FINGER_SET_SIGN_TRANSITIONS &&
+            *param != SIG_FINGER_REGISTER_ADD_SUCCESS &&
+            *param != SIG_SIGN_TRANSACTION_WITH_PASSWORD &&
+            *param != SIG_SETUP_RSA_PRIVATE_KEY_WITH_PASSWORD &&
+            *param != SIG_MULTISIG_WALLET_IMPORT_VERIFY_PASSWORD &&
+            *param != SIG_MULTISIG_WALLET_DELETE_VERIFY_PASSWORD &&
+            *param != SIG_HARDWARE_CALL_DERIVE_PUBKEY &&
+            *param != SIG_INIT_CONNECT_USB &&
+            // forget-pass prove-ownership: the user already entered the seed; clearing it here would blank the
+            // mnemonic before the upcoming re-save (it would fail with "mnemonic error"). The other wallet's PIN
+            // we just verified is already captured in the dedicated provision-recovery holder; the forget-pass
+            // DeInit clears the cache.
+            *param != SIG_FORGET_PASSWORD_PROVE_OWNERSHIP &&
+            !strnlen_s(SecretCacheGetPassphrase(), PASSPHRASE_MAX_LEN) &&
+            !GuiCheckIfViewOpened(&g_createWalletView) &&
+            !ModelGetPassphraseQuickAccess()) {
         ClearSecretCache();
     }
     SetLockScreen(enable);

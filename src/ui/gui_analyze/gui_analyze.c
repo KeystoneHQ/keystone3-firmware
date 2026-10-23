@@ -455,9 +455,9 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
             cJSON *type = cJSON_GetObjectItem(child, "type");
             cJSON *textFunc = cJSON_GetObjectItem(child, "text_func");
             if (type != NULL && textFunc != NULL &&
-                !strcmp(type->valuestring, "label") &&
-                (!strcmp(textFunc->valuestring, "GetSolMessageUtf8") ||
-                 !strcmp(textFunc->valuestring, "GetSolMessageRaw"))) {
+                    !strcmp(type->valuestring, "label") &&
+                    (!strcmp(textFunc->valuestring, "GetSolMessageUtf8") ||
+                     !strcmp(textFunc->valuestring, "GetSolMessageRaw"))) {
                 GuiShowSolMessagePaged(obj, g_totalData,
                                        !strcmp(textFunc->valuestring, "GetSolMessageRaw"));
                 continue;
@@ -467,9 +467,9 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
             cJSON *ethType = cJSON_GetObjectItem(child, "type");
             cJSON *ethTextFunc = cJSON_GetObjectItem(child, "text_func");
             if (ethType != NULL && ethTextFunc != NULL &&
-                !strcmp(ethType->valuestring, "label") &&
-                (!strcmp(ethTextFunc->valuestring, "GetMessageUtf8") ||
-                 !strcmp(ethTextFunc->valuestring, "GetMessageRaw"))) {
+                    !strcmp(ethType->valuestring, "label") &&
+                    (!strcmp(ethTextFunc->valuestring, "GetMessageUtf8") ||
+                     !strcmp(ethTextFunc->valuestring, "GetMessageRaw"))) {
                 GuiShowEthMessagePaged(obj, g_totalData,
                                        !strcmp(ethTextFunc->valuestring, "GetMessageRaw"));
                 continue;
@@ -479,9 +479,9 @@ void GuiWidgetBaseInit(lv_obj_t *obj, cJSON *json)
             cJSON *trxType = cJSON_GetObjectItem(child, "type");
             cJSON *trxTextFunc = cJSON_GetObjectItem(child, "text_func");
             if (trxType != NULL && trxTextFunc != NULL &&
-                !strcmp(trxType->valuestring, "label") &&
-                (!strcmp(trxTextFunc->valuestring, "GetTrxMessageUtf8") ||
-                 !strcmp(trxTextFunc->valuestring, "GetTrxMessageRaw"))) {
+                    !strcmp(trxType->valuestring, "label") &&
+                    (!strcmp(trxTextFunc->valuestring, "GetTrxMessageUtf8") ||
+                     !strcmp(trxTextFunc->valuestring, "GetTrxMessageRaw"))) {
                 GuiShowTrxMessagePaged(obj, g_totalData,
                                        !strcmp(trxTextFunc->valuestring, "GetTrxMessageRaw"));
                 continue;
@@ -1280,7 +1280,7 @@ void *GuiTemplateReload(lv_obj_t *parent, uint8_t index)
 #ifdef COMPILE_SIMULATOR
     if (g_reMapIndex != REMAPVIEW_BTC && g_reMapIndex != REMAPVIEW_BTC_MESSAGE
 #ifdef WEB3_VERSION
-        && g_reMapIndex != REMAPVIEW_SOL && g_reMapIndex != REMAPVIEW_SOL_MESSAGE
+            && g_reMapIndex != REMAPVIEW_SOL && g_reMapIndex != REMAPVIEW_SOL_MESSAGE
 #endif
        ) {
         return g_templateContainer;

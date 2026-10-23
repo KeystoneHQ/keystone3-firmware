@@ -481,22 +481,22 @@ static void GuiShowSolTxTransferOverview(lv_obj_t *parent, PtrT_DisplaySolanaTxO
         lastView = GuiCreateAltWarningCard(parent, overviewData->transfer_to_lookup_table_reference);
     }
     lv_obj_t *overviewCard = CreateTransactionOverviewCardWithWidth(
-        parent,
-        _("Value"),
-        overviewData->transfer_value,
-        _("Main Action"),
-        overviewData->main_action,
-        SOL_COMPONENT_WIDTH);
+                                 parent,
+                                 _("Value"),
+                                 overviewData->transfer_value,
+                                 _("Main Action"),
+                                 overviewData->main_action,
+                                 SOL_COMPONENT_WIDTH);
     if (lastView != NULL) {
         lv_obj_align_to(overviewCard, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
     }
     lastView = overviewCard;
     lastView = CreateTransactionItemViewWithWidth(
-        parent,
-        _("From"),
-        overviewData->transfer_from,
-        lastView,
-        SOL_COMPONENT_WIDTH);
+                   parent,
+                   _("From"),
+                   overviewData->transfer_from,
+                   lastView,
+                   SOL_COMPONENT_WIDTH);
     CreateTransactionItemViewWithWidth(
         parent,
         overviewData->transfer_to_in_lookup_table ? _("solana_unresolved_destination") : _("To"),
@@ -892,7 +892,7 @@ static void GuiShowSolTxSquadsProposalOverview(lv_obj_t *parent, PtrT_DisplaySol
             continue;
         }
         lv_obj_t *feeContainer = GuiCreateAutoHeightContainer(
-            parent, SOL_COMPONENT_WIDTH, 16);
+                                     parent, SOL_COMPONENT_WIDTH, 16);
         lv_obj_t *feeLabel = lv_label_create(feeContainer);
         lv_label_set_text(feeLabel, "Fee");
         lv_obj_set_style_text_color(feeLabel, WHITE_COLOR, LV_PART_MAIN);
@@ -976,7 +976,7 @@ static char GuiSolProtocolTextByteAt(void *context, size_t offset);
 static lv_obj_t *GuiCreateSolConfigReviewCard(lv_obj_t *parent, const char *text, lv_obj_t *lastView)
 {
     lv_obj_t *card = CreateTransactionContentContainer(
-        parent, SOL_COMPONENT_WIDTH, SOL_CONFIG_REVIEW_MAX_HEIGHT);
+                         parent, SOL_COMPONENT_WIDTH, SOL_CONFIG_REVIEW_MAX_HEIGHT);
     lv_obj_set_style_max_height(card, SOL_CONFIG_REVIEW_MAX_HEIGHT, LV_PART_MAIN);
     lv_obj_set_style_pad_left(card, 24, LV_PART_MAIN);
     lv_obj_set_style_pad_right(card, 24, LV_PART_MAIN);
@@ -1027,31 +1027,31 @@ static lv_obj_t *GuiShowSolTxGeneralOverview(
         char *program = general->data[i].program;
         if (strcmp(program, "TransactionConfig") == 0) {
             lastView = CreateTransactionItemViewWithWidth(
-                parent, "Transaction Config (V1)", general->data[i].memo,
-                lastView, SOL_COMPONENT_WIDTH);
+                           parent, "Transaction Config (V1)", general->data[i].memo,
+                           lastView, SOL_COMPONENT_WIDTH);
             continue;
         }
         char order[BUFFER_SIZE_16] = {0};
         snprintf_s(order, BUFFER_SIZE_16, "#%u", (unsigned int)general->data[i].instruction_index);
         const char *method = strlen(general->data[i].method) > 0
-            ? general->data[i].method
-            : "Unknown";
+                             ? general->data[i].method
+                             : "Unknown";
         lv_obj_t *actionCard;
         if (strcmp(method, "VaultTransactionCreate") == 0 &&
-            strlen(general->data[i].memo) > 0) {
+                strlen(general->data[i].memo) > 0) {
             // Preserve the established Squads review card even when a mixed
             // transaction reaches the General/addon path.  The memo belongs
             // to VaultTransactionCreate, not ProposalCreate.
             actionCard = CreateSolanaSquadsProposalOverviewCard(
-                parent, "Squads", method, general->data[i].memo, "");
+                             parent, "Squads", method, general->data[i].memo, "");
         } else {
             actionCard = CreateTransactionOverviewCardWithWidth(
-                parent,
-                order,
-                program,
-                _("Method"),
-                method,
-                SOL_COMPONENT_WIDTH);
+                             parent,
+                             order,
+                             program,
+                             _("Method"),
+                             method,
+                             SOL_COMPONENT_WIDTH);
         }
         if (lastView != NULL) {
             lv_obj_align_to(actionCard, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
@@ -1063,47 +1063,47 @@ static lv_obj_t *GuiShowSolTxGeneralOverview(
         }
         if (strlen(general->data[i].value) > 0) {
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Value"), general->data[i].value, lastView, SOL_COMPONENT_WIDTH);
+                           parent, _("Value"), general->data[i].value, lastView, SOL_COMPONENT_WIDTH);
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("From"), general->data[i].from, lastView, SOL_COMPONENT_WIDTH);
+                           parent, _("From"), general->data[i].from, lastView, SOL_COMPONENT_WIDTH);
             if (general->data[i].to_in_lookup_table) {
                 lv_obj_t *warningCard = GuiCreateAltWarningCard(
-                    parent, general->data[i].to_lookup_table_reference);
+                                            parent, general->data[i].to_lookup_table_reference);
                 lv_obj_align_to(warningCard, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
                 lastView = warningCard;
             }
             lastView = CreateTransactionItemViewWithWidth(
-                parent,
-                general->data[i].to_in_lookup_table ? _("solana_unresolved_destination") : _("To"),
-                general->data[i].to,
-                lastView,
-                SOL_COMPONENT_WIDTH);
+                           parent,
+                           general->data[i].to_in_lookup_table ? _("solana_unresolved_destination") : _("To"),
+                           general->data[i].to,
+                           lastView,
+                           SOL_COMPONENT_WIDTH);
         }
         if (strlen(general->data[i].amount) > 0) {
             if (general->data[i].unusual_decimals) {
                 lv_obj_t *warningCard = GuiCreateUnusualDecimalsWarningCard(
-                    parent, general->data[i].decimals);
+                                            parent, general->data[i].decimals);
                 if (lastView != NULL) {
                     lv_obj_align_to(warningCard, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
                 }
                 lastView = warningCard;
             }
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Amount"), general->data[i].amount, lastView, SOL_COMPONENT_WIDTH);
+                           parent, _("Amount"), general->data[i].amount, lastView, SOL_COMPONENT_WIDTH);
             if (strlen(general->data[i].token) > 0) {
                 lastView = CreateTransactionItemViewWithWidth(
-                    parent, _("Token"), general->data[i].token, lastView, SOL_COMPONENT_WIDTH);
+                               parent, _("Token"), general->data[i].token, lastView, SOL_COMPONENT_WIDTH);
             }
             if (strlen(general->data[i].mint) > 0) {
                 lastView = CreateTransactionItemViewWithWidth(
-                    parent, _("Mint Address"), general->data[i].mint, lastView, SOL_COMPONENT_WIDTH);
+                               parent, _("Mint Address"), general->data[i].mint, lastView, SOL_COMPONENT_WIDTH);
             }
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Authority"), general->data[i].authority, lastView, SOL_COMPONENT_WIDTH);
+                           parent, _("Authority"), general->data[i].authority, lastView, SOL_COMPONENT_WIDTH);
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Source"), general->data[i].source, lastView, SOL_COMPONENT_WIDTH);
+                           parent, _("Source"), general->data[i].source, lastView, SOL_COMPONENT_WIDTH);
             lastView = CreateTransactionItemViewWithWidth(
-                parent, _("Destination"), general->data[i].destination, lastView, SOL_COMPONENT_WIDTH);
+                           parent, _("Destination"), general->data[i].destination, lastView, SOL_COMPONENT_WIDTH);
         }
     }
     return lastView;
@@ -1153,12 +1153,12 @@ static lv_obj_t *GuiAppendSolTxAdditionalUnknownProgramCards(
         char order[BUFFER_SIZE_16] = {0};
         snprintf_s(order, BUFFER_SIZE_16, "#%d", i + 1);
         lv_obj_t *programCard = CreateTransactionOverviewCardWithWidth(
-            parent,
-            _("solana_unknown_program"),
-            order,
-            _("solana_program_address"),
-            programs->data[i],
-            SOL_COMPONENT_WIDTH);
+                                    parent,
+                                    _("solana_unknown_program"),
+                                    order,
+                                    _("solana_program_address"),
+                                    programs->data[i],
+                                    SOL_COMPONENT_WIDTH);
         if (lastView != NULL) {
             lv_obj_align_to(programCard, lastView, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 16);
         }
@@ -1494,7 +1494,7 @@ static bool GuiSolInstructionsUseAddressLookupTable(PtrT_VecFFI_Instruction inst
     }
     for (size_t i = 0; i < instructions->size; i++) {
         if (instructions->data[i].program_address != NULL &&
-            CheckIsAddressLookupTableAccount(instructions->data[i].program_address)) {
+                CheckIsAddressLookupTableAccount(instructions->data[i].program_address)) {
             return true;
         }
         PtrT_VecFFI_PtrString accounts = instructions->data[i].accounts;
@@ -1618,7 +1618,7 @@ static lv_obj_t *GuiShowSolAccounts(lv_obj_t *parent, PtrT_VecFFI_PtrString acco
     lv_obj_update_layout(parent);
     lv_coord_t width = lv_obj_get_content_width(parent);
     lv_obj_t *pager = GuiCreateContainerWithParent(
-        parent, width, 384 + SOL_ACCOUNTS_PAGER_BOTTOM_PADDING);
+                          parent, width, 384 + SOL_ACCOUNTS_PAGER_BOTTOM_PADDING);
     lv_obj_set_style_pad_bottom(pager, SOL_ACCOUNTS_PAGER_BOTTOM_PADDING, LV_PART_MAIN);
     lv_obj_set_style_bg_opa(pager, LV_OPA_TRANSP, LV_PART_MAIN);
     SolAccountsPager *state = lv_mem_alloc(sizeof(*state));
@@ -1696,8 +1696,8 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
     lv_label_set_text(
         noticeContent,
         usesAlt
-            ? _("solana_parse_tx_alt_warning_body")
-            : _("solana_parse_tx_notice"));
+        ? _("solana_parse_tx_alt_warning_body")
+        : _("solana_parse_tx_notice"));
     lv_obj_set_style_text_opa(noticeContent, 144, LV_PART_MAIN | LV_STATE_DEFAULT);
     lv_obj_align_to(noticeContent, iconNoticeContainer, LV_ALIGN_OUT_BOTTOM_LEFT, 24, 10);
 
@@ -1723,7 +1723,7 @@ static void GuiShowSolTxInstructionsOverview(lv_obj_t *parent, PtrT_DisplaySolan
         lv_obj_align_to(programSection, orderLabel, LV_ALIGN_OUT_BOTTOM_LEFT, 0, 12);
         lv_obj_update_layout(programSection);
         lv_obj_t *programAddress = GuiCreateIllustrateLabel(
-            programSection, overview_instructions->data[i].program_address);
+                                       programSection, overview_instructions->data[i].program_address);
         lv_obj_set_width(programAddress, lv_obj_get_content_width(programSection));
         lv_label_set_long_mode(programAddress, LV_LABEL_LONG_WRAP);
         lv_obj_set_height(programAddress, LV_SIZE_CONTENT);
@@ -1871,7 +1871,7 @@ void GuiShowSolTxOverview(lv_obj_t *parent, void *totalData)
      * are appended below those cards as generic addons.
      */
     if (0 != strcmp(overviewData->display_type, "General") &&
-        0 != strcmp(overviewData->display_type, "jupiterv6_swap")) {
+            0 != strcmp(overviewData->display_type, "jupiterv6_swap")) {
         GuiShowSolTxGeneralOverview(parent, overviewData, GuiGetSolTxBottomView(parent));
     }
     if (!unknownProgramsRendered) {
@@ -2015,7 +2015,7 @@ static void GuiSolAdvancedRefresh(SolAdvancedPager *state)
         char *title = GuiSolAdvancedText(item->title);
         char *value = GuiSolAdvancedText(item->value);
         last = CreateTransactionItemViewWithWidth(
-            state->content, title, value, last, SOL_COMPONENT_WIDTH);
+                   state->content, title, value, last, SOL_COMPONENT_WIDTH);
         lv_obj_t *titleLabel = lv_obj_get_child(last, 0);
         lv_obj_t *valueLabel = lv_obj_get_child(last, 1);
         if (lv_obj_get_width(titleLabel) > SOL_COMPONENT_CONTENT_WIDTH) {

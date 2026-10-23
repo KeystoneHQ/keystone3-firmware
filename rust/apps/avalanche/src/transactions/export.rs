@@ -79,17 +79,10 @@ impl AvaxTxInfo for ExportTx {
     }
 }
 
+#[cfg(test)]
 impl ExportTx {
-    fn get_base_tx(&self) -> &BaseTx {
-        &self.base_tx
-    }
-
     fn get_dest_chain(&self) -> [u8; BLOCKCHAIN_ID_LEN] {
         self.dest_chain
-    }
-
-    fn get_transfer_out(&self) -> &LengthPrefixedVec<TransferableOutput> {
-        &self.transfer_out
     }
 }
 

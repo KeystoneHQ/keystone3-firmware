@@ -18,6 +18,10 @@ use core::convert::TryFrom;
 pub struct AddPermissionlessDelegatorTx {
     base_tx: BaseTx,
     validator: Validator,
+    #[allow(
+        dead_code,
+        reason = "Retained as part of the parsed wire format and debug representation"
+    )]
     subnet_id: SubnetId,
     stake_out: LengthPrefixedVec<TransferableOutput>,
     delegator_owner: OutputOwner,

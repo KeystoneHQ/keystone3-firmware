@@ -85,8 +85,8 @@ void GuiPurposeAreaRefresh()
             g_reboot = false;
             static lv_obj_t *notice;
             notice = GuiCreateConfirmHintBox(&imgWarn, _("single_backup_notice_page_title"),
-                _("wallet_setup_interrupted_desc"),
-                NULL, _("wallet_setting_add_wallet_confirm"), ORANGE_COLOR);
+                                             _("wallet_setup_interrupted_desc"),
+                                             NULL, _("wallet_setting_add_wallet_confirm"), ORANGE_COLOR);
             lv_obj_add_event_cb(GuiGetHintBoxRightBtn(notice), CloseHintBoxHandler, LV_EVENT_CLICKED, &notice);
         } else if (!GuiJudgeCurrentPahse(SETUP_PHASE_CREATE_WALLET)) {
             GuiFrameOpenView(&g_homeView);

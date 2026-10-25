@@ -14,6 +14,12 @@ static DMA_InitTypeDef DMA_InitStruct;
 static uint8_t *g_dmaBuff;
 static uint32_t g_dmaIndex, g_dmaTotal;
 static volatile bool g_dmaBusy = false;
+static void (*g_dmaDoneCb)(void) = NULL;
+
+void Parallel8080SetDoneCallback(void (*cb)(void))
+{
+    g_dmaDoneCb = cb;
+}
 
 void Parallel8080Init(void)
 {
@@ -151,6 +157,13 @@ void DMA0_IRQHandler(void)
         if (remaining <= 0) {
             g_dmaBusy = false;
             PARALLEL_8080_CS_SET;
+            /* Fire the one-shot completion callback (LVGL non-blocking flush).
+             * Cleared before invoking so blocking callers stay unaffected. */
+            if (g_dmaDoneCb != NULL) {
+                void (*cb)(void) = g_dmaDoneCb;
+                g_dmaDoneCb = NULL;
+                cb();
+            }
         } else {
             if (remaining > PARALLEL_8080_DMA_MAX_BYTE) {
                 transNum = PARALLEL_8080_DMA_MAX_BYTE;

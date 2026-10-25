@@ -8,6 +8,7 @@
 #include "gui_model.h"
 #include "cmsis_os2.h"
 #include "drv_qspi_flash.h"
+#include "crc.h"
 
 LV_FONT_DECLARE(openSans_24);
 
@@ -97,7 +98,7 @@ int32_t UpdateBootFromFlash(void)
     WDT_ReloadCounter();
 
     sha256_update(&ctx, (uint32_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
-    crcCalc = crc32_ieee(0, (uint32_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
+    crcCalc = crc32_ieee(0, (const uint8_t *)(baseAddr + 4 + 32 + MAGIC_NUMBER_SIZE), 0x134);
 
     for (int i = startNum; i <= startNum + (bootLen - 0x134) / SECTOR_SIZE; i++, writeAddr += SECTOR_SIZE) {
         Delay(100);
@@ -115,7 +116,7 @@ int32_t UpdateBootFromFlash(void)
             return -1;
         }
         memcpy(g_fileUnit, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
-        crcCalc = crc32_ieee(crcCalc, (uint32_t *)(APP_ADDR + i * SECTOR_SIZE), len);
+        crcCalc = crc32_ieee(crcCalc, (const uint8_t *)(APP_ADDR + i * SECTOR_SIZE), len);
         printf("writeAddr = %#x\n", (unsigned int)writeAddr);
         QspiFlashEraseAndWrite(writeAddr, g_fileUnit, SECTOR_SIZE);
         WDT_ReloadCounter();

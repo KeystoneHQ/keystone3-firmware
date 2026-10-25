@@ -1,6 +1,7 @@
 #include "log_print.h"
 #include "stdio.h"
 #include "librust_c.h"
+#include "drv_lcd_bright.h"
 
 #ifndef COMPILE_SIMULATOR
 #include "safe_str_lib.h"

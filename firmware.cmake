@@ -4,7 +4,7 @@ set(ARCH_FLAGS "-mcpu=${MCU} -mthumb -mlittle-endian")
 set(MCU_FLAGS "${ARCH_FLAGS} -Os -mfloat-abi=hard -mfpu=fpv4-sp-d16")
 set(SECTION_FLAGS "-ffunction-sections -fdata-sections")
 set(HARDENING_FLAGS "-Wformat -Werror=format-security -Werror=format")
-set(CMAKE_C_FLAGS "${MCU_FLAGS} ${SECTION_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g ${HARDENING_FLAGS}")
+set(CMAKE_C_FLAGS "${MCU_FLAGS} ${SECTION_FLAGS} -std=gnu17 -Wall -Wno-unknown-pragmas -Wno-format -g ${HARDENING_FLAGS}")
 set(CMAKE_CXX_FLAGS "${MCU_FLAGS} ${SECTION_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g ${HARDENING_FLAGS}")
 
 if(NOT BUILD_PRODUCTION)

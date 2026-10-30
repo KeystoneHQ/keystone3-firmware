@@ -70,8 +70,8 @@ impl ExportedTransferDetails {
             });
         }
 
-        let _offset = reader.read_varint()?;
-        let value_offset = reader.read_varint()?;
+        let offset = reader.read_varint()?;
+        let _transfer_count = reader.read_varint()?;
         let value_size = reader.read_count(MAX_DESTINATIONS)?;
 
         let mut details = Vec::with_capacity(value_size.min(32));
@@ -110,7 +110,7 @@ impl ExportedTransferDetails {
             return Err(MoneroError::FormatError);
         }
         Ok(ExportedTransferDetails {
-            offset: value_offset,
+            offset,
             size: value_size as u64,
             details,
         })

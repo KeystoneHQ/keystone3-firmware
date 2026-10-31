@@ -936,6 +936,28 @@ mod tests {
     }
 
     #[test]
+    fn test_cyclic_parts_are_uppercase_for_qr_alphanumeric_mode() {
+        let result = UREncodeResult::encode(
+            vec![0; FRAGMENT_UNLIMITED_LENGTH + 1],
+            "xmr-keyimage".to_string(),
+            FRAGMENT_UNLIMITED_LENGTH,
+        );
+        assert!(result.is_multi_part);
+        for _ in 0..4 {
+            let part = get_next_cyclic_part(result.encoder);
+            let data = unsafe { recover_c_char((*part).data) };
+            assert!(data.starts_with("UR:XMR-KEYIMAGE/"));
+            assert!(!data.chars().any(|c| c.is_ascii_lowercase()));
+            unsafe {
+                Box::from_raw(part).free();
+            }
+        }
+        unsafe {
+            result.free();
+        }
+    }
+
+    #[test]
     fn single_part_cbor_must_consume_the_entire_payload() {
         let valid = ur::encode(&[0xa0], "bytes");
         assert!(validate_single_part_cbor(&valid).is_ok());
@@ -1270,7 +1292,7 @@ pub extern "C" fn get_next_cyclic_part(ptr: PtrEncoder) -> *mut UREncodeMultiRes
     let keystone_ur_encoder_ptr = ptr as *mut ur_parse_lib::keystone_ur_encoder::KeystoneUREncoder;
     let encoder = unsafe { &mut *keystone_ur_encoder_ptr };
     match encoder.next_cyclic_part() {
-        Ok(result) => UREncodeMultiResult::success(result.to_lowercase()).c_ptr(),
+        Ok(result) => UREncodeMultiResult::success(result.to_uppercase()).c_ptr(),
         Err(e) => UREncodeMultiResult::from(e).c_ptr(),
     }
 }

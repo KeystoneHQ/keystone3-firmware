@@ -40,7 +40,8 @@ pub fn derive_ufvk<P: consensus::Parameters>(
             let usk = UnifiedSpendingKey::from_seed(params, seed, account_index)
                 .map_err(|e| KeystoreError::DerivationError(e.to_string()))?;
             let ufvk = usk.to_unified_full_viewing_key();
-            Ok(ufvk.encode(params))
+            ufvk.encode(params)
+                .map_err(|e| KeystoreError::DerivationError(e.to_string()))
         }
         _ => Err(KeystoreError::DerivationError(format!(
             "invalid account path: {account_path}"
@@ -75,8 +76,8 @@ mod orchard_tests {
     use zcash_vendor::pasta_curves::group::ff::PrimeField;
 
     use hex;
-    use rand_chacha::rand_core::SeedableRng;
-    use rand_chacha::ChaCha8Rng;
+    use rand_chacha_010::rand_core::SeedableRng;
+    use rand_chacha_010::ChaCha8Rng;
 
     extern crate std;
 
@@ -101,7 +102,7 @@ mod orchard_tests {
         assert!(!orchard_bytes.is_empty());
 
         // Verify UFVK can be encoded to string format
-        let encoded_ufvk = ufvk.encode(&MAIN_NETWORK);
+        let encoded_ufvk = ufvk.encode(&MAIN_NETWORK).unwrap();
         assert!(!encoded_ufvk.is_empty());
         assert!(encoded_ufvk.starts_with("uview"));
 
@@ -125,7 +126,7 @@ mod orchard_tests {
     #[test]
     fn test_orchard_signing() {
         let rng_seed = [0u8; 32];
-        let rng: ChaCha8Rng = ChaCha8Rng::from_seed(rng_seed);
+        let mut rng: ChaCha8Rng = ChaCha8Rng::from_seed(rng_seed);
         let seed: std::vec::Vec<u8> =
             hex::decode("000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f")
                 .unwrap();
@@ -144,7 +145,7 @@ mod orchard_tests {
         // randm.to_repr();
         let msg = hex::decode("90b4ba49d75eb5df50b68e927dbd196a6f120ba8544664b116f6d74f0bc3812c")
             .unwrap();
-        let sig = osak.randomize(&randm).sign(rng, &msg);
+        let sig = osak.randomize(&randm).sign(&mut rng, &msg);
         let bytes = <[u8; 64]>::from(&sig);
         assert_eq!(hex::encode(bytes), "065ef82c33af0ed487e8932112e3359e93c5955d3eac6c3a1f9cb6dd24e19d8a2bba454a4274154dd4ad0c6bdb2022a646950ed521f3de18e99015f4821cbb10");
     }

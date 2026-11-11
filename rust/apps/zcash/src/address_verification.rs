@@ -109,7 +109,7 @@ mod tests {
     #[test]
     fn uppercase_addresses_are_owned_but_mixed_case_is_invalid() {
         let key = key(1);
-        let ufvk = key.encode(&MainNetwork);
+        let ufvk = key.encode(&MainNetwork).unwrap();
         let (address, _) = key.default_address(UnifiedAddressRequest::ORCHARD).unwrap();
         let text = address.encode(&MainNetwork);
         assert_eq!(
@@ -144,10 +144,13 @@ mod tests {
     }
 
     fn check(key: &UnifiedFullViewingKey, receivers: Vec<Receiver>) -> VerificationResult {
-        let text = unified::Address::try_from_items(receivers)
-            .unwrap()
-            .encode(&NetworkType::Main);
-        verify(&MainNetwork, &key.encode(&MainNetwork), &text)
+        let text = unified::Address::try_from_items(
+            unified::Revision::R0,
+            receivers.into_iter().map(unified::Uitem::Data).collect(),
+        )
+        .unwrap()
+        .encode(&NetworkType::Main);
+        verify(&MainNetwork, &key.encode(&MainNetwork).unwrap(), &text)
     }
 
     #[test]
@@ -160,7 +163,7 @@ mod tests {
             assert_eq!(
                 verify(
                     &MainNetwork,
-                    &key.encode(&MainNetwork),
+                    &key.encode(&MainNetwork).unwrap(),
                     &address.encode(&MainNetwork)
                 ),
                 VerificationResult::Owned
@@ -176,7 +179,7 @@ mod tests {
         assert_eq!(
             verify(
                 &MainNetwork,
-                &key.encode(&MainNetwork),
+                &key.encode(&MainNetwork).unwrap(),
                 &address.encode(&MainNetwork)
             ),
             VerificationResult::Owned
@@ -192,7 +195,7 @@ mod tests {
         assert_eq!(
             verify(
                 &MainNetwork,
-                &self::key(2).encode(&MainNetwork),
+                &self::key(2).encode(&MainNetwork).unwrap(),
                 &other.encode(&MainNetwork)
             ),
             VerificationResult::NotOwned
@@ -225,13 +228,15 @@ mod tests {
             key.address(1u32.into(), UnifiedAddressRequest::AllAvailableKeys)
                 .unwrap(),
         ] {
-            let (_, raw) = unified::Address::decode(&other.encode(&MainNetwork)).unwrap();
+            let (_, _, raw) = unified::Address::decode(&other.encode(&MainNetwork)).unwrap();
             let transparent = raw
                 .items_as_parsed()
                 .iter()
-                .find(|r| matches!(r, Receiver::P2pkh(_)))
-                .unwrap()
-                .clone();
+                .find_map(|item| match item {
+                    unified::Uitem::Data(r @ Receiver::P2pkh(_)) => Some(r.clone()),
+                    _ => None,
+                })
+                .unwrap();
             assert_eq!(
                 check(&key, vec![orchard.clone(), transparent]),
                 VerificationResult::NotOwned
@@ -279,7 +284,7 @@ mod tests {
         let ua = key
             .address(0u32.into(), UnifiedAddressRequest::ORCHARD)
             .unwrap();
-        let ufvk = key.encode(&MainNetwork);
+        let ufvk = key.encode(&MainNetwork).unwrap();
         for text in ["", "u1invalid", "zcash:u1invalid"] {
             assert_eq!(
                 verify(&MainNetwork, &ufvk, text),

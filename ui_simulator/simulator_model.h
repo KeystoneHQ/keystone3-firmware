@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include "err_code.h"
 #include "qrdecode_task.h"
+#include "gui_zcash_template.h"
 #include "gui_lock_device_widgets.h"
 extern bool g_fingerUnlockDeviceFlag;
 extern bool g_fingerSingTransitionsFlag;
@@ -55,7 +56,7 @@ extern bool g_reboot;
 #define GUI_ANALYZE_OBJ_SURPLUS \
     { \
         REMAPVIEW_ZCASH, \
-        PC_SIMULATOR_PATH "/page_zcash.json", \
+        GUI_ZCASH_PAGE_TEMPLATE, \
         GuiGetZcashGUIData, \
         NULL, \
         FreeZcashMemory, \
@@ -271,7 +272,7 @@ extern bool g_reboot;
     },\
     { \
         REMAPVIEW_ZCASH, \
-        PC_SIMULATOR_PATH "/page_zcash.json", \
+        GUI_ZCASH_PAGE_TEMPLATE, \
         GuiGetZcashGUIData, \
         NULL, \
         FreeZcashMemory, \

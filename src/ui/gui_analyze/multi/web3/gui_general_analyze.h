@@ -1,3 +1,4 @@
+#include "gui_zcash_template.h"
 #ifndef _GUI_GENERAL_ANALYZE_WIDGETS_H
 #define _GUI_GENERAL_ANALYZE_WIDGETS_H
 
@@ -199,7 +200,7 @@
     },\
     { \
         REMAPVIEW_ZCASH, \
-        "{\"name\":\"zcash_page\",\"type\":\"custom_container\",\"pos\":[36,0],\"size\":[408,900],\"bg_color\":0,\"custom_show_func\":\"GuiZcashOverview\"}", \
+        GUI_ZCASH_PAGE_TEMPLATE, \
         GuiGetZcashGUIData, \
         NULL, \
         FreeZcashMemory, \

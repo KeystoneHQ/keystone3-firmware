@@ -1,3 +1,19 @@
+## 3.2.2(2026-11-10)
+
+**Web3:**
+
+### Fixed
+
+1. Support Zcash NU7
+
+**Cypherpunk:**
+
+### Fixed
+
+1. Support Zcash NU7
+
+
+
 ## 3.2.0(2026-10-21)
 
 **Web3:**

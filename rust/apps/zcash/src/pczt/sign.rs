@@ -33,14 +33,11 @@ use zcash_vendor::{
 #[cfg(feature = "cypherpunk")]
 use {
     blake2b_simd::Hash,
-    core::{
-        cell::{Cell, RefCell},
-        mem::MaybeUninit,
-    },
-    rand_core::OsRng,
-    zeroize::Zeroize,
+    core::cell::{Cell, RefCell},
 };
 
+#[cfg(feature = "cypherpunk")]
+use crate::rng::DeviceRng;
 use crate::{errors::ZcashError, version::KEYSTONE_FW_VERSION};
 
 /// `global.proprietary` key stamped into every signed PCZT response.
@@ -121,45 +118,35 @@ fn reject_unsupported_pczt(pczt: &Pczt) -> Result<(), ZcashError> {
 
 /// One cached spend authorizing key slot, scrubbed on replacement and drop.
 ///
-/// `SpendAuthorizingKey` bottoms out in reddsa's `Copy` `SigningKey`, which
-/// holds the secret ask scalar and has no `Zeroize` or `Drop` of its own, so a
-/// plainly-dropped cache would leave the scalar bytes behind in memory.
 #[cfg(feature = "cypherpunk")]
-struct AskCacheSlot {
-    account: Option<zcash_vendor::zip32::AccountId>,
-    // `MaybeUninit` makes every post-scrub bit pattern valid without depending
-    // on private Orchard/reddsa layout invariants. The slot invariant is that
-    // this field is initialized exactly when `account` is `Some`.
-    ask: MaybeUninit<orchard::keys::SpendAuthorizingKey>,
-}
+struct AskCacheSlot(
+    Option<(
+        zcash_vendor::zip32::AccountId,
+        orchard::keys::SpendAuthorizingKey,
+    )>,
+);
 
-// `MaybeUninit` deliberately suppresses the wrapped value's destructor. Fail
-// the build if a dependency bump gives either secret type drop glue; any change
-// to an indirect or owning representation requires a fresh zeroization audit
-// rather than silently retaining this type-specific strategy.
 #[cfg(feature = "cypherpunk")]
-const _: () = assert!(!core::mem::needs_drop::<orchard::keys::SpendAuthorizingKey>());
-#[cfg(feature = "cypherpunk")]
-const _: () = assert!(!core::mem::needs_drop::<orchard::keys::SpendingKey>());
+#[allow(dead_code)]
+fn assert_orchard_keys_zeroize_on_drop() {
+    fn zeroize_on_drop<T: zeroize::ZeroizeOnDrop>() {}
+    zeroize_on_drop::<orchard::keys::SpendAuthorizingKey>();
+    zeroize_on_drop::<orchard::keys::SpendingKey>();
+}
 
 #[cfg(feature = "cypherpunk")]
 impl AskCacheSlot {
     fn empty() -> Self {
-        Self {
-            account: None,
-            ask: MaybeUninit::uninit(),
-        }
+        Self(None)
     }
 
     fn get(
         &self,
         account: zcash_vendor::zip32::AccountId,
     ) -> Option<&orchard::keys::SpendAuthorizingKey> {
-        if self.account == Some(account) {
-            // SAFETY: `account` is only set to `Some` after `ask` is written.
-            Some(unsafe { self.ask.assume_init_ref() })
-        } else {
-            None
+        match &self.0 {
+            Some((cached, ask)) if *cached == account => Some(ask),
+            _ => None,
         }
     }
 
@@ -167,23 +154,13 @@ impl AskCacheSlot {
         &mut self,
         account: zcash_vendor::zip32::AccountId,
         ask: orchard::keys::SpendAuthorizingKey,
-    ) -> &orchard::keys::SpendAuthorizingKey {
-        self.account = None;
-        self.ask.zeroize();
-        self.ask.write(ask);
-        self.account = Some(account);
-
-        // SAFETY: the value was written immediately above, before `account`
-        // was set to `Some`.
-        unsafe { self.ask.assume_init_ref() }
+    ) {
+        self.0 = Some((account, ask));
     }
-}
 
-#[cfg(feature = "cypherpunk")]
-impl Drop for AskCacheSlot {
-    fn drop(&mut self) {
-        self.account = None;
-        self.ask.zeroize();
+    #[cfg(test)]
+    fn cached_account(&self) -> Option<zcash_vendor::zip32::AccountId> {
+        self.0.as_ref().map(|(account, _)| *account)
     }
 }
 
@@ -254,27 +231,18 @@ impl<'a> SeedSigner<'a> {
         }
     }
 
-    /// Derives the spend authorizing key for `account_index` from the seed,
-    /// scrubbing the intermediate spending key before returning.
     fn derive_spend_authorizing_key(
         &self,
         account_index: zcash_vendor::zip32::AccountId,
     ) -> Result<orchard::keys::SpendAuthorizingKey, ZcashError> {
-        let mut osk = MaybeUninit::new(
-            orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index).map_err(
-                |e| {
-                    ZcashError::SigningError(format!(
-                        "failed to derive {} spending key: {e:?}",
-                        self.pool
-                    ))
-                },
-            )?,
-        );
-        // SAFETY: `osk` was initialized immediately above and is only scrubbed
-        // after this borrow ends.
-        let ask = orchard::keys::SpendAuthorizingKey::from(unsafe { osk.assume_init_ref() });
-        osk.zeroize();
-        Ok(ask)
+        let osk = orchard::keys::SpendingKey::from_zip32_seed(self.seed, 133, account_index)
+            .map_err(|e| {
+                ZcashError::SigningError(format!(
+                    "failed to derive {} spending key: {e:?}",
+                    self.pool
+                ))
+            })?;
+        Ok(orchard::keys::SpendAuthorizingKey::from(&osk))
     }
 
     /// Looks up (or derives and caches) the spend authorizing key for
@@ -381,7 +349,7 @@ impl PcztSigner for SeedSigner<'_> {
                 .sign(
                     hash.as_bytes().try_into().expect("sighash is 32 bytes"),
                     ask,
-                    OsRng,
+                    DeviceRng,
                 )
                 .map_err(|e| {
                     ZcashError::SigningError(format!("failed to sign {} action: {e:?}", self.pool))
@@ -627,47 +595,35 @@ mod tests {
         zip32,
     };
 
-    /// Extracts the ask scalar bytes via public API only: randomizing by zero
-    /// returns `rsk = ask + 0 = ask`.
     fn ask_scalar_bytes(ask: &orchard::keys::SpendAuthorizingKey) -> [u8; 32] {
-        (&ask.randomize(&Fq::ZERO)).into()
+        let rsk = ask.randomize(&Fq::ZERO);
+        (&orchard::primitives::redpallas::VerificationKey::from(&rsk)).into()
     }
 
     #[test]
-    fn test_ask_cache_slot_zeroizes_on_drop() {
+    fn test_ask_cache_slot_replaces_cached_key() {
         let seed = [7u8; 32];
-        let osk = orchard::keys::SpendingKey::from_zip32_seed(&seed, 133, zip32::AccountId::ZERO)
-            .unwrap();
-        let mut storage = MaybeUninit::<AskCacheSlot>::uninit();
-        let slot = storage.write(AskCacheSlot::empty());
-        slot.replace(
-            zip32::AccountId::ZERO,
-            orchard::keys::SpendAuthorizingKey::from(&osk),
-        );
-        assert_ne!(
-            ask_scalar_bytes(slot.get(zip32::AccountId::ZERO).unwrap()),
-            [0u8; 32],
-            "a real ask must not start out zero"
-        );
-
-        // The outer `MaybeUninit` keeps the backing storage alive after the
-        // slot itself is dropped.
-        unsafe { core::ptr::drop_in_place(storage.as_mut_ptr()) };
-
-        // SAFETY: `Drop` initialized every byte of the still-allocated
-        // `MaybeUninit<SpendAuthorizingKey>` storage to zero. `addr_of!`
-        // projects the dropped slot without reading it.
-        let bytes = unsafe {
-            let ask_storage = core::ptr::addr_of!((*storage.as_ptr()).ask);
-            core::slice::from_raw_parts(
-                ask_storage.cast::<u8>(),
-                core::mem::size_of::<MaybeUninit<orchard::keys::SpendAuthorizingKey>>(),
+        let ask = |i: u32| {
+            let osk = orchard::keys::SpendingKey::from_zip32_seed(
+                &seed,
+                133,
+                zip32::AccountId::try_from(i).unwrap(),
             )
+            .unwrap();
+            orchard::keys::SpendAuthorizingKey::from(&osk)
         };
-        assert!(
-            bytes.iter().all(|b| *b == 0),
-            "cached ask storage must be fully scrubbed"
+        let mut slot = AskCacheSlot::empty();
+        let zero = zip32::AccountId::ZERO;
+        let one = zip32::AccountId::try_from(1).unwrap();
+
+        slot.replace(zero, ask(0));
+        assert_eq!(
+            ask_scalar_bytes(slot.get(zero).unwrap()),
+            ask_scalar_bytes(&ask(0))
         );
+        slot.replace(one, ask(1));
+        assert!(slot.get(zero).is_none());
+        assert_eq!(slot.cached_account(), Some(one));
     }
 
     #[test]
@@ -699,7 +655,7 @@ mod tests {
         }
 
         // The slot holds exactly the most recently used account's key.
-        assert_eq!(cache.0.borrow().account, Some(account(0)));
+        assert_eq!(cache.0.borrow().cached_account(), Some(account(0)));
     }
 
     #[test]
@@ -717,7 +673,10 @@ mod tests {
             .expect("shared-cache PCZT should sign");
         }
 
-        assert_eq!(cache.0.borrow().account, Some(zip32::AccountId::ZERO));
+        assert_eq!(
+            cache.0.borrow().cached_account(),
+            Some(zip32::AccountId::ZERO)
+        );
     }
 
     #[test]
@@ -809,7 +768,11 @@ mod tests {
             where
                 F: FnOnce(SignableInput) -> [u8; 32],
             {
-                self.0.set(Some(input.with_signable_input(index, hash)));
+                self.0.set(Some(
+                    input
+                        .with_signable_input(index, hash)
+                        .expect("transparent input should be signable"),
+                ));
                 Ok(())
             }
 
@@ -1035,7 +998,7 @@ mod tests {
             .finish();
         assert!(!dummy_indices.is_empty());
         let pczt = zcash_vendor::pczt::roles::io_finalizer::IoFinalizer::new(pczt)
-            .finalize_io()
+            .finalize_io(crate::rng::DeviceRng)
             .unwrap();
         let pczt = zcash_vendor::pczt::roles::verifier::Verifier::new(pczt)
             .with_ironwood::<(), _>(|bundle| {

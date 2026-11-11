@@ -82,13 +82,19 @@ else()
     )
 endif()
 
-message(STATUS "cargo build command: " ${CARGO_FLAG})
+if(BUILD_ENVIRONMENT STREQUAL "PRODUCTION")
+    set(CARGO_ENV ${CMAKE_COMMAND} -E env RUSTFLAGS=-Zlocation-detail=none)
+else()
+    set(CARGO_ENV ${CMAKE_COMMAND} -E env)
+endif()
+
+message(STATUS "cargo build command: " ${CARGO_ENV} " " ${CARGO_FLAG})
 #TODO: add debug-momery if need
 
 #run build
 add_custom_target(rust_c ALL
     BYPRODUCTS ${TARGET_PATH}/${LIB_NAME} ${TARGET_PATH}/librust_c.h
-    COMMAND rustup run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
+    COMMAND ${CARGO_ENV} rustup run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
     COMMAND ${COPY_BUILD_TARGET}
     COMMAND ${COPY_BINDINGS_TARGET}
     WORKING_DIRECTORY ${RUST_DIR}

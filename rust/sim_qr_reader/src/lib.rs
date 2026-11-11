@@ -1,6 +1,5 @@
 use anyhow::Result;
 use image::DynamicImage;
-use quircs::{Code, Quirc};
 use screenshots::Screen;
 use std::thread;
 use std::time::Duration;
@@ -47,14 +46,13 @@ where
 {
     let screens = Screen::all()?;
     let screen = screens.first().ok_or(anyhow::anyhow!("No screen found"))?;
-    let mut decoder = Quirc::default();
 
     let scaling_factor = get_screen_scaling_factor();
     println!("Screen scaling factor: {scaling_factor}");
 
     let mut qr_area: Option<(i32, i32, u32, u32)> = None;
 
-    let mut capture_and_decode =
+    let capture_and_decode =
         |area: Option<(i32, i32, u32, u32)>| -> Result<(String, Option<(i32, i32, u32, u32)>)> {
             let image = match area {
                 Some((x, y, width, height)) => {
@@ -69,21 +67,7 @@ where
                 }
                 None => screen.capture()?,
             };
-            let dynamic_image = DynamicImage::ImageRgba8(image);
-            let mut codes = decoder.identify(
-                dynamic_image.width() as usize,
-                dynamic_image.height() as usize,
-                &dynamic_image.to_luma8(),
-            );
-
-            if let Some(Ok(code)) = codes.next() {
-                let decoded = code.decode()?;
-                let content = String::from_utf8(decoded.payload)?;
-                let new_area = Some(get_qr_area(&code, &dynamic_image));
-                Ok((content, new_area))
-            } else {
-                Err(anyhow::anyhow!("No QR code found on screen"))
-            }
+            decode_image(&DynamicImage::ImageRgba8(image))
         };
 
     let interval = Duration::from_millis(100);
@@ -116,21 +100,99 @@ where
     Ok(())
 }
 
-fn get_qr_area(code: &Code, image: &DynamicImage) -> (i32, i32, u32, u32) {
-    let points = code.corners;
-    let min_x = points.iter().map(|p| p.x).min().unwrap();
-    let min_y = points.iter().map(|p| p.y).min().unwrap();
-    let max_x = points.iter().map(|p| p.x).max().unwrap();
-    let max_y = points.iter().map(|p| p.y).max().unwrap();
+type ScanArea = (i32, i32, u32, u32);
 
-    let width = (max_x - min_x) as u32;
-    let height = (max_y - min_y) as u32;
+fn decode_image(image: &DynamicImage) -> Result<(String, Option<ScanArea>)> {
+    let gray = image.to_luma8();
+    let result = rxing::helpers::detect_in_luma_slice(
+        gray.as_raw(),
+        gray.width(),
+        gray.height(),
+        Some(rxing::BarcodeFormat::QR_CODE),
+    )
+    .map_err(|error| anyhow::anyhow!("No QR code decoded: {error}"))?;
+    let area = get_qr_area(result.getPoints(), image.width(), image.height());
+    Ok((result.getText().to_owned(), area))
+}
 
-    let margin = 10;
-    let x = (min_x - margin).max(0);
-    let y = (min_y - margin).max(0);
-    let width = (width + 2 * margin as u32).min(image.width() - x as u32);
-    let height = (height + 2 * margin as u32).min(image.height() - y as u32);
+fn get_qr_area(points: &[rxing::Point], width: u32, height: u32) -> Option<ScanArea> {
+    if points.len() < 3 || points.iter().any(|p| !p.x.is_finite() || !p.y.is_finite()) {
+        return None;
+    }
+    let min_x = points.iter().map(|p| p.x).fold(f32::INFINITY, f32::min);
+    let min_y = points.iter().map(|p| p.y).fold(f32::INFINITY, f32::min);
+    let max_x = points.iter().map(|p| p.x).fold(f32::NEG_INFINITY, f32::max);
+    let max_y = points.iter().map(|p| p.y).fold(f32::NEG_INFINITY, f32::max);
 
-    (x, y, width, height)
+    let margin = ((max_x - min_x).max(max_y - min_y) * 0.6).max(10.0);
+    let x = (min_x - margin).floor().clamp(0.0, width as f32) as u32;
+    let y = (min_y - margin).floor().clamp(0.0, height as f32) as u32;
+    let right = (max_x + margin).ceil().clamp(0.0, width as f32) as u32;
+    let bottom = (max_y + margin).ceil().clamp(0.0, height as f32) as u32;
+    if right <= x || bottom <= y {
+        return None;
+    }
+    Some((x as i32, y as i32, right - x, bottom - y))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use image::{GrayImage, Luma};
+    use rxing::{qrcode::QRCodeWriter, BarcodeFormat, Writer};
+
+    fn qr_image(content: &str) -> DynamicImage {
+        let matrix = QRCodeWriter
+            .encode(content, &BarcodeFormat::QR_CODE, 600, 600)
+            .unwrap();
+        DynamicImage::ImageLuma8(GrayImage::from_fn(600, 600, |x, y| {
+            Luma([if matrix.get(x, y) { 0 } else { 255 }])
+        }))
+    }
+
+    #[test]
+    fn dense_qr_decodes_with_cached_crop() {
+        let content = format!("ur:bytes/{}", "abcdef0123456789".repeat(50));
+        let image = qr_image(&content);
+        let (decoded, area) = decode_image(&image).unwrap();
+        assert_eq!(decoded, content);
+        let (x, y, width, height) = area.unwrap();
+        let crop = image.crop_imm(x as u32, y as u32, width, height);
+        assert_eq!(decode_image(&crop).unwrap().0, content);
+    }
+
+    #[test]
+    fn small_qr_near_screen_edge_retains_decodable_capture_area() {
+        let content = "screen QR regression";
+        let qr = qr_image(content)
+            .resize_exact(180, 180, image::imageops::FilterType::Nearest)
+            .to_luma8();
+        let mut screen = GrayImage::from_pixel(1200, 800, Luma([255]));
+        image::imageops::replace(&mut screen, &qr, 1000, 10);
+        let image = DynamicImage::ImageLuma8(screen);
+        let (decoded, area) = decode_image(&image).unwrap();
+        assert_eq!(decoded, content);
+        let (x, y, width, height) = area.unwrap();
+        assert!(width < image.width() && height < image.height());
+        let crop = image.crop_imm(x as u32, y as u32, width, height);
+        assert_eq!(decode_image(&crop).unwrap().0, content);
+    }
+
+    #[test]
+    fn blank_image_is_not_a_qr_code() {
+        let image = DynamicImage::ImageLuma8(GrayImage::from_pixel(320, 240, Luma([255])));
+        assert!(decode_image(&image).is_err());
+    }
+
+    #[test]
+    #[ignore = "requires a local screenshot via SIM_QR_TEST_IMAGE"]
+    fn screenshot_regression() {
+        let image = image::open(std::env::var("SIM_QR_TEST_IMAGE").unwrap()).unwrap();
+        let (content, area) = decode_image(&image).unwrap();
+        assert!(!content.is_empty());
+        if let Some((x, y, width, height)) = area {
+            let crop = image.crop_imm(x as u32, y as u32, width, height);
+            assert_eq!(decode_image(&crop).unwrap().0, content);
+        }
+    }
 }

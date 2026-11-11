@@ -30,7 +30,7 @@ use zcash_vendor::orchard::{
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::{
     zcash_address::{
-        unified::{self, Encoding, Receiver},
+        unified::{self, Encoding, Receiver, Revision, Uitem},
         ConversionError, TryFromAddress,
     },
     zcash_keys::keys::UnifiedFullViewingKey,
@@ -652,7 +652,7 @@ impl WalletKeys {
         let external_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::External).clone();
         let internal_ovk = fvk.to_ovk(zcash_vendor::zip32::Scope::Internal).clone();
         let transparent_internal_ovk = ufvk
-            .transparent()
+            .p2pkh()
             .map(|k| orchard::keys::OutgoingViewingKey::from(k.internal_ovk().as_bytes()));
         Ok(Self {
             external_ivk,
@@ -728,9 +728,12 @@ pub(crate) fn parse_orchard_output<P: consensus::Parameters>(
                         "recipient is not match with address in decoded note".to_string(),
                     ));
                 }
-                let ua = unified::Address::try_from_items(vec![Receiver::Orchard(
-                    address.to_raw_address_bytes(),
-                )])
+                let ua = unified::Address::try_from_items(
+                    Revision::R0,
+                    vec![Uitem::Data(Receiver::Orchard(
+                        address.to_raw_address_bytes(),
+                    ))],
+                )
                 .unwrap()
                 .encode(&params.network_type());
                 let user_address = action.output().user_address();

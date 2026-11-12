@@ -19,6 +19,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Read Rust toolchain
         run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV
@@ -42,6 +44,8 @@ jobs:
     steps:
       - name: Checkout sources
         uses: actions/checkout@v2
+        with:
+          persist-credentials: false
 
       - name: Read Rust toolchain
         run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV

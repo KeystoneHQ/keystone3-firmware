@@ -1,6 +1,7 @@
 #include "gui.h"
 #include "gui_page.h"
 #include "gui_views.h"
+#include "gui_zcash.h"
 #include "gui_qr_hintbox.h"
 #include "gui_status_bar.h"
 #include "account_manager.h"
@@ -37,7 +38,7 @@ void GuiZcashVerifyResultWidgetsInit(const char *address)
     const uint8_t accountIndex = GetCurrentAccountIndex();
     if (address != NULL && accountIndex <= 2 && IsZcashSupportedForCurrentMnemonic() &&
             GetZcashUFVK(accountIndex, ufvk) == SUCCESS_CODE && ufvk[0] != '\0') {
-        result = verify_zcash_address(ufvk, (char *)address);
+        result = verify_zcash_address(ufvk, (char *)address, GetZcashNetworkType());
     }
     CLEAR_ARRAY(ufvk);
     const char *message;

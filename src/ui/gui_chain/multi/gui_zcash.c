@@ -3,6 +3,7 @@
 #include "user_memory.h"
 #include "account_manager.h"
 #include "gui_chain.h"
+#include "gui_home_widgets.h"
 #include "keystore.h"
 #include "screen_manager.h"
 #include "gui_chain.h"
@@ -16,6 +17,11 @@ static URParseMultiResult *g_urMultiResult = NULL;
 static void *g_parseResult = NULL;
 static DisplayPczt *g_zcashData;
 static ZcashCheckedPczt *g_checkedPczt = NULL;
+
+NetworkType GetZcashNetworkType(void)
+{
+    return GetNetworkType(HOME_WALLET_CARD_ZEC);
+}
 
 static void FreeCheckedPczt(void)
 {
@@ -350,7 +356,7 @@ PtrT_TransactionCheckResult GuiGetZcashCheckResult(void)
 #ifdef CYPHERPUNK_VERSION
     char ufvk[ZCASH_UFVK_BUFFER_SIZE] = {0};
     GetZcashUFVK(GetCurrentAccountIndex(), ufvk);
-    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), &g_checkedPczt);
+    return check_zcash_tx_cypherpunk(data, ufvk, sfp, zcash_account_index, !IsZcashSupportedForCurrentMnemonic(), GetZcashNetworkType(), &g_checkedPczt);
 #endif
 }
 

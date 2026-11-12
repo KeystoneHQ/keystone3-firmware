@@ -5,6 +5,9 @@ on:
 
 name: Monero Checks
 
+permissions:
+  contents: read
+
 jobs:
   UnitTest:
     name: Unit Test And Code coverage

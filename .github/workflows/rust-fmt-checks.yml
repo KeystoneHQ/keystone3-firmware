@@ -5,6 +5,9 @@ on:
 
 name: Rust checks
 
+permissions:
+  contents: read
+
 jobs:
   RustfmtCheck:
     name: Fmt Check

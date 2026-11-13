@@ -368,6 +368,7 @@ pub fn generate_export_ur_data<R: RngCore + CryptoRng>(
         keypair,
         key_images.to_bytes(),
         KEY_IMAGE_EXPORT_MAGIC,
+        u32::try_from(outputs.offset).map_err(|_| MoneroError::FormatError)?,
         &mut rng,
     ))
 }
@@ -457,7 +458,44 @@ mod tests {
         let key_images_export_data =
             generate_export_ur_data(keypair.clone(), data.clone(), rng).unwrap();
 
-        assert_eq!(hex::encode(key_images_export_data), "4d6f6e65726f206b657920696d616765206578706f727403903df1a0ade0b87669089dd7b782428c6cc412dbd2ea7da1aa91a84de1213f8e3fdfd09875d6a119b90a158db50787b36f383f87e29ca264a635e90e3d6dce3d2334cab3ee8e2461fc7614fe05c5d83b23f8f7e9906bffc471cd99f31ec56e6870a9ce5ade2f32b43d5966014a4f57bc8837fb004ebe67e284e64c970a0201ec32b57aae7ce0d614274bd60e");
+        assert_eq!(hex::encode(key_images_export_data), "4d6f6e65726f206b657920696d616765206578706f727403903df1a0ade0b87679089dd7b782428c6cc412dbd2ea7da1aa91a84de1213f8e3fdfd09875d6a119b90a158db50787b36f383f87e29ca264a635e90e3d6dce3d2334cab3ee8e2461fc7614fe90993ea74af27702543ff75bd6061ecf63a3e9ebc252d0c9198a0d3e11592604f3ffa254da4afefe76de57045a6e262b57498b011e27768a827a1b556e028e03");
+    }
+
+    #[test]
+    fn test_key_image_export_keeps_request_offset() {
+        use chacha20::cipher::{KeyIvInit, StreamCipher};
+
+        let keypair = crate::key::KeyPair::new(
+            PrivateKey::from_bytes(
+                &hex::decode("9128db9621015042d5eb96078b7b86aec79e6fb63b75affbd33138ba25f10d02")
+                    .unwrap(),
+            ),
+            PrivateKey::from_bytes(
+                &hex::decode("5385a6c16c84e4c6450ec4df4aad857de294e46abf56a09f5438a07f5e167202")
+                    .unwrap(),
+            ),
+        );
+        let rng = rand_chacha::ChaCha20Rng::from_seed([0; 32]);
+        // tuple of (offset 3, 5 transfers in total, no outputs in this export)
+        let request = encrypt_data_with_pvk(
+            keypair.clone(),
+            vec![3, 3, 5, 0],
+            OUTPUT_EXPORT_MAGIC,
+            0,
+            rng.clone(),
+        );
+
+        let response = generate_export_ur_data(keypair.clone(), request, rng).unwrap();
+
+        let body = &response[KEY_IMAGE_EXPORT_MAGIC.len()..];
+        let key = cuprate_cryptonight::cryptonight_hash_v0(&keypair.view.to_bytes());
+        let mut offset = body[8..12].to_vec();
+        chacha20::ChaCha20Legacy::new(
+            chacha20::cipher::generic_array::GenericArray::from_slice(&key),
+            chacha20::cipher::generic_array::GenericArray::from_slice(&body[..8]),
+        )
+        .apply_keystream(&mut offset);
+        assert_eq!(offset, 3u32.to_le_bytes());
     }
 
     #[test]

@@ -758,6 +758,11 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
     return NULL;
 }
 
+NetworkType GetNetworkType(HOME_WALLET_CARD_ENUM index)
+{
+    return g_walletState[index].network;
+}
+
 void GuiHomeDeInit(void)
 {
     if (g_pageWidget != NULL) {

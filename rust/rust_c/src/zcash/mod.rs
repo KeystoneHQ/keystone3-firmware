@@ -27,6 +27,7 @@ use keystore::algorithms::{
 use structs::BatchDisplayCache;
 use structs::DisplayPczt;
 use structs::DisplayZcashBatch;
+use structs::NetworkType;
 use structs::ZcashCheckedPczt;
 use ur_registry::traits::RegistryItem;
 use ur_registry::zcash::zcash_batch_sig_result::ZcashBatchSigResult;
@@ -34,7 +35,7 @@ use ur_registry::zcash::zcash_pczt::ZcashPczt;
 use ur_registry::zcash::zcash_sign_batch::ZcashSignBatch;
 #[cfg(feature = "cypherpunk")]
 use zcash_vendor::pczt::roles::signer::batch::{BatchSignRequest, BatchSignResponse};
-use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::MainNetwork};
+use zcash_vendor::{pczt::Pczt, zcash_protocol::consensus::Network};
 use zeroize::Zeroize;
 
 // Cap both per-PCZT overhead and variable-size payload data to leave headroom
@@ -51,10 +52,11 @@ pub unsafe extern "C" fn derive_zcash_ufvk(
     seed: PtrBytes,
     seed_len: u32,
     account_path: PtrString,
+    network: NetworkType,
 ) -> *mut SimpleResponse<c_char> {
     let seed = extract_array!(seed, u8, seed_len as usize);
     let account_path = unsafe { recover_c_char(account_path) };
-    let ufvk_text = derive_ufvk(&MainNetwork, seed, &account_path);
+    let ufvk_text = derive_ufvk(&Network::from(network), seed, &account_path);
     let result = match ufvk_text {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -82,9 +84,10 @@ pub unsafe extern "C" fn calculate_zcash_seed_fingerprint(
 #[no_mangle]
 pub unsafe extern "C" fn generate_zcash_default_address(
     ufvk_text: PtrString,
+    network: NetworkType,
 ) -> *mut SimpleResponse<c_char> {
     let ufvk_text = unsafe { recover_c_char(ufvk_text) };
-    let address = get_address(&MainNetwork, &ufvk_text);
+    let address = get_address(&Network::from(network), &ufvk_text);
     match address {
         Ok(text) => SimpleResponse::success(convert_c_char(text)).simple_c_ptr(),
         Err(e) => SimpleResponse::from(e).simple_c_ptr(),
@@ -99,6 +102,7 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
+    network: NetworkType,
     checked_pczt: Ptr<Ptr<ZcashCheckedPczt>>,
 ) -> *mut TransactionCheckResult {
     *checked_pczt = core::ptr::null_mut();
@@ -113,14 +117,14 @@ pub unsafe extern "C" fn check_zcash_tx_cypherpunk(
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
     match app_zcash::check_pczt_cypherpunk(
-        &MainNetwork,
+        &Network::from(network),
         &pczt.get_data(),
         &ufvk_text,
         seed_fingerprint,
         account_index,
     ) {
         Ok(normalized) => {
-            *checked_pczt = ZcashCheckedPczt::new(normalized).c_ptr();
+            *checked_pczt = ZcashCheckedPczt::new(normalized, network).c_ptr();
             TransactionCheckResult::new().c_ptr()
         }
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
@@ -148,15 +152,17 @@ pub unsafe extern "C" fn check_zcash_tx_multi_coins(
     let xpub_text = unsafe { recover_c_char(xpub) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
+    // The multi-coins firmware has no network selection; Zcash is mainnet-only there.
+    let network = NetworkType::MainNet;
     match app_zcash::check_pczt_multi_coins(
-        &MainNetwork,
+        &Network::from(network),
         &pczt.get_data(),
         &xpub_text,
         seed_fingerprint,
         account_index,
     ) {
         Ok(normalized) => {
-            *checked_pczt = ZcashCheckedPczt::new(normalized).c_ptr();
+            *checked_pczt = ZcashCheckedPczt::new(normalized, network).c_ptr();
             TransactionCheckResult::new().c_ptr()
         }
         Err(e) => TransactionCheckResult::from(e).c_ptr(),
@@ -184,7 +190,12 @@ pub unsafe extern "C" fn parse_zcash_tx_cypherpunk(
     let ufvk_text = unsafe { recover_c_char(ufvk) };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::parse_pczt_cypherpunk(&MainNetwork, bytes, &ufvk_text, seed_fingerprint) {
+    match app_zcash::parse_pczt_cypherpunk(
+        &Network::from(checked.network),
+        bytes,
+        &ufvk_text,
+        seed_fingerprint,
+    ) {
         Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
@@ -209,7 +220,11 @@ pub unsafe extern "C" fn parse_zcash_tx_multi_coins(
     };
     let seed_fingerprint = extract_array!(seed_fingerprint, u8, 32);
     let seed_fingerprint = seed_fingerprint.try_into().unwrap();
-    match app_zcash::parse_pczt_multi_coins(&MainNetwork, bytes, seed_fingerprint) {
+    match app_zcash::parse_pczt_multi_coins(
+        &Network::from(checked.network),
+        bytes,
+        seed_fingerprint,
+    ) {
         Ok(pczt) => TransactionParseResult::success(DisplayPczt::from(&pczt).c_ptr()).c_ptr(),
         Err(e) => TransactionParseResult::from(e).c_ptr(),
     }
@@ -372,6 +387,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     seed_fingerprint: PtrBytes,
     account_index: u32,
     disabled: bool,
+    network: NetworkType,
     checked_batch: Ptr<Ptr<ZcashCheckedPczt>>,
 ) -> *mut TransactionCheckResult {
     *checked_batch = core::ptr::null_mut();
@@ -409,7 +425,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
     let check_ctx = app_zcash::BatchCheckContext::new(&ufvk_text);
     for payload in payloads {
         match app_zcash::check_batch_pczt_with_display(
-            &MainNetwork,
+            &Network::from(network),
             &payload,
             &check_ctx,
             seed_fingerprint,
@@ -458,7 +474,7 @@ pub unsafe extern "C" fn check_zcash_batch_tx_cypherpunk(
         Ok(bytes) => bytes,
         Err(e) => return TransactionCheckResult::from(e).c_ptr(),
     };
-    *checked_batch = ZcashCheckedPczt::new_with_display(normalized_batch, display).c_ptr();
+    *checked_batch = ZcashCheckedPczt::new_with_display(normalized_batch, network, display).c_ptr();
     TransactionCheckResult::new().c_ptr()
 }
 
@@ -790,7 +806,7 @@ unsafe fn sign_zcash_tx_cypherpunk_dynamic(
                     return UREncodeResult::from(RustCError::MasterFingerprintMismatch).c_ptr();
                 }
                 match app_zcash::sign_checked_pczt(
-                    &MainNetwork,
+                    &Network::from(checked.network),
                     pczt_bytes,
                     seed,
                     &seed_fingerprint,
@@ -1501,8 +1517,12 @@ mod tests {
             [0; 32],
             0,
         );
-        let checked_ptr =
-            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
+        let checked_ptr = ZcashCheckedPczt::new_with_display(
+            b"normalized-batch-bytes".to_vec(),
+            NetworkType::MainNet,
+            cache,
+        )
+        .c_ptr();
         let result = unsafe {
             parse_zcash_batch_tx_cypherpunk(
                 checked_ptr,
@@ -1533,8 +1553,12 @@ mod tests {
             [0; 32],
             0,
         );
-        let checked_ptr =
-            ZcashCheckedPczt::new_with_display(b"normalized-batch-bytes".to_vec(), cache).c_ptr();
+        let checked_ptr = ZcashCheckedPczt::new_with_display(
+            b"normalized-batch-bytes".to_vec(),
+            NetworkType::MainNet,
+            cache,
+        )
+        .c_ptr();
         unsafe { free_zcash_checked_pczt(checked_ptr) };
     }
 }
@@ -1563,6 +1587,7 @@ pub unsafe extern "C" fn zcash_address_qr_text(data: PtrUR) -> *const c_char {
 pub unsafe extern "C" fn verify_zcash_address(
     ufvk: PtrString,
     address: PtrString,
+    network: NetworkType,
 ) -> ZcashAddressVerification {
     use app_zcash::address_verification::VerificationResult;
     use ZcashAddressVerification::*;
@@ -1580,7 +1605,7 @@ pub unsafe extern "C" fn verify_zcash_address(
     if !address_ok {
         return ZcashAddressInvalid;
     }
-    match app_zcash::address_verification::verify(&MainNetwork, &key, &text) {
+    match app_zcash::address_verification::verify(&Network::from(network), &key, &text) {
         VerificationResult::Owned => ZcashAddressOwned,
         VerificationResult::NotOwned => ZcashAddressNotOwned,
         VerificationResult::InvalidAddress => ZcashAddressInvalid,

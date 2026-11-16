@@ -46,7 +46,7 @@ static uint8_t g_currentPage = 0;
 static bool g_isScrolling = false;
 
 static WalletState_t g_walletState[HOME_WALLET_CARD_BUTT] = {
-    {HOME_WALLET_CARD_BTC, false, "BTC", true},
+    {HOME_WALLET_CARD_BTC, false, "BTC", true, MainNet},
     HOME_WALLET_STATE_SURPLUS,
 };
 static WalletState_t g_walletBakState[HOME_WALLET_CARD_BUTT] = {0};
@@ -496,6 +496,11 @@ const ChainCoinCard_t *GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index)
         }
     }
     return NULL;
+}
+
+NetworkType GetNetworkType(HOME_WALLET_CARD_ENUM index)
+{
+    return g_walletState[index].network;
 }
 
 void GuiHomeDeInit(void)

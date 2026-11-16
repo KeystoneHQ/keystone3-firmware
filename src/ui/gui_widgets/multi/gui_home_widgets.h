@@ -3,6 +3,7 @@
 
 #include "gui_model.h"
 #include "lvgl.h"
+#include "rust.h"
 #include "gui_keyboard_hintbox.h"
 #include "gui_attention_hintbox.h"
 #include "web3/gui_general_home_widgets.h"
@@ -22,6 +23,10 @@ typedef struct {
     bool state;
     const char *name;
     bool enable;
+    /// Which network this chain operates on. Only Zcash on the cypherpunk
+    /// firmware reads it; everything else is mainnet-only. `MainNet` is 0, so
+    /// an initializer that omits it gets mainnet.
+    NetworkType network;
     lv_obj_t *checkBox;
 } WalletState_t;
 
@@ -44,6 +49,7 @@ void GuiHomeShowArSetupNotice(void);
 void GuiHomeCancelArSetup(void);
 void RecalculateManageWalletState(void);
 const ChainCoinCard_t* GetCoinCardByIndex(HOME_WALLET_CARD_ENUM index);
+NetworkType GetNetworkType(HOME_WALLET_CARD_ENUM index);
 void GuiHomeDeInit(void);
 void GuiShowRsaSetupasswordHintbox(void);
 void GuiShowRsaInitializatioCompleteHintbox(bool receive, const char *address);

@@ -5,8 +5,11 @@
 #define HOME_WIDGETS_SURPLUS_CARD_ENUM     HOME_WALLET_CARD_ZEC, \
     HOME_WALLET_CARD_MONERO
 
-#define HOME_WALLET_STATE_SURPLUS          {HOME_WALLET_CARD_ZEC, true, "ZEC", true}, \
-    {HOME_WALLET_CARD_MONERO, true, "XMR", true}
+/// There is no GUI for network selection yet: change `MainNet` to `TestNet` in
+/// the `HOME_WALLET_CARD_ZEC` entry to run Zcash against testnet. The Bitcoin
+/// and Monero entries are mainnet-only, and changing theirs has no effect.
+#define HOME_WALLET_STATE_SURPLUS          {HOME_WALLET_CARD_ZEC, true, "ZEC", true, MainNet}, \
+    {HOME_WALLET_CARD_MONERO, true, "XMR", true, MainNet}
 
 #define HOME_WALLET_CARD_SURPLUS           { \
         .index = HOME_WALLET_CARD_ZEC, \

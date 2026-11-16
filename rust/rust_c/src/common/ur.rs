@@ -800,6 +800,7 @@ mod tests {
     #[test]
     fn zcash_address_text_qr_owns_and_releases_its_payload() {
         use crate::common::qrcode::parse_qrcode_text;
+        use crate::zcash::structs::NetworkType;
         use crate::zcash::{verify_zcash_address, zcash_address_qr_text, ZcashAddressVerification};
         let key = keystore::algorithms::zcash::derive_ufvk(
             &zcash_vendor::zcash_protocol::consensus::MainNetwork,
@@ -821,7 +822,11 @@ mod tests {
                 let borrowed = zcash_address_qr_text(parsed.data);
                 assert_eq!(cstr_core::CStr::from_ptr(borrowed).to_str().unwrap(), text);
                 assert!(matches!(
-                    verify_zcash_address(key.as_ptr() as PtrString, borrowed as PtrString),
+                    verify_zcash_address(
+                        key.as_ptr() as PtrString,
+                        borrowed as PtrString,
+                        NetworkType::MainNet,
+                    ),
                     ZcashAddressVerification::ZcashAddressOwned
                 ));
                 parsed.free();
@@ -841,7 +846,11 @@ mod tests {
                     cstr_core::CStr::from_ptr(borrowed).to_str().unwrap(),
                     candidate
                 );
-                let result = verify_zcash_address(key.as_ptr() as PtrString, borrowed as PtrString);
+                let result = verify_zcash_address(
+                    key.as_ptr() as PtrString,
+                    borrowed as PtrString,
+                    NetworkType::MainNet,
+                );
                 if owned {
                     assert!(matches!(
                         result,
@@ -865,7 +874,11 @@ mod tests {
                 parsed.free();
             }
             assert!(matches!(
-                verify_zcash_address(core::ptr::null_mut(), core::ptr::null_mut()),
+                verify_zcash_address(
+                    core::ptr::null_mut(),
+                    core::ptr::null_mut(),
+                    NetworkType::MainNet,
+                ),
                 ZcashAddressVerification::ZcashAddressKeyUnavailable
             ));
         }

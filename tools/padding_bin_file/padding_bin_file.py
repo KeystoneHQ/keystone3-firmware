@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-# !/usr/bin/python
+# !/usr/bin/python3
 
 import sys
 import hashlib
@@ -86,7 +86,7 @@ def padding_bin_file(file_name):
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
-        print("Usage: python padding_bin_file.py [file_name]")
+        print("Usage: python3 padding_bin_file.py [file_name]")
         sys.exit()
     file_name = sys.argv[1]
     padding_bin_file(file_name)

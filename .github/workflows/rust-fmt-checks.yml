@@ -5,23 +5,24 @@ on:
 
 name: Rust checks
 
+permissions:
+  contents: read
+
 jobs:
   RustfmtCheck:
     name: Fmt Check
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.8.0
+        with:
+          persist-credentials: false
 
       - name: Read Rust toolchain
         run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          override: true
-          target: x86_64-apple-darwin
-          components: rustfmt
+      - name: Install Rust toolchain
+        run: rustup toolchain install "$RUST_TOOLCHAIN" --component rustfmt --target x86_64-apple-darwin
 
       - name: Run rust/apps/bitcoin
         run: cd rust/apps/bitcoin && cargo +$RUST_TOOLCHAIN fmt --check

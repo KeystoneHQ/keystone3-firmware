@@ -5,6 +5,7 @@
 #include "keystore.h"
 #include "gui_model.h"
 #include "gui_qr_hintbox.h"
+#include "gui_pending_hintbox.h"
 #include "screen_manager.h"
 #include "user_sqlite3.h"
 #include "account_manager.h"

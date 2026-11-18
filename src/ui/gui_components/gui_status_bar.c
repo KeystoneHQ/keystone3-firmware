@@ -422,7 +422,13 @@ static int GetDisplayPercent(int actualPercent, bool charging)
     static const int thresholds[] = {20, 40, 60, 80, 100};
     static const int displayValuesDischarge[] = {20, 40, 60, 80, 100};
     static const int displayValuesCharge[] = {0, 20, 40, 60, 80};
+    static bool lastCharging = false;
     uint8_t currentPercent = 0;
+
+    if (charging != lastCharging) {
+        g_currentDisplayPercent = -1;
+        lastCharging = charging;
+    }
 
     for (int i = 0; i < sizeof(thresholds) / sizeof(thresholds[0]); i++) {
         if (actualPercent <= thresholds[i]) {

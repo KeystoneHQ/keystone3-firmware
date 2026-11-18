@@ -57,4 +57,41 @@ pub enum TransactionPayload {
     ModuleBundle(ModuleBundle),
     /// A transaction that executes an existing entry function published on-chain.
     EntryFunction(EntryFunction),
+    // BCS variant 3: append only, preserving existing transaction discriminants.
+    Multisig(Multisig),
+}
+
+/// Execution of a pre-approved proposal by one owner of an Aptos multisig account.
+/// This is a transaction payload, not a multi-agent/multi-key signing envelope.
+#[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Multisig {
+    multisig_address: AccountAddress,
+    transaction_payload: Option<MultisigTransactionPayload>,
+}
+
+#[derive(Clone, Debug, Hash, Eq, PartialEq, Serialize, Deserialize)]
+pub enum MultisigTransactionPayload {
+    EntryFunction(EntryFunction),
+    Script(Script),
+}
+
+impl RawTransaction {
+    pub(crate) fn validate_for_review(&self) -> crate::errors::Result<()> {
+        if let TransactionPayload::Multisig(multisig) = &self.payload {
+            // The device cannot fetch an omitted on-chain proposal. Accept only
+            // an inline entry function so the existing JSON review contains both
+            // the vault address and the action. Script execution is out of scope.
+            if !matches!(
+                &multisig.transaction_payload,
+                Some(MultisigTransactionPayload::EntryFunction(_))
+            ) {
+                return Err(crate::errors::AptosError::ParseTxError(
+                    alloc::string::String::from(
+                        "multisig execution requires an inline entry function",
+                    ),
+                ));
+            }
+        }
+        Ok(())
+    }
 }

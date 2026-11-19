@@ -159,6 +159,8 @@ static void RecalcCurrentWalletIndex(char *origin)
         g_walletIndex = WALLET_LIST_MEDUSA;
     } else if (strcmp("gerowallet", origin) == 0) {
         g_walletIndex = WALLET_LIST_GERO;
+    } else if (strcmp("Daedalus", origin) == 0) {
+        g_walletIndex = WALLET_LIST_DAEDALUS;
     } else {
         g_walletIndex = WALLET_LIST_ETERNL;
     }

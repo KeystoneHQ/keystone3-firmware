@@ -140,6 +140,14 @@ static void WalletTutorialsInit()
     g_tutorials[WALLET_LIST_GERO].items[0].qrTitle = GERO_WALLET_TITLE;
     g_tutorials[WALLET_LIST_GERO].items[0].qrUrl = GERO_WALLET_LINK;
 
+    // WALLET_LIST_DAEDALUS
+    g_tutorials[WALLET_LIST_DAEDALUS].len = 1;
+    g_tutorials[WALLET_LIST_DAEDALUS].desc = _("connect_wallet_desc");
+    g_tutorials[WALLET_LIST_DAEDALUS].items[0].walletName = DAEDALUS_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_DAEDALUS].items[0].url = DAEDALUS_WALLET_LINK;
+    g_tutorials[WALLET_LIST_DAEDALUS].items[0].qrTitle = DAEDALUS_WALLET_TITLE;
+    g_tutorials[WALLET_LIST_DAEDALUS].items[0].qrUrl = DAEDALUS_WALLET_LINK;
+
     // WALLET_LIST_Typhon
     g_tutorials[WALLET_LIST_TYPHON].len = 1;
     g_tutorials[WALLET_LIST_TYPHON].desc = _("connect_wallet_desc");

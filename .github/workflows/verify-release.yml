@@ -1,0 +1,156 @@
+name: Build and verify release
+
+on:
+  push:
+    branches: ['release/v[0-9]+.[0-9]+.[0-9]+']
+
+permissions:
+  contents: read
+
+jobs:
+  manifest:
+    name: Read release manifest
+    if: ${{ !github.event.deleted }}
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.read.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Validate release manifest
+        id: read
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import re
+          from pathlib import Path
+
+          def unique_keys(pairs):
+              result = {}
+              for key, value in pairs:
+                  if key in result:
+                      raise SystemExit(f"Duplicate key {key!r} in .releases")
+                  result[key] = value
+              return result
+
+          releases = json.loads(Path(".releases").read_text(), object_pairs_hook=unique_keys)
+          version = os.environ["GITHUB_REF_NAME"].removeprefix("release/v")
+          if version not in releases:
+              raise SystemExit(f"No record for version {version} in .releases")
+          variants = releases[version]
+          if not isinstance(variants, dict) or not variants or variants.keys() - {"web3", "btc_only", "cypherpunk"}:
+              raise SystemExit("Expected one or more supported variants in .releases")
+          entries = []
+          for variant, record in variants.items():
+              for field in ("firmware_sha256", "source_code_sha256"):
+                  if not re.fullmatch(r"[0-9a-f]{64}", record.get(field, "")):
+                      raise SystemExit(f"Invalid {field} for {variant}")
+              entries.append({"variant": variant, "source_code_sha256": record["source_code_sha256"]})
+          with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+              print("matrix=" + json.dumps({"include": entries}), file=output)
+          PY
+
+  build:
+    needs: manifest
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.manifest.outputs.matrix) }}
+    env:
+      VARIANT: ${{ matrix.variant }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+
+      - name: Prepare public build environment
+        run: |
+          git -c submodule.keystone3-firmware-release.update=none submodule update --init --recursive
+          docker build --target pillar -t keystone3-baker:local .
+
+      - name: Build and package production firmware
+        run: |
+          docker run --rm -e VARIANT -v "$PWD:/keystone3-firmware" keystone3-baker:local bash -eu -o pipefail -c '
+            args=()
+            if [[ "$VARIANT" != web3 ]]; then args=(-t "$VARIANT"); fi
+            python3 build.py -e production "${args[@]}" -s
+            cargo run --release --locked --manifest-path tools/code/firmware-maker/Cargo.toml -- \
+              --source build/mh1903_full.bin --destination build/keystone3-unsigned.bin
+            cargo run --release --locked --manifest-path tools/code/firmware-checker/Cargo.toml -- \
+              --source build/keystone3-unsigned.bin > build/package-checksum.txt
+          '
+
+      - name: Verify source code checksum
+        env:
+          expected: ${{ matrix.source_code_sha256 }}
+        run: |
+          raw=$(sha256sum build/mh1903.bin | cut -d ' ' -f 1)
+          packaged=$(sed -nE 's/^Firmware checksum sha256: ([0-9a-f]{64})[[:space:]]*$/\1/p' build/package-checksum.txt)
+          printf 'Manifest: %s\nCompiled firmware: %s\nPackaged firmware: %s\n' "$expected" "$raw" "$packaged" | tee -a "$GITHUB_STEP_SUMMARY"
+          [[ "$raw" == "$expected" && "$packaged" == "$expected" ]]
+
+      - name: Upload verified package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: keystone3-unsigned-${{ matrix.variant }}-${{ github.sha }}
+          path: build/keystone3-unsigned.bin
+          if-no-files-found: error
+          retention-days: 7
+
+  draft:
+    name: Tag verified commit and create draft release
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: draft-release-${{ github.ref }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - name: Prepare release notes
+        run: |
+          python3 .github/scripts/release_notes.py "${GITHUB_REF_NAME#release/v}" > "$RUNNER_TEMP/release.md"
+
+      - name: Create tag and draft
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="${GITHUB_REF_NAME#release/v}"
+          head=$(git ls-remote --exit-code origin "$GITHUB_REF" | cut -f1)
+          if [[ "$head" != "$GITHUB_SHA" ]]; then
+            echo "::error::Release branch advanced after this build; refusing to tag an outdated commit."
+            exit 1
+          fi
+
+          ref="refs/tags/$version"
+          existing=$(git ls-remote --refs origin "$ref")
+          if [[ -n "$existing" ]]; then
+            git fetch --no-tags origin "$ref"
+            if [[ "$(git rev-parse 'FETCH_HEAD^{commit}')" != "$GITHUB_SHA" ]]; then
+              echo "::error::Tag $version already points to another commit."
+              exit 1
+            fi
+          else
+            git push origin "$GITHUB_SHA:$ref"
+          fi
+
+          # Include drafts visible to this token and propagate API errors.
+          releases=$(gh api --paginate "repos/$GITHUB_REPOSITORY/releases?per_page=100" \
+            | jq -sc --arg version "$version" 'add // [] | map(select(.tag_name == $version))')
+          case "$(jq -r 'map(.draft) | tostring' <<< "$releases")" in
+            '[]')
+              gh release create "$version" --repo "$GITHUB_REPOSITORY" --verify-tag --draft \
+                --title "$version" --notes-file "$RUNNER_TEMP/release.md"
+              ;;
+            '[true]')
+              echo "Draft for $version already exists."
+              ;;
+            *)
+              echo "::error::Published release or conflicting releases already exist for $version."
+              exit 1
+              ;;
+          esac

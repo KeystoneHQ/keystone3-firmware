@@ -23,7 +23,7 @@ OTA_HEADER = struct.Struct(">8sII32s32sIII")
 
 
 class InvalidFirmware(ValueError):
-    pass
+    """The OTA image or one of its compressed chunks is invalid."""
 
 
 def chunk_header(source):
@@ -48,6 +48,12 @@ def chunk_header(source):
 
 
 def decompress_chunk(chunk):
+    """Decode the level-3 literal/back-reference format; never call native C.
+
+    Wire reference: external/quicklz/quicklz.c, qlz_decompress_core (level 3).
+    Each control word has a high sentinel bit and 31 low-to-high token bits.
+    Back-references may overlap, but must refer to bytes already produced.
+    """
     header_size, compressed, expected = chunk_header(chunk)
     if compressed != len(chunk):
         raise InvalidFirmware("trailing data after QuickLZ chunk")

@@ -6,12 +6,14 @@
 
 #define SERIAL_NUMBER_MAX_LEN               64
 #define WEB_AUTH_RSA_KEY_LEN                1024
+#define WEB_AUTH_RSA_PRIMES_LEN             512
 #define UPDATE_PUB_KEY_LEN                  64
 
 int32_t GetSerialNumber(char *serialNumber);
 int32_t SetSerialNumber(const char *serialNumber);
 
 int32_t GetWebAuthRsaKey(uint8_t *key);
+int32_t GetWebAuthRsaPrimes(uint8_t pq[WEB_AUTH_RSA_PRIMES_LEN]);
 int32_t SetWebAuthRsaKey(const uint8_t *key);
 
 int32_t GetUpdatePubKey(uint8_t *pubKey);

@@ -144,10 +144,6 @@ static const lv_img_dsc_t *g_nightlyCoinArray[] = {
     &coinSui, &coinIota, &coinApt
 };
 
-static const lv_img_dsc_t *g_suiWalletCoinArray[] = {
-    &coinSui
-};
-
 static const lv_img_dsc_t *g_iotaCoinArray[1] = {
     &coinIota,
 };
@@ -216,7 +212,6 @@ WalletListItem_t g_walletListArray[] = {
     {WALLET_LIST_BEGIN, &walletBegin, "Begin", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_LACE, &walletLace, "Lace", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
     {WALLET_LIST_UNISAT, &walletUniSat, "UniSat", g_UniSatCoinArray, 5, true, WALLET_FILTER_BTC},
-    {WALLET_LIST_SUIET, &walletSuiet, "Suiet", g_suiWalletCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_IOTA, &walletIota, "IOTA Wallet", g_iotaCoinArray, 1, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_NIGHTLY, &walletNightly, "Nightly", g_nightlyCoinArray, 3, true, WALLET_FILTER_OTHER},
     {WALLET_LIST_TYPHON, &walletTyphon, "Typhon", g_adaCoinArray, 1, true, WALLET_FILTER_ADA},
@@ -1067,11 +1062,6 @@ UREncodeResult *GuiGetNightlyData(void)
     return GuiGetWalletDataByCoin(false);
 }
 
-UREncodeResult *GuiGetSuiWalletData(void)
-{
-    return GuiGetWalletDataByCoin(true);
-}
-
 UREncodeResult *GuiGetXrpToolkitData(void)
 {
     return GuiGetXrpToolkitDataByIndex(
@@ -1198,10 +1188,6 @@ void GuiConnectWalletSetQrdata(WALLET_LIST_INDEX_ENUM index)
     case WALLET_LIST_IOTA:
         func = GuiGetIotaWalletData;
         AddWalletCoins(g_iotaCoinArray, NUMBER_OF_ARRAYS(g_iotaCoinArray));
-        break;
-    case WALLET_LIST_SUIET:
-        func = GuiGetSuiWalletData;
-        AddWalletCoins(g_suiWalletCoinArray, NUMBER_OF_ARRAYS(g_suiWalletCoinArray));
         break;
     case WALLET_LIST_FEWCHA:
         if (!g_isCoinReselected) {

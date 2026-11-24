@@ -81,6 +81,7 @@ void GuiModelResetForgetAuthorization(void);
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39);
 void GuiModelWriteLastLockDeviceTime(uint32_t time);
 void GuiModelCalculateWebAuthCode(void *webAuthData);
+void GuiModelCheckWebAuthKey(void);
 void GuiModelCopySdCardOta(void);
 void GuiModelURGenerateQRCode(GenerateUR func);
 void GuiModelURUpdate(void);

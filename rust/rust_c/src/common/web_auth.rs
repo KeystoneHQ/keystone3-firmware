@@ -1,109 +1,198 @@
 use alloc::{
-    format,
     string::{String, ToString},
     vec,
+    vec::Vec,
 };
-use rsa::BigUint;
-use {
-    hex,
-    serde_json::{from_slice, from_value, Value},
-    ur_registry::bytes::Bytes,
-};
-
-use crate::{extract_array, extract_ptr_with_type};
+use rsa::{BigUint, Pkcs1v15Sign, PublicKey, PublicKeyParts, RsaPrivateKey};
+use serde_json::{from_slice, from_value, Value};
+use sha1::Sha1;
+use sha2::{Digest, Sha256};
+use ur_registry::bytes::Bytes;
+use zeroize::Zeroizing;
 
 use super::{
     errors::RustCError,
     types::{ConstPtrUR, PtrBytes, PtrString},
     utils::convert_c_char,
 };
+use crate::{extract_array, extract_ptr_with_type};
 
-use sha1::Sha1;
+const OFFICIAL_SERVER_KEY: &str = "0454cc449aad7b4490ca4f395c3eff29fca0a899e289769dc680190e2e07cf9d0d08e52c6b8c096790a63931cbe4dc53cc7efeb1f58a203b03c6d27b57c998ebb7";
+
+unsafe fn read_challenge(data: ConstPtrUR) -> Result<Vec<u8>, RustCError> {
+    let error = || RustCError::WebAuthFailed("invalid challenge".into());
+    if data.is_null() {
+        return Err(error());
+    }
+    let bytes = extract_ptr_with_type!(data, Bytes);
+    let value: Value = from_slice(&bytes.get_bytes()).map_err(|_| error())?;
+    let encoded: String = from_value(value.pointer("/data/data").cloned().unwrap_or(Value::Null))
+        .map_err(|_| error())?;
+    if encoded.len() > 1024 {
+        return Err(error());
+    }
+    base64::decode(&encoded).map_err(|_| error())
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn calculate_auth_code(
-    web_auth_data: ConstPtrUR,
-    rsa_key_n: PtrBytes,
-    rsa_key_n_len: u32,
-    rsa_key_d: PtrBytes,
-    rsa_key_d_len: u32,
+    data: ConstPtrUR,
+    n: PtrBytes,
+    nl: u32,
+    d: PtrBytes,
+    dl: u32,
 ) -> PtrString {
-    let crypto_bytes = extract_ptr_with_type!(web_auth_data, Bytes);
-    let json_bytes = crypto_bytes.get_bytes();
-    let result = match from_slice::<Value>(&json_bytes) {
-        Ok(_json) => {
-            let data = _json.pointer("/data/data");
-            if let Some(_data) = data {
-                match from_value::<String>(_data.clone()) {
-                    Ok(_hex) => match base64::decode(&_hex) {
-                        Ok(_value) => unsafe {
-                            let rsa_key_n = extract_array!(rsa_key_n, u8, rsa_key_n_len as usize);
-                            let rsa_key_d = extract_array!(rsa_key_d, u8, rsa_key_d_len as usize);
-                            match _calculate_auth_code(&_value, rsa_key_n, rsa_key_d) {
-                                Ok(_result) => Ok(_result),
-                                Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
-                            }
-                        },
-                        Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
-                    },
-                    Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
-                }
-            } else {
-                Err(RustCError::WebAuthFailed("invalid json".to_string()))
-            }
+    if n.is_null() || d.is_null() || nl == 0 || nl > 512 || dl == 0 || dl > 512 {
+        return convert_c_char(String::new());
+    }
+    let result = read_challenge(data).and_then(|challenge| {
+        _calculate_auth_code(
+            &challenge,
+            extract_array!(n, u8, nl as usize),
+            extract_array!(d, u8, dl as usize),
+        )
+    });
+    convert_c_char(result.unwrap_or_default())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn calculate_pq_auth_code(
+    data: ConstPtrUR,
+    pq: PtrBytes,
+    pq_len: u32,
+) -> PtrString {
+    if pq.is_null() || pq_len != 512 {
+        return convert_c_char(String::new());
+    }
+    let result = read_challenge(data).and_then(|challenge| {
+        let error = || RustCError::WebAuthFailed("RSA key or challenge is invalid".into());
+        let encrypted = verified_ciphertext(&challenge, 512)?;
+        let pq = extract_array!(pq, u8, 512);
+        let key =
+            keystore::algorithms::rsa::build_rsa_private_key_from_primes(&pq[..256], &pq[256..])
+                .map_err(|_| error())?;
+        if key.size() != 512 {
+            return Err(error());
         }
-        Err(_err) => Err(RustCError::WebAuthFailed(format!("{_err}"))),
-    };
+        let code = decrypt(&key, encrypted)?;
+        if code.len() != 8 || !code.bytes().all(|byte| byte.is_ascii_digit()) {
+            return Err(error());
+        }
+        Ok(code)
+    });
+    convert_c_char(result.unwrap_or_default())
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn check_pq_public_key(
+    pq: PtrBytes,
+    pq_len: u32,
+    pub_key_crc: *mut u32,
+) -> u8 {
+    if pub_key_crc.is_null() {
+        return 0;
+    }
+    *pub_key_crc = 0;
+    if pq.is_null() || pq_len != 512 {
+        return 0;
+    }
+    let pq = extract_array!(pq, u8, 512);
+    let result =
+        keystore::algorithms::rsa::build_rsa_private_key_from_primes(&pq[..256], &pq[256..])
+            .ok()
+            .and_then(|key| pq_key_self_check(&key).ok());
     match result {
-        Ok(_value) => convert_c_char(_value),
-        Err(_err) => convert_c_char("".to_string()),
+        Some(crc) => {
+            *pub_key_crc = crc;
+            1
+        }
+        None => 0,
     }
 }
 
-fn _calculate_auth_code(
-    data: &[u8],
-    rsa_key_n: &[u8],
-    rsa_key_d: &[u8],
-) -> Result<String, RustCError> {
-    let len = data.len();
-    let encrypted_data = &data[0..(len - 64)];
-    let k1_signature = &data[(len - 64)..];
-    let msg_hash = cryptoxide::hashing::sha256(encrypted_data);
-    let k1_pub_key =
-        hex::decode("0454cc449aad7b4490ca4f395c3eff29fca0a899e289769dc680190e2e07cf9d0d08e52c6b8c096790a63931cbe4dc53cc7efeb1f58a203b03c6d27b57c998ebb7")
-            .map_err(|_e| RustCError::WebAuthFailed("recover k1 pub key failed".to_string()))?;
-    match keystore::algorithms::secp256k1::verify_signature(k1_signature, &msg_hash, &k1_pub_key) {
-        Ok(true) => unsafe {
-            let n = BigUint::from_bytes_be(rsa_key_n);
-            let d = BigUint::from_bytes_be(rsa_key_d);
-            let dummy_p = BigUint::from_bytes_be(&hex::decode("02").unwrap());
-            let dummy_q = BigUint::from_bytes_be(&hex::decode("02").unwrap());
-            match rsa::RsaPrivateKey::from_components(
-                n,
-                //default E
-                BigUint::from(65537u64),
-                d,
-                vec![dummy_p, dummy_q],
-            ) {
-                Ok(_key) => match _key.decrypt(rsa::Oaep::new::<Sha1>(), encrypted_data) {
-                    Ok(_value) => String::from_utf8(_value.clone()).map_err(|_err| {
-                        RustCError::WebAuthFailed(format!(
-                            "Invalid utf8 hex: {}, {}",
-                            hex::encode(_value),
-                            _err
-                        ))
-                    }),
-                    Err(_err) => Err(RustCError::WebAuthFailed(format!(
-                        "RSA decryption failed: {_err}"
-                    ))),
-                },
-                Err(_err) => Err(RustCError::WebAuthFailed(format!(
-                    "RSA key recovery error: {_err}"
-                ))),
-            }
-        },
-        _ => Err(RustCError::WebAuthFailed("k1 verify failed".to_string())),
+fn pq_key_self_check(key: &RsaPrivateKey) -> Result<u32, RustCError> {
+    let error = || RustCError::WebAuthFailed("RSA self-check failed".into());
+    let message = b"Keystone WebAuth RSA self-check v1";
+    let digest = Sha256::digest(message);
+    let signature = key
+        .sign_with_rng(
+            &mut rand_core::OsRng,
+            Pkcs1v15Sign::new::<Sha256>(),
+            digest.as_slice(),
+        )
+        .map_err(|_| error())?;
+    let public_key = key.to_public_key();
+    public_key
+        .verify(Pkcs1v15Sign::new::<Sha256>(), digest.as_slice(), &signature)
+        .map_err(|_| error())?;
+
+    let mut public_key_bytes = public_key.n().to_bytes_be();
+    if public_key_bytes.len() > 512 {
+        return Err(error());
     }
+    if public_key_bytes.len() < 512 {
+        let mut fixed_width = alloc::vec![0; 512 - public_key_bytes.len()];
+        fixed_width.append(&mut public_key_bytes);
+        public_key_bytes = fixed_width;
+    }
+    public_key_bytes.extend_from_slice(&public_key.e().to_bytes_be());
+    Ok(crc32_ieee(&public_key_bytes))
+}
+
+fn crc32_ieee(bytes: &[u8]) -> u32 {
+    let mut crc = !0u32;
+    for byte in bytes {
+        crc ^= *byte as u32;
+        for _ in 0..8 {
+            crc = if crc & 1 != 0 {
+                (crc >> 1) ^ 0xEDB8_8320
+            } else {
+                crc >> 1
+            };
+        }
+    }
+    !crc
+}
+
+fn _calculate_auth_code(data: &[u8], n: &[u8], d: &[u8]) -> Result<String, RustCError> {
+    let error = || RustCError::WebAuthFailed("challenge verification failed".into());
+    let modulus_len = n.iter().skip_while(|byte| **byte == 0).count();
+    let encrypted = verified_ciphertext(data, modulus_len)?;
+    let key = RsaPrivateKey::from_components(
+        BigUint::from_bytes_be(n),
+        BigUint::from(65537u32),
+        BigUint::from_bytes_be(d),
+        vec![BigUint::from(2u8), BigUint::from(2u8)],
+    )
+    .map_err(|_| error())?;
+    decrypt(&key, encrypted)
+}
+
+fn verified_ciphertext(data: &[u8], modulus_len: usize) -> Result<&[u8], RustCError> {
+    let error = || RustCError::WebAuthFailed("challenge verification failed".into());
+    if ![256, 384, 512].contains(&modulus_len) || data.len() != modulus_len + 64 {
+        return Err(error());
+    }
+    let (encrypted, signature) = data.split_at(modulus_len);
+    let public = hex::decode(OFFICIAL_SERVER_KEY).map_err(|_| error())?;
+    let hash = cryptoxide::hashing::sha256(encrypted);
+    if !keystore::algorithms::secp256k1::verify_signature(signature, &hash, &public)
+        .unwrap_or(false)
+    {
+        return Err(error());
+    }
+    Ok(encrypted)
+}
+
+fn decrypt(key: &RsaPrivateKey, encrypted: &[u8]) -> Result<String, RustCError> {
+    let error = || RustCError::WebAuthFailed("RSA decryption failed".into());
+    let clear = Zeroizing::new(
+        key.decrypt_blinded(&mut rand_core::OsRng, rsa::Oaep::new::<Sha1>(), encrypted)
+            .map_err(|_| error())?,
+    );
+    core::str::from_utf8(&clear)
+        .map(|code| code.to_string())
+        .map_err(|_| error())
 }
 
 #[cfg(test)]

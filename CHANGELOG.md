@@ -1,3 +1,18 @@
+## 4.0.0(2026-11-13)
+
+**Web3:**
+
+Security Enhancement
+
+**Cypherpunk:**
+
+Security Enhancement
+
+**BTC Only:**
+
+Security Enhancement
+
+
 ## 3.2.0(2026-10-21)
 
 **Web3:**

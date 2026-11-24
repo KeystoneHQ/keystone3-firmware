@@ -23,6 +23,7 @@ thiserror = { workspace = true }
 bitcoin_hashes = { workspace = true }
 rsa = { workspace = true }
 sha1 = { workspace = true }
+sha2 = { workspace = true }
 aes = { workspace = true }
 cbc = { workspace = true }
 cipher = { workspace = true }

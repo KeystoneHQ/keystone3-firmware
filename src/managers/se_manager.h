@@ -40,6 +40,9 @@
 #define PAGE_WALLET2_RSA_PRIMES_HASH                 40
 #define PAGE_WALLET3_RSA_PRIMES_HASH                 41
 
+#define PAGE_WEB_AUTH_PQ_FIRST                      42
+#define PAGE_WEB_AUTH_PQ_LAST                       57
+
 // Status page layout: a 4-byte magic + a 1-byte state (rest zero). The magic lets a blank/legacy/wiped page
 // (all-zero, or random) be told apart from a real state — without it we fall back to the coarse CheckEntropy
 // boot check, so existing accounts keep working. A bootloader/firmware wipe zeros the page -> magic absent

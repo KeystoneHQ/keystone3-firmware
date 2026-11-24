@@ -1,4 +1,18 @@
 {
+    "4.0.2": {
+        "web3": {
+            "firmware_sha256": "46123729055f81f9180da71089aeb872265e79336b5473f0ae90d3c43e3b70e9",
+            "source_code_sha256": "0292819062a6e4d5813aac8176528c3175c894dca1a0b74338752be9e52aaafc"
+        },
+        "btc_only": {
+            "firmware_sha256": "155ac40a85c693389be5b232a10dca5fdb5b6325a10635ce347060c93dd147c2",
+            "source_code_sha256": "e340360f95211bb94784b5c9d31b21faef94b3b66d755c13bcbd7362e6fdc465"
+        },
+        "cypherpunk": {
+            "firmware_sha256": "3ff57ba352fabe9eb6567968befc86b6c11286d195daf0cbf79cd389a1d7485e",
+            "source_code_sha256": "b10528ec4060126f15029b404965189111e943b66c58cfb3c0b574e9f79ff20c"
+        }
+    },
     "4.0.0": {
         "web3": {
             "firmware_sha256": "8f9bc9b50c5835f4735c1a80638d5f0793ca938624d1c6fcad1170a20ec9a053",

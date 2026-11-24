@@ -1,3 +1,18 @@
+## 4.0.0(2026-11-13)
+
+**Web3:**
+
+Security Enhancement
+
+**Cypherpunk:**
+
+Security Enhancement
+
+**BTC Only:**
+
+Security Enhancement
+
+
 ## 3.2.2(2026-11-10)
 
 **Web3:**
@@ -11,7 +26,6 @@
 ### Fixed
 
 1. Support Zcash NU7
-
 
 
 ## 3.2.0(2026-10-21)

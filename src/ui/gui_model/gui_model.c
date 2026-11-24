@@ -167,6 +167,7 @@ static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8
 static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen);
+static int32_t ModelCheckWebAuthKey(const void *inData, uint32_t inDataLen);
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen);
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR);
@@ -494,6 +495,11 @@ void GuiModelStopCalculateCheckSum(void)
 void GuiModelCalculateWebAuthCode(void *webAuthData)
 {
     AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
+}
+
+void GuiModelCheckWebAuthKey(void)
+{
+    AsyncExecute(ModelCheckWebAuthKey, NULL, 0);
 }
 
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39)
@@ -1507,6 +1513,44 @@ static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
     return ret;
 }
 
+static int32_t ModelCheckWebAuthKey(const void *inData, uint32_t inDataLen)
+{
+#ifdef COMPILE_SIMULATOR
+    return GuiApiEmitSignalWithValue(SIG_WEB_AUTH_VERIFICATION_ID, 0x12345678u);
+#else
+    bool lockScreenEnabled = IsPreviousLockScreenEnable();
+    SetLockScreen(false);
+    char message[64] = "RSA self-check failed";
+    uint32_t crc = 0;
+    bool hasVerificationId = false;
+    uint8_t *pq = SRAM_MALLOC(WEB_AUTH_RSA_PRIMES_LEN);
+    if (pq != NULL) {
+        for (uint8_t attempt = 0; attempt < 2; ++attempt) {
+            if (attempt != 0) {
+                UserDelay(1500);
+            }
+            int32_t ret = GetWebAuthRsaPrimes(pq);
+            hasVerificationId = ret == SUCCESS_CODE && check_pq_public_key(pq, WEB_AUTH_RSA_PRIMES_LEN, &crc);
+            memset_s(pq, WEB_AUTH_RSA_PRIMES_LEN, 0, WEB_AUTH_RSA_PRIMES_LEN);
+            if (ret == ERR_WEB_AUTH_KEY_NOT_EXIST) {
+                message[0] = '\0';
+                break;
+            }
+            if (hasVerificationId) {
+                break;
+            }
+        }
+        SRAM_FREE(pq);
+    }
+    SetLockScreen(lockScreenEnabled);
+    if (hasVerificationId) {
+        return GuiApiEmitSignalWithValue(SIG_WEB_AUTH_VERIFICATION_ID, crc);
+    }
+    GuiApiEmitSignal(SIG_WEB_AUTH_KEY_CHECK, message, strlen(message) + 1);
+    return SUCCESS_CODE;
+#endif
+}
+
 // calculate auth code
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
 {
@@ -1523,16 +1567,18 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
         SetLockScreen(enable);
         return SUCCESS_CODE;
     }
-    int32_t ret = GetWebAuthRsaKey(key);
-    if (ret != SUCCESS_CODE) {
-        memset_s(key, WEB_AUTH_RSA_KEY_LEN, 0, WEB_AUTH_RSA_KEY_LEN);
-        SRAM_FREE(key);
-        char *authCode = "";
-        GuiApiEmitSignal(SIG_WEB_AUTH_CODE_SUCCESS, authCode, strlen(authCode) + 1);
-        SetLockScreen(enable);
-        return SUCCESS_CODE;
+    char *authCode = NULL;
+    int32_t ret = GetWebAuthRsaPrimes(key);
+    if (ret == SUCCESS_CODE) {
+        printf("[webauth] using SE RSA P/Q\r\n");
+        authCode = calculate_pq_auth_code(inData, key, WEB_AUTH_RSA_PRIMES_LEN);
+    } else if (ret == ERR_WEB_AUTH_KEY_NOT_EXIST) {
+        ret = GetWebAuthRsaKey(key);
+        if (ret == SUCCESS_CODE) {
+            printf("[webauth] using legacy OTP RSA N/D\r\n");
+            authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
+        }
     }
-    char *authCode = calculate_auth_code(inData, key, 512, &key[512], 512);
     bool shouldFreeAuthCode = authCode != NULL;
     memset_s(key, WEB_AUTH_RSA_KEY_LEN, 0, WEB_AUTH_RSA_KEY_LEN);
     SRAM_FREE(key);

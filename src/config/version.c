@@ -8,9 +8,9 @@
 #define SOFTWARE_VERSION_MAX_LEN            (32)
 #define STRINGIFY(x)                        #x
 #define EXPAND(x)                           STRINGIFY(x)
-#define BOOT_MATCH_MAJOR                    0
-#define BOOT_MATCH_MINOR                    2
-#define BOOT_MATCH_BUILD                    1
+#define BOOT_MATCH_MAJOR                    1
+#define BOOT_MATCH_MINOR                    0
+#define BOOT_MATCH_BUILD                    0
 
 #define SOFTWARE_VERSION_STR "Firmware v" EXPAND(SOFTWARE_VERSION_MAJOR) "." EXPAND(SOFTWARE_VERSION_MINOR) "." EXPAND(SOFTWARE_VERSION_BUILD)
 
@@ -93,7 +93,7 @@ bool NeedUpdateBoot(void)
     if (GetBootSoftwareVersion(&major, &minor, &build) == false) {
         return true;
     }
-    if (major == 0 && minor == 4 && build == 1) {
+    if (major == BOOT_MATCH_MAJOR && minor == BOOT_MATCH_MINOR && build == BOOT_MATCH_BUILD) {
         return false;
     }
     return true;

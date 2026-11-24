@@ -1,6 +1,8 @@
 #ifndef _GUI_WEB_AUTH_WIDGETS_H
 #define _GUI_WEB_AUTH_WIDGETS_H
 
+#include <stdint.h>
+
 typedef enum {
     WEB_AUTH_ENTRY_SETUP = 0,
     WEB_AUTH_ENTRY_SETTING,
@@ -13,5 +15,7 @@ void GuiWebAuthAreaDeInit();
 void GuiWebAuthAreaRefresh();
 void GuiWebAuthAreaRestart();
 void GuiWebAuthSetEntry(uint8_t entry);
+void GuiWebAuthShowKeyCheck(const char *keyCheck);
+void GuiWebAuthShowVerificationId(uint32_t crc);
 
 #endif

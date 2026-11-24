@@ -624,7 +624,7 @@ static SimpleResponse_c_char *ProcessKeyType(uint8_t *seed, int len, int cryptoK
         return get_monero_pvk_by_seed(seed, len);
 #endif
 
-#ifdef WEB3_VERSION
+#if defined(WEB3_VERSION) && !defined(TRANSITION_FIRMWARE)
     case RSA_KEY: {
         printf("here, RSA_KEY\n");
         Rsa_primes_t *primes = FlashReadRsaPrimes();
@@ -866,6 +866,9 @@ int32_t AccountPublicInfoReadFromFlash(uint8_t accountIndex, uint32_t addr)
 
 int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, uint32_t addr)
 {
+#ifdef TRANSITION_FIRMWARE
+    return ERR_GENERAL_FAIL;
+#else
     uint8_t entropyLen = 0;
     uint8_t seed[64], entropy[64];
     int32_t ret = SUCCESS_CODE;
@@ -950,6 +953,7 @@ int32_t AccountPublicSavePublicInfo(uint8_t accountIndex, const char *password, 
 
     CLEAR_ARRAY(seed);
     return ret;
+#endif
 }
 
 int32_t AccountPublicInfoSwitch(uint8_t accountIndex, const char *password, bool newKey)
@@ -1136,6 +1140,9 @@ int32_t RegenerateZcashUFVK(uint8_t accountIndex, const uint8_t *seed, int seedL
 
 int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool set)
 {
+#ifdef TRANSITION_FIRMWARE
+    return ERR_GENERAL_FAIL;
+#else
     uint32_t i;
     SimpleResponse_c_char *xPubResult;
     int32_t ret = SUCCESS_CODE;
@@ -1245,6 +1252,7 @@ int32_t TempAccountPublicInfo(uint8_t accountIndex, const char *password, bool s
     CLEAR_ARRAY(seed);
 
     return ret;
+#endif
 }
 
 void DeleteAccountPublicInfo(uint8_t accountIndex)

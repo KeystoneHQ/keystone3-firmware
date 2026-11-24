@@ -253,7 +253,11 @@ uint32_t GetSetupStep(void)
 
 void SetSetupStep(uint32_t setupStep)
 {
+#if FIRMWARE_TRANSITION_ONLY
+    (void)setupStep;
+#else
     g_deviceSettings.setupStep = setupStep;
+#endif
 }
 
 uint32_t GetBright(void)

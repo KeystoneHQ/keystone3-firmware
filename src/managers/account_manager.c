@@ -633,7 +633,9 @@ int32_t DestroyAccount(uint8_t accountIndex)
             printf("destroy account:erase se account err,0x%X\n", ret);
         } else {
             DeleteAccountPublicInfo(accountIndex);
+#ifndef TRANSITION_FIRMWARE
             ClearAccountPassphrase(accountIndex);
+#endif
             ret = SetWalletDataHash(accountIndex, data);
             if (ret != SUCCESS_CODE) {
                 printf("destroy account:clear wallet data hash err,0x%X\n", ret);
@@ -763,6 +765,9 @@ int32_t GetZcashSFP(uint8_t accountIndex, uint8_t* outSFP)
 
 int32_t SetupZcashSFP(uint8_t accountIndex, const char* password)
 {
+#ifdef TRANSITION_FIRMWARE
+    return ERR_GENERAL_FAIL;
+#else
     ASSERT(accountIndex <= 2);
 
     if (!IsZcashSupportedForCurrentMnemonic()) {
@@ -792,6 +797,7 @@ int32_t SetupZcashSFP(uint8_t accountIndex, const char* password)
 
     SetZcashSFP(accountIndex, sfp);
     return ret;
+#endif
 }
 
 #ifdef CYPHERPUNK_VERSION

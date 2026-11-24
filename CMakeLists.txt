@@ -2,6 +2,7 @@ set(CMAKE_SYSTEM_NAME Generic)
 cmake_minimum_required(VERSION 3.10)
 
 option(COMPILE_KEYSTONE "compile on MAIN target" ON)
+option(TRANSITION_FIRMWARE "Build the production transition firmware without wallet chains" ON)
 
 set(BUILD_ENVIRONMENT "DEBUG")
 set(BUILD_VARIANT "MULTI_COINS")
@@ -24,7 +25,13 @@ else()
     add_compile_definitions(WEB3_VERSION)
     set(WIDGET_PATH "multi")
     set(WIDGET_SUBPATH "multi/web3")
-    set(BUILD_VARIANT "MULTI_COINS")
+    if(TRANSITION_FIRMWARE AND NOT BUILD_TYPE STREQUAL "Simulator")
+        if(NOT BUILD_PRODUCTION)
+            message(FATAL_ERROR "Transition firmware requires -DBUILD_PRODUCTION=ON. Run build.bat production.")
+        endif()
+        add_compile_definitions(TRANSITION_FIRMWARE)
+        set(BUILD_VARIANT "TRANSITION_FIRMWARE")
+    endif()
 endif()
 if(BUILD_TYPE STREQUAL "Simulator")
     set(COMPILE_KEYSTONE OFF CACHE BOOL "compile on MAIN target" FORCE)
@@ -170,8 +177,14 @@ set(SRC_INCLUDE_PATH
     src/webusb_protocol/general
 )
 
+if(BUILD_TYPE STREQUAL "Simulator")
+    set(RUST_BINDINGS_DIR ${CMAKE_SOURCE_DIR}/ui_simulator/lib/rust-builds)
+else()
+    set(RUST_BINDINGS_DIR ${CMAKE_CURRENT_BINARY_DIR}/rust-builds)
+endif()
+
 set(INCLUDE_DIR
-    build/rust-builds
+    ${RUST_BINDINGS_DIR}
     ${SRC_INCLUDE_PATH}
     ${CRYPTO_INCLUDE_PATH}
     ${GUI_INCLUDE_PATH}
@@ -217,6 +230,15 @@ file(GLOB_RECURSE GUI
     "src/ui/gui_model/*.c"
     "src/ui/gui_components/*.c"
 )
+
+if(BUILD_VARIANT STREQUAL "TRANSITION_FIRMWARE")
+    list(FILTER GUI EXCLUDE REGEX "/gui_(chain|wallet)/")
+    list(FILTER GUI EXCLUDE REGEX "/gui_analyze/")
+    list(FILTER GUI EXCLUDE REGEX "/gui_assets/coin/")
+    list(FILTER GUI EXCLUDE REGEX "/gui_(views|widgets)/gui_(scan|web_auth|web_auth_result)_(view|widgets)\\.c$")
+    list(FILTER GUI EXCLUDE REGEX "/gui_widgets/multi/")
+    list(FILTER GUI EXCLUDE REGEX "/gui_widgets/gui_(export_pubkey|select_address|utxo_receive|transaction_detail|transaction_signature)_widgets\\.c$")
+endif()
 
 file(GLOB_RECURSE LVGL
     "external/lvgl/src/core/*.c"
@@ -315,6 +337,9 @@ if(COMPILE_KEYSTONE)
     endforeach()
 
     add_executable(${PROJECT_NAME}.elf ${objsrc})
+    if(BUILD_VARIANT STREQUAL "TRANSITION_FIRMWARE")
+        target_link_libraries(${PROJECT_NAME}.elf "-Wl,--undefined=g_transitionWalletImages")
+    endif()
     target_compile_definitions(${PROJECT_NAME}.elf PRIVATE ${COMMON_DEFINITIONS})
     target_include_directories(${PROJECT_NAME}.elf PRIVATE ${INCLUDE_DIR})
     add_dependencies(${PROJECT_NAME}.elf rust_c)

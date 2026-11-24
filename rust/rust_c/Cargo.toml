@@ -37,11 +37,11 @@ ed25519-bip32-core = { workspace = true }
 app_utils = { workspace = true }
 rust_tools = { workspace = true }
 rand_core = { workspace = true }
-sui-transaction-types-core = { workspace = true }
+sui-transaction-types-core = { workspace = true, optional = true }
 zeroize = { workspace = true }
 
 #apps
-app_wallets = { workspace = true }
+app_wallets = { workspace = true, optional = true }
 app_babylon = { workspace = true, optional = true }
 app_bitcoin = { workspace = true, optional = true }
 app_ethereum = { workspace = true, optional = true }
@@ -89,12 +89,13 @@ zcash_multi_coins = ["zcash", "app_zcash/multi_coins"]
 zcash_cypherpunk = ["zcash", "app_zcash/cypherpunk"]
 monero = ["dep:app_monero"]
 avalanche = ["dep:app_avalanche"]
-iota = ["dep:app_iota"]
+iota = ["dep:app_iota", "dep:sui-transaction-types-core"]
 test_cmd = []
 
 debug-memory = ["multi-coins"]
 
 multi-coins = [
+    "dep:app_wallets",
     "aptos",
     "arweave",
     "bch",
@@ -119,15 +120,18 @@ multi-coins = [
     "keystore/multi_coins",
 ]
 
-btc-only = ["bitcoin", "keystore/multi_coins"]
+btc-only = ["bitcoin", "dep:app_wallets", "keystore/multi_coins"]
 
-cypherpunk = ["bitcoin", "zcash_cypherpunk", "monero", "keystore/cypherpunk"]
+cypherpunk = ["bitcoin", "zcash_cypherpunk", "monero", "dep:app_wallets", "keystore/cypherpunk"]
+
+transition-firmware = []
 
 # build variants
 # production
 production-multi-coins = ["use-allocator", "multi-coins"]
 production-btc-only = ["use-allocator", "btc-only"]
 production-cypherpunk = ["use-allocator", "cypherpunk"]
+production-transition-firmware = ["use-allocator", "transition-firmware"]
 # debug
 debug-multi-coins = ["test_cmd", "use-allocator", "multi-coins"]
 debug-btc-only = ["test_cmd", "use-allocator", "btc-only"]

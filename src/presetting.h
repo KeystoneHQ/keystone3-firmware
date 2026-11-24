@@ -7,6 +7,7 @@
 #define SERIAL_NUMBER_MAX_LEN               64
 #define WEB_AUTH_RSA_KEY_LEN                1024
 #define UPDATE_PUB_KEY_LEN                  64
+#define UPDATE_PUB_KEY_MIGRATION_SLOT       0U
 
 int32_t GetSerialNumber(char *serialNumber);
 int32_t SetSerialNumber(const char *serialNumber);
@@ -15,7 +16,9 @@ int32_t GetWebAuthRsaKey(uint8_t *key);
 int32_t SetWebAuthRsaKey(const uint8_t *key);
 
 int32_t GetUpdatePubKey(uint8_t *pubKey);
-int32_t SetUpdatePubKey(const uint8_t *pubKey);
+void GetNewUpdatePubKey(uint8_t pubKey[65]);
+int32_t SetUpdatePubKey(const uint8_t *pubKey, uint32_t slot);
+int32_t PrepareUpdatePubKey(void);
 
 bool GetFactoryResult(void);
 

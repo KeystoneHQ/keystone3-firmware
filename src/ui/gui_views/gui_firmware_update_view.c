@@ -5,6 +5,7 @@
 #include "gui_status_bar.h"
 #include "gui_model.h"
 #include "gui_lock_widgets.h"
+#include "transition_firmware.h"
 
 int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -29,6 +30,7 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
     case SIG_SETUP_VIEW_TILE_PREV:
         GuiFirmwareUpdatePrevTile();
         break;
+#if !FIRMWARE_TRANSITION_ONLY
     case SIG_VERIFY_PASSWORD_PASS:
         if (param != NULL) {
             uint16_t sig = *(uint16_t *)param;
@@ -51,6 +53,7 @@ int32_t GuiFirmwareUpdateViewEventProcess(void *self, uint16_t usEvent, void *pa
         }
         GuiFirmwareUpdateVerifyPasswordErrorCount(param);
         break;
+#endif
     case SIG_INIT_SD_CARD_OTA_COPY_SUCCESS:
         GuiFirmwareSdCardCopyResult(true);
         break;

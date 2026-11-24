@@ -14,6 +14,7 @@ mod my_alloc;
 
 #[allow(unused)]
 mod common;
+#[cfg(not(feature = "transition-firmware"))]
 #[allow(unused)]
 mod wallet;
 

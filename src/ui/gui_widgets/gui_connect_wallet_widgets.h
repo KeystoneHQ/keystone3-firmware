@@ -142,7 +142,9 @@ typedef enum SOLAccountType {
     SOLBip44Change,
 } SOLAccountType;
 
+#ifndef TRANSITION_FIRMWARE
 ETHAccountType GetMetamaskAccountType(void);
+#endif
 SOLAccountType GetSolflareAccountType(void);
 SOLAccountType GetHeliumAccountType(void);
 void GuiPrepareArConnectWalletView(void);

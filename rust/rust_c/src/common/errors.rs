@@ -258,6 +258,7 @@ impl ErrorCodes {
     }
 }
 
+#[cfg(feature = "bitcoin")]
 impl From<&BitcoinError> for ErrorCodes {
     fn from(value: &BitcoinError) -> Self {
         match value {

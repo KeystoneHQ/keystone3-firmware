@@ -27,6 +27,7 @@ pub unsafe extern "C" fn infer_qrcode_type(qrcode: PtrString) -> QRProtocol {
 }
 
 #[no_mangle]
+#[cfg(feature = "bitcoin")]
 pub unsafe extern "C" fn parse_qrcode_text(qr: PtrString) -> Ptr<URParseResult> {
     let (is_ok, value) = check_recover_c_char_lossy(qr);
     if !is_ok {

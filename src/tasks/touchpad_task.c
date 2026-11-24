@@ -66,9 +66,11 @@ static void TouchPadTask(void *argument)
 #endif
         osKernelUnlock();
         ActivateUiTaskLoop();
+#ifndef TRANSITION_FIRMWARE
         QrDecodeTouchQuit();
 #ifdef WEB3_VERSION
         NftLockDecodeTouchQuit();
+#endif
 #endif
 #ifndef BUILD_PRODUCTION
 #ifdef ENABLE_SCREEN_SHOT

@@ -33,6 +33,7 @@
 #include "simulator_storage.h"
 #else
 #endif
+#ifndef TRANSITION_FIRMWARE
 #define KEYSTORE_DEBUG          0
 
 #if KEYSTORE_DEBUG == 1
@@ -816,6 +817,8 @@ static int32_t GetPassphraseSeed(uint8_t accountIndex, uint8_t *seed, const char
     CLEAR_ARRAY(entropy);
     return ret;
 }
+
+#endif
 
 #ifndef COMPILE_SIMULATOR
 void random_buffer(uint8_t *buf, size_t len)

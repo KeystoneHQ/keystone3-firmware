@@ -12,13 +12,17 @@ const uint32_t g_tamperFlag = 0x1234ABCD;
 /// @return err code.
 int32_t WriteOtpData(uint32_t addr, const uint8_t *data, uint32_t len)
 {
-    int32_t ret;
+    int32_t ret = 0;
     ASSERT(len <= 256);
+    ASSERT(data != NULL);
+    ASSERT(len > 0U);
     OTP_PowerOn();
     OTP_Unlock();
     OTP_UnProtect(addr);
     for (uint32_t i = 0; i < len; i += 4) {
-        ret = OTP_WriteWord(addr + i, *(uint32_t *)(data + i));
+        uint32_t word;
+        memcpy(&word, data + i, sizeof(word));
+        ret = OTP_WriteWord(addr + i, word);
         if (ret != 0) {
             break;
         }

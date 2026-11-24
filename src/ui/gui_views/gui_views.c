@@ -54,14 +54,20 @@ void OpenViewHandler(lv_event_t *e)
 
 void CloseTimerCurrentViewHandler(lv_event_t *e)
 {
+#ifndef TRANSITION_FIRMWARE
     CloseQRTimer();
+#endif
     GuiCloseCurrentWorkingView();
 }
 
 void GoToHomeViewHandler(lv_event_t *e)
 {
+#ifdef TRANSITION_FIRMWARE
+    GuiCloseToTargetView(&g_transitionView);
+#else
     CloseQRTimer();
     GuiCloseToTargetView(&g_homeView);
+#endif
 }
 
 void CloseCurrentViewHandler(lv_event_t *e)

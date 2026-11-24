@@ -27,7 +27,7 @@ typedef struct {
 static const ProtocolService_t g_ProtocolServiceList[] = {
     {SERVICE_ID_DEVICE_INFO, COMMAND_ID_DEVICE_INFO_MAX, g_deviceInfoServiceFunc},
     {SERVICE_ID_FILE_TRANS, COMMAND_ID_FILE_TRANS_MAX, g_fileTransInfoServiceFunc},
-#ifdef WEB3_VERSION
+#if defined(WEB3_VERSION) && !defined(TRANSITION_FIRMWARE)
     {SERVICE_ID_NFT_FILE_TRANS, COMMAND_ID_FILE_TRANS_MAX, g_nftFileTransInfoServiceFunc},
 #endif
 };

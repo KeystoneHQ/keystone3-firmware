@@ -22,6 +22,8 @@ fn main() {
         "simulator-cypherpunk",
         #[cfg(feature = "production-cypherpunk")]
         "production-cypherpunk",
+        #[cfg(feature = "production-transition-firmware")]
+        "production-transition-firmware",
     ];
 
     //feature toggle

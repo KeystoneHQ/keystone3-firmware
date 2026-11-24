@@ -56,6 +56,7 @@ bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t 
     int32_t ret;
     bool handled = false;
     if (NULL != view->pEvtHandler) {
+#if !FIRMWARE_TRANSITION_ONLY
         if (GuiLockScreenIsTop()) {
             if (usEvent == GUI_EVENT_REFRESH || usEvent == SIG_INIT_SDCARD_CHANGE) {
                 g_lockView.pEvtHandler(&g_lockView, usEvent, param, usLen);
@@ -63,6 +64,7 @@ bool GuiViewHandleEvent(GUI_VIEW *view, uint16_t usEvent, void *param, uint16_t 
             }
         }
 
+#endif
         ret = view->pEvtHandler(view, usEvent, param, usLen);
         if (ERR_GUI_UNHANDLED != ret) {
             handled = true;
@@ -79,6 +81,7 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
     bool sigHandled;
     GUI_VIEW *pView = g_workingView;
     uint32_t loopCnt = 0;
+#if !FIRMWARE_TRANSITION_ONLY
     if (GuiLockScreenIsTop()) {
         //verify failed
         if (usEvent == SIG_VERIFY_PASSWORD_FAIL) {
@@ -94,6 +97,7 @@ int32_t GuiEmitSignal(uint16_t usEvent, void *param, uint16_t usLen)
             return SUCCESS_CODE;
         }
     }
+#endif
     do {
         sigHandled = GuiViewHandleEvent(pView, usEvent, param, usLen);
         if (sigHandled) {
@@ -262,16 +266,18 @@ int32_t GuiCloseToTargetView(GUI_VIEW *view)
     }
 #endif
     GuiViewHintBoxClear();
+#if !FIRMWARE_TRANSITION_ONLY
     if (g_workingView == &g_homeView) {
         GuiViewHandleEvent(view, GUI_EVENT_RESTART, NULL, 0);
-    } else {
-        while (g_workingView != view) {
-            if (GuiCloseCurrentWorkingView() != SUCCESS_CODE) {
-                return ERR_GUI_ERROR;
-            }
-        }
-        GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
+        return SUCCESS_CODE;
     }
+#endif
+    while (g_workingView != view) {
+        if (GuiCloseCurrentWorkingView() != SUCCESS_CODE) {
+            return ERR_GUI_ERROR;
+        }
+    }
+    GuiViewHandleEvent(view, GUI_EVENT_REFRESH, NULL, 0);
     return SUCCESS_CODE;
 }
 

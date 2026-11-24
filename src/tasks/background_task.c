@@ -112,7 +112,7 @@ static void BackgroundTask(void *argument)
         }
         break;
         case BACKGROUND_MSG_BATTERY_INTERVAL: {
-            if (rcvMsg.value != 0 || BatteryIntervalHandler()) {
+            if (rcvMsg.value != 0 || BatteryIntervalHandler() || FIRMWARE_TRANSITION_ONLY) {
                 battState = GetBatterPercent();
                 if (GetUsbPowerState() == USB_POWER_STATE_CONNECT) {
                     battState |= 0x8000;

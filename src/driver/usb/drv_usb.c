@@ -18,6 +18,7 @@ void UsbInit(void)
     printf("usb init\r\n");
 
     if (g_usbInit == false) {
+        NVIC_SetPriority(USB_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), USB_IRQ_RTOS_SAFE_PRIO, 0));
         SYSCTRL_AHBPeriphClockCmd(SYSCTRL_AHBPeriph_USB, ENABLE);
         SYSCTRL_AHBPeriphResetCmd(SYSCTRL_AHBPeriph_USB, ENABLE);
 
@@ -31,7 +32,6 @@ void UsbInit(void)
         memset_s(&g_usbDev, sizeof(g_usbDev), 0x00, sizeof(g_usbDev));
 
         USBD_Init(&g_usbDev, USB_OTG_FS_CORE_ID, &USR_desc, DeviceCallback, &USRD_cb);
-        NVIC_SetPriority(USB_IRQn, NVIC_EncodePriority(NVIC_GetPriorityGrouping(), USB_IRQ_RTOS_SAFE_PRIO, 0));
         g_usbInit = true;
     }
 }

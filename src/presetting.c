@@ -7,8 +7,22 @@
 #include "err_code.h"
 #include "assert.h"
 #include "drv_mpu.h"
+#include "drv_battery.h"
+#include "drv_aw32001.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
+
+static const uint8_t g_newUpdatePublicKey[65] = {
+    0x04,
+    0xBD, 0x99, 0x79, 0x6F, 0x42, 0xB7, 0xE9, 0xBD,
+    0xBC, 0xF4, 0x6D, 0x48, 0xB2, 0x7B, 0x8E, 0x60,
+    0x75, 0xB1, 0x7E, 0x04, 0xA9, 0xEC, 0x9C, 0xA4,
+    0x54, 0x20, 0x1E, 0x7A, 0x6E, 0x15, 0xC2, 0xE9,
+    0xE7, 0x2F, 0xEE, 0x6F, 0x81, 0x2D, 0xE1, 0x92,
+    0x91, 0xC5, 0x48, 0x68, 0xFA, 0xE8, 0xED, 0x03,
+    0x8E, 0xE5, 0x88, 0xCB, 0x60, 0x15, 0x90, 0xD4,
+    0xC5, 0x1D, 0x54, 0x3D, 0x86, 0xD3, 0x7D, 0x29
+};
 
 int32_t GetSerialNumber(char *serialNumber)
 {
@@ -126,55 +140,85 @@ int SetFactoryResult(void)
 int32_t GetUpdatePubKey(uint8_t *pubKey)
 {
     uint8_t data[UPDATE_PUB_KEY_LEN];
-    uint32_t addr;
+    const uint32_t slot = UPDATE_PUB_KEY_MIGRATION_SLOT;
+    uint32_t addr = OTP_ADDR_UPDATE_PUB_KEY + slot * UPDATE_PUB_KEY_LEN;
 
-    OTP_PowerOn();
-    for (addr = OTP_ADDR_UPDATE_PUB_KEY + 1024 - UPDATE_PUB_KEY_LEN; addr >= OTP_ADDR_UPDATE_PUB_KEY; addr -= UPDATE_PUB_KEY_LEN) {
-        memcpy_s(data, sizeof(data), (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
-        PrintArray("read pub key", data, UPDATE_PUB_KEY_LEN);
-        if (CheckAllFF(data, UPDATE_PUB_KEY_LEN) == false) {
-            if (CheckEntropy(data, UPDATE_PUB_KEY_LEN)) {
-                //Found
-                printf("found,addr=0x%X\n", addr);
-                pubKey[0] = 4;
-                memcpy_s(pubKey + 1, UPDATE_PUB_KEY_LEN, data, UPDATE_PUB_KEY_LEN);
-                memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
-                return SUCCESS_CODE;
-            }
-            printf("not found,addr=0x%X\n", addr);
-            memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
-            memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
-            return ERR_UPDATE_PUB_KEY_NOT_EXIST;
-        }
+    if (pubKey == NULL) {
+        return ERR_UPDATE_PUB_KEY_NOT_EXIST;
     }
-    printf("not found,addr=0x%X\n", addr);
-    memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
     memset_s(pubKey, UPDATE_PUB_KEY_LEN + 1, 0, UPDATE_PUB_KEY_LEN + 1);
-    return ERR_UPDATE_PUB_KEY_NOT_EXIST;
+    MpuSetOtpProtection(false);
+    OTP_PowerOn();
+    memcpy_s(data, sizeof(data), (const void *)(uintptr_t)addr, sizeof(data));
+    MpuSetOtpProtection(true);
+
+    if (CheckAllFF(data, sizeof(data))) {
+        return ERR_UPDATE_PUB_KEY_NOT_EXIST;
+    }
+    bool hasTargetKey = memcmp(data, g_newUpdatePublicKey + 1, sizeof(data)) == 0;
+    if (!hasTargetKey) {
+        printf("[factory] unexpected update key in OTP slot %lu\r\n", (unsigned long)slot);
+        ASSERT(hasTargetKey);
+        return ERR_GENERAL_FAIL;
+    }
+    pubKey[0] = 0x04;
+    memcpy_s(pubKey + 1, UPDATE_PUB_KEY_LEN, data, sizeof(data));
+    return SUCCESS_CODE;
 }
 
-/// @brief
-/// @param key Key with it's 0x04 head, 65 bytes.
-/// @return err code.
-int32_t SetUpdatePubKey(const uint8_t *pubKey)
+void GetNewUpdatePubKey(uint8_t pubKey[65])
 {
-    uint8_t data[UPDATE_PUB_KEY_LEN];
-    uint32_t addr;
+    memcpy(pubKey, g_newUpdatePublicKey, sizeof(g_newUpdatePublicKey));
+}
 
-    OTP_PowerOn();
-    for (addr = OTP_ADDR_UPDATE_PUB_KEY; addr < OTP_ADDR_UPDATE_PUB_KEY + 1024; addr += UPDATE_PUB_KEY_LEN) {
-        memcpy_s(data, UPDATE_PUB_KEY_LEN, (uint8_t *)addr, UPDATE_PUB_KEY_LEN);
-        PrintArray("read pub key", data, UPDATE_PUB_KEY_LEN);
-        if (CheckAllFF(data, UPDATE_PUB_KEY_LEN)) {
-            printf("writeable addr found:0x%08X\n", addr);
-            //write OTP
-            memcpy_s(data, UPDATE_PUB_KEY_LEN, pubKey + 1, UPDATE_PUB_KEY_LEN);
-            WriteOtpData(addr, data, UPDATE_PUB_KEY_LEN);
-            return SUCCESS_CODE;
-        }
+
+
+int32_t SetUpdatePubKey(const uint8_t *pubKey, uint32_t slot)
+{
+    if (slot != UPDATE_PUB_KEY_MIGRATION_SLOT) {
+        ASSERT(slot == UPDATE_PUB_KEY_MIGRATION_SLOT);
+        return ERR_GENERAL_FAIL;
     }
-    memset_s(data, UPDATE_PUB_KEY_LEN, 0, UPDATE_PUB_KEY_LEN);
-    return ERR_UPDATE_PUB_KEY_NO_SPACE;
+    if (pubKey == NULL || pubKey[0] != 0x04 ||
+            memcmp(pubKey, g_newUpdatePublicKey, sizeof(g_newUpdatePublicKey)) != 0) {
+        return ERR_UPDATE_PUB_KEY_NOT_EXIST;
+    }
+
+    uint8_t current[UPDATE_PUB_KEY_LEN + 1];
+    int32_t result = GetUpdatePubKey(current);
+    if (result != ERR_UPDATE_PUB_KEY_NOT_EXIST) {
+        return result;
+    }
+
+    uint32_t milliVolt = GetBatteryMilliVolt();
+    uint8_t batteryPercent = GetBatteryPercentByMilliVolt(milliVolt, GetUsbPowerState() == USB_POWER_STATE_DISCONNECT);
+    if (batteryPercent <= 40) {
+        return ERR_KEYSTORE_SAVE_LOW_POWER;
+    }
+
+    uint32_t addr = OTP_ADDR_UPDATE_PUB_KEY + slot * UPDATE_PUB_KEY_LEN;
+    MpuSetOtpProtection(false);
+    result = WriteOtpData(addr, pubKey + 1, UPDATE_PUB_KEY_LEN);
+    MpuSetOtpProtection(true);
+    if (result != 0 || GetUpdatePubKey(current) != SUCCESS_CODE ||
+            memcmp(current, pubKey, sizeof(current)) != 0) {
+        return ERR_GENERAL_FAIL;
+    }
+    printf("[update-key] OTP write and readback verified\r\n");
+    return SUCCESS_CODE;
+}
+
+int32_t PrepareUpdatePubKey(void)
+{
+    uint8_t updateKey[UPDATE_PUB_KEY_LEN + 1];
+    int32_t status = GetUpdatePubKey(updateKey);
+    if (status == ERR_UPDATE_PUB_KEY_NOT_EXIST) {
+        GetNewUpdatePubKey(updateKey);
+        status = SetUpdatePubKey(updateKey, UPDATE_PUB_KEY_MIGRATION_SLOT);
+    } else if (status == SUCCESS_CODE) {
+        printf("[update-key] target key already present and verified\r\n");
+    }
+    return status;
 }
 
 void PresettingTest(int argc, char *argv[])
@@ -243,7 +287,7 @@ void PresettingTest(int argc, char *argv[])
             return;
         }
         PrintArray("hex", data, len);
-        ret = SetUpdatePubKey(data);
+        ret = SetUpdatePubKey(data, UPDATE_PUB_KEY_MIGRATION_SLOT);
         printf("SetUpdatePubKey ret=%d\n", ret);
         SRAM_FREE(data);
     } else if (strcmp(argv[0], "set_factory_result") == 0) {

@@ -33,6 +33,7 @@
 #include "user_delay.h"
 #include "transition_firmware.h"
 #ifndef COMPILE_SIMULATOR
+#include "boot_update.h"
 #include "sha256.h"
 #include "rust.h"
 #include "user_msg.h"
@@ -50,7 +51,11 @@
 
 #define SECTOR_SIZE                         4096
 #define APP_ADDR                            (0x1001000 + 0x80000)   //108 1000
+#ifdef TRANSITION_FIRMWARE
+#define APP_CHECK_START_ADDR                (APP_ADDR)
+#else
 #define APP_CHECK_START_ADDR                (0x1400000)
+#endif
 #define APP_END_ADDR                        (0x2000000)
 #define SD_CARD_OTA_FILE_PATH               "0:/keystone3.bin"
 #define INTERNAL_STORAGE_OTA_FILE_PATH      "1:/keystone3.bin"
@@ -98,7 +103,9 @@ static int32_t ModelSlip39WriteEntropy(const void *inData, uint32_t inDataLen);
 static int32_t ModelComparePubkey(MnemonicType mnemonicType, uint8_t *ems, uint8_t emsLen, uint16_t id, bool eb, uint8_t ie, uint8_t *index);
 static int32_t ModelBip39ForgetPass(const void *inData, uint32_t inDataLen);
 static int32_t ModelSlip39ForgetPass(const void *inData, uint32_t inDataLen);
+#ifndef TRANSITION_FIRMWARE
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen);
+#endif
 static int32_t ModelWriteLastLockDeviceTime(const void *inData, uint32_t inDataLen);
 static int32_t ModelCopySdCardOta(const void *inData, uint32_t inDataLen);
 static int32_t ModelURGenerateQRCode(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t getUR);
@@ -106,9 +113,12 @@ static int32_t ModelCalculateCheckSum(const void *indata, uint32_t inDataLen);
 static int32_t ModelCalculateBinSha256(const void *indata, uint32_t inDataLen);
 static int32_t ModelURUpdate(const void *inData, uint32_t inDataLen);
 static int32_t ModelURClear(const void *inData, uint32_t inDataLen);
+#ifndef TRANSITION_FIRMWARE
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionCheckResultClear(const void *inData, uint32_t inDataLen);
 static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, BackgroundAsyncRunnable_t parseTransactionFunc);
+#endif
+
 static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen);
 static int32_t ModelParseTransactionRawData(const void *inData, uint32_t inDataLen);
 static int32_t ModelTransactionParseRawDataDelay(const void *inData, uint32_t inDataLen);
@@ -317,10 +327,12 @@ void GuiModelStopCalculateCheckSum(void)
     g_stopCalChecksum = true;
 }
 
+#ifndef TRANSITION_FIRMWARE
 void GuiModelCalculateWebAuthCode(void *webAuthData)
 {
     AsyncExecuteWithPtr(ModelCalculateWebAuthCode, webAuthData);
 }
+#endif
 
 void GuiModelSlip39ForgetPassword(Slip39Data_t slip39)
 {
@@ -426,6 +438,7 @@ void GuiModelURClear(void)
     AsyncExecute(ModelURClear, NULL, 0);
 }
 
+#ifndef TRANSITION_FIRMWARE
 void GuiModelCheckTransaction(ViewType viewType)
 {
     AsyncExecute(ModelCheckTransaction, &viewType, sizeof(viewType));
@@ -440,6 +453,7 @@ void GuiModelParseTransaction(ReturnVoidPointerFunc func)
 {
     AsyncExecuteRunnable(ModelParseTransaction, NULL, 0, (BackgroundAsyncRunnable_t)func);
 }
+#endif
 
 // bip39 generate
 static int32_t ModelGenerateEntropy(const void *inData, uint32_t inDataLen)
@@ -1234,6 +1248,7 @@ static int32_t ModelChangeAccountPass(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
+#ifndef TRANSITION_FIRMWARE
 // calculate auth code
 static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
 {
@@ -1280,6 +1295,8 @@ static int32_t ModelCalculateWebAuthCode(const void *inData, uint32_t inDataLen)
     SetLockScreen(enable);
     return SUCCESS_CODE;
 }
+
+#endif
 
 static void ModelVerifyPassSuccess(uint16_t *param)
 {
@@ -1588,6 +1605,7 @@ static int32_t ModelUpdateBoot(const void *inData, uint32_t inDataLen)
     return SUCCESS_CODE;
 }
 
+#ifndef TRANSITION_FIRMWARE
 static PtrT_TransactionCheckResult g_checkResult = NULL;
 static int32_t ModelCheckTransaction(const void *inData, uint32_t inDataLen)
 {
@@ -1637,6 +1655,7 @@ static int32_t ModelParseTransaction(const void *indata, uint32_t inDataLen, Bac
     SetPageLockScreen(true);
     return SUCCESS_CODE;
 }
+#endif
 
 static const uint8_t APP_END_MAGIC_NUMBER[] = {'m', 'h', '1', '9', '0', '3', 'a', 'p', 'p', 'e', 'n', 'd'};
 uint32_t BinarySearchLastNonFFSector(void)
@@ -1809,7 +1828,7 @@ static int32_t ModelFormatMicroSd(const void *indata, uint32_t inDataLen)
 }
 
 
-#ifdef WEB3_VERSION
+#if defined(WEB3_VERSION) && !defined(TRANSITION_FIRMWARE)
 static int32_t ModelRsaGenerateKeyPair(const void *inData, uint32_t inDataLen);
 
 void GuiModelRsaGenerateKeyPair(void)

@@ -1,8 +1,63 @@
-#include "gui_views.h"
-#include "gui_qr_hintbox.h"
-#include "gui_firmware_update_widgets.h"
-#include "version.h"
 #include "gui_api.h"
+#include "gui_firmware_update_widgets.h"
+#include "gui_qr_hintbox.h"
+#include "gui_views.h"
+#include "version.h"
+
+#ifdef TRANSITION_FIRMWARE
+#include "gui_resource.h"
+const lv_img_dsc_t *const g_transitionWalletImages[] = {
+    &walletBabylon,
+    &walletBackpack,
+    &walletBeacon,
+    &walletBegin,
+    &walletBitget,
+    &walletBlockWallet,
+    &walletBluewallet,
+    &walletBtcSafe,
+    &walletBull,
+    &walletCake,
+    &walletCore,
+    &walletEternl,
+    &walletFeather,
+    &walletFewcha,
+    &walletGero,
+    &walletHelium,
+    &walletImToken,
+    &walletIota,
+    &walletJupiter,
+    &walletKeplr,
+    &walletKeystone,
+    &walletLace,
+    &walletMedusa,
+    &walletMetamask,
+    &walletMintScan,
+    &walletNabox,
+    &walletNightly,
+    &walletNufi,
+    &walletNunchuk,
+    &walletOkx,
+    &walletPetra,
+    &walletRabby,
+    &walletSafe,
+    &walletSolflare,
+    &walletSparrow,
+    &walletSpecter,
+    &walletSubwallet,
+    &walletTonkeeper,
+    &walletTyphon,
+    &walletUniSat,
+    &walletVespr,
+    &walletVizor,
+    &walletWander,
+    &walletXBull,
+    &walletXRPToolkit,
+    &walletYearn,
+    &walletZapper,
+    &walletZeus,
+    &walletZodl,
+};
+#endif
 
 static lv_obj_t *g_transitionPage = NULL;
 static const char g_firmwareUrl[] = "https://keyst.one/firmware";

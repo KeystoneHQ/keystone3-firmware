@@ -29,6 +29,7 @@ use zeroize::Zeroize;
 pub mod errors;
 pub mod ffi;
 pub mod free;
+#[cfg(not(feature = "transition-firmware"))]
 pub mod keystone;
 pub mod macros;
 pub mod qrcode;
@@ -37,6 +38,7 @@ pub mod types;
 pub mod ur;
 mod ur_ext;
 pub mod utils;
+#[cfg(not(feature = "transition-firmware"))]
 pub mod web_auth;
 
 pub const KEYSTONE: &str = "keystone";

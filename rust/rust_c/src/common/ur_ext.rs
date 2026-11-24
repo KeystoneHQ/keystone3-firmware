@@ -28,6 +28,7 @@ use ur_registry::cosmos::cosmos_sign_request::CosmosSignRequest;
 #[cfg(feature = "cosmos")]
 use ur_registry::cosmos::evm_sign_request::EvmSignRequest;
 use ur_registry::crypto_account::CryptoAccount;
+#[cfg(feature = "bitcoin")]
 use ur_registry::crypto_psbt::CryptoPSBT;
 use ur_registry::crypto_psbt_extend::CryptoPSBTExtend;
 use ur_registry::error::URError;
@@ -78,6 +79,7 @@ pub trait InferViewType {
     }
 }
 
+#[cfg(feature = "bitcoin")]
 impl InferViewType for CryptoPSBT {
     fn infer(&self) -> Result<ViewType, URError> {
         Ok(ViewType::BtcTx)

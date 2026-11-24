@@ -136,8 +136,7 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
     /* The updater uses the internal protocol; all wallet SDK commands are disabled. */
     SendEApduResponseError(request->cla, request->commandType, request->requestID,
                           PRS_PARSING_DISALLOWED, "Intermediate firmware: upgrade using SD card or USB");
-    return;
-#endif
+#else
     switch (request->commandType) {
     case CMD_ECHO_TEST:
         EchoService(request);
@@ -163,6 +162,7 @@ static void EApduRequestHandler(EAPDURequestPayload_t *request)
         printf("Invalid command: %u\n", request->commandType);
         break;
     }
+#endif
 }
 
 static ParserStatusEnum CheckFrameValidity(EAPDUFrame_t *eapduFrame)

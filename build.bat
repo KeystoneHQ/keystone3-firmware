@@ -40,6 +40,7 @@ IF NOT EXIST %BUILD_FOLDER%\padding_bin_file.py (
 )
 
 CALL :EXECUTE_BUILD
+IF ERRORLEVEL 1 EXIT /B 1
 
 ENDLOCAL
 GOTO :EOF
@@ -67,12 +68,24 @@ IF "%build_simulator%"=="true" (
 ) ELSE (
     pushd %BUILD_FOLDER%
     cmake -G "Unix Makefiles" %cmake_parm% ..
+    IF ERRORLEVEL 1 (
+        popd
+        EXIT /B 1
+    )
     IF "%build_log%"=="true" (
         make -j16 > makefile.log 2>&1
     ) ELSE (
         make -j16
     )
+    IF ERRORLEVEL 1 (
+        popd
+        EXIT /B 1
+    )
     python padding_bin_file.py mh1903.bin
+    IF ERRORLEVEL 1 (
+        popd
+        EXIT /B 1
+    )
     popd
 )
 

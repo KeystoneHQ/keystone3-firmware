@@ -404,6 +404,7 @@ impl QRCodeType {
             InnerURType::CryptoPsbt(_) => Ok(QRCodeType::CryptoPSBT),
             #[cfg(feature = "multi-coins")]
             InnerURType::CryptoPsbtExtend(_) => Ok(QRCodeType::CryptoPSBTExtend),
+            #[cfg(not(feature = "transition-firmware"))]
             InnerURType::CryptoMultiAccounts(_) => Ok(QRCodeType::CryptoMultiAccounts),
             #[cfg(feature = "bitcoin")]
             InnerURType::CryptoAccount(_) => Ok(QRCodeType::CryptoAccount),
@@ -466,7 +467,7 @@ impl QRCodeType {
             InnerURType::XmrOutput(_) => Ok(QRCodeType::XmrOutputSignRequest),
             #[cfg(feature = "avalanche")]
             InnerURType::AvaxSignRequest(_) => Ok(QRCodeType::AvaxSignRequest),
-            #[cfg(not(feature = "btc-only"))]
+            #[cfg(not(any(feature = "btc-only", feature = "transition-firmware")))]
             InnerURType::QRHardwareCall(_) => Ok(QRCodeType::QRHardwareCall),
             _ => Err(URError::NotSupportURTypeError(value.get_type_str())),
         }

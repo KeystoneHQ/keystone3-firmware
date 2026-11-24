@@ -16,12 +16,11 @@
 #include "gui_setup_widgets.h"
 #include "low_power.h"
 #include "account_manager.h"
-#ifndef BTC_ONLY
+#if !defined(BTC_ONLY) && !defined(TRANSITION_FIRMWARE)
 #include "general/eapdu_services/service_resolve_ur.h"
 #endif
 
 static void UsbTask(void *argument);
-void ClearUSBRequestId(void);
 
 static osThreadId_t g_usbTaskHandle;
 static volatile bool g_usbState = false;
@@ -50,7 +49,7 @@ void CloseUsb()
 void OpenUsb()
 {
     PubValueMsg(USB_MSG_INIT, 0);
-#ifndef BTC_ONLY
+#if !defined(BTC_ONLY) && !defined(TRANSITION_FIRMWARE)
     ClearUSBRequestId();
 #endif
 }
@@ -92,7 +91,7 @@ static void UsbTask(void *argument)
                 SetUsbState(false);
             }
             break;
-#ifndef BTC_ONLY
+#if !defined(BTC_ONLY) && !defined(TRANSITION_FIRMWARE)
             case USB_MSG_HANDLE_UR_RESULT: {
                 if ((rcvMsg.buffer != NULL) && (rcvMsg.length >= sizeof(USBURResultMsg_t))) {
                     USBURResultMsg_t *msg = (USBURResultMsg_t *)rcvMsg.buffer;

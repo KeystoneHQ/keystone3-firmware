@@ -7,6 +7,7 @@
 #include "gui_pop_message_box.h"
 #include "gui_power_option_widgets.h"
 #include "gui_init_widgets.h"
+#include "gui_hintbox.h"
 #include "gui_firmware_process_widgets.h"
 #include "gui_usb_connection_widgets.h"
 #include "gui_low_battery_widgets.h"
@@ -30,13 +31,40 @@
 #include "screen_manager.h"
 #include "gui_api.h"
 
+#if FIRMWARE_TRANSITION_ONLY
+static void GuiInitOpenTransitionView(void)
+{
+    GuiFrameOpenView(&g_transitionView);
+    if (NeedUpdateBoot()) {
+        GuiFrameOpenView(&g_bootUpdateView);
+        return;
+    }
+#ifndef COMPILE_SIMULATOR
+    if (GetUsbDetectState()) {
+        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+    }
+#endif
+}
+
+#ifndef COMPILE_SIMULATOR
+static int32_t g_updateKeyStatus = ERR_UPDATE_PUB_KEY_NOT_EXIST;
+
+static void GuiInitPrepareUpdatePubKey(void)
+{
+    g_updateKeyStatus = PrepareUpdatePubKey();
+}
+#endif
+#endif
+
 static int32_t GuiInitViewInit(void *param)
 {
     bool isTamper = false;
     if (param != NULL) {
         isTamper = *(bool *)param;
     }
+#if !FIRMWARE_TRANSITION_ONLY
     GuiEnterPassLabelRefresh();
+#endif
     GuiStyleInit();
     GuiStatusBarInit();
     GlobalResourcesInit();
@@ -57,16 +85,10 @@ static int32_t GuiInitViewInit(void *param)
     // }
 #if FIRMWARE_TRANSITION_ONLY
     SetPageLockScreen(false);
-    GuiFrameOpenView(&g_transitionView);
-    if (NeedUpdateBoot()) {
-        GuiFrameOpenView(&g_bootUpdateView);
-        return SUCCESS_CODE;
-    }
 #ifndef COMPILE_SIMULATOR
-    if (GetUsbDetectState()) {
-        GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
-    }
+    GuiInitPrepareUpdatePubKey();
 #endif
+    GuiInitOpenTransitionView();
 #else
     GuiModeGetAccount();
 #endif
@@ -109,6 +131,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         battState = *(uint16_t *)param;
         //printf("rcv battState=0x%04X\r\n", battState);
         GuiStatusBarSetBattery(battState & 0xFF, (battState & 0x8000) != 0);
+#if FIRMWARE_TRANSITION_ONLY && !defined(COMPILE_SIMULATOR)
+        if (g_updateKeyStatus == ERR_KEYSTORE_SAVE_LOW_POWER) {
+            GuiInitPrepareUpdatePubKey();
+            if (g_updateKeyStatus == SUCCESS_CODE && !NeedUpdateBoot() && GetUsbDetectState()) {
+                GuiApiEmitSignalWithValue(SIG_INIT_USB_CONNECTION, 1);
+            }
+        }
+#endif
         break;
     case SIG_INIT_FIRMWARE_UPDATE_DENY:
         rcvValue = *(uint32_t *)param;
@@ -126,6 +156,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             CloseMsgBox(&g_guiMsgBoxLowBattery);
         }
         break;
+#ifndef TRANSITION_FIRMWARE
     case SIG_INIT_TRANSFER_NFT_SCREEN:
         rcvValue = *(uint32_t *)param;
         printf("rcvValue=%d\r\n", rcvValue);
@@ -135,8 +166,14 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
             CloseMsgBox(&g_guiMsgBoxNftScreen);
         }
         break;
+#endif
     case SIG_INIT_USB_CONNECTION:
 #if FIRMWARE_TRANSITION_ONLY
+#ifndef COMPILE_SIMULATOR
+        if (g_updateKeyStatus != SUCCESS_CODE) {
+            break;
+        }
+#endif
         GuiUsbConnectionRequest(param != NULL && usLen >= sizeof(uint32_t) && *(uint32_t *)param != 0);
         break;
 #endif
@@ -191,9 +228,11 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
     case SIG_INIT_SD_CARD_OTA_COPY:
         GuiFirmwareSdCardCopy();
         break;
+#if !FIRMWARE_TRANSITION_ONLY
     case SIG_FIRMWARE_VERIFY_PASSWORD_FAIL:
         GuiFirmwareUpdateVerifyPasswordErrorCount(param);
         break;
+#endif
     case SIG_SETTING_CHECKSUM_PERCENT:
         if (param != NULL) {
             percent = *(uint8_t *)param;
@@ -218,7 +257,7 @@ int32_t GUI_InitViewEventProcess(void *self, uint16_t usEvent, void *param, uint
         GuiStatusBarSetTestNet();
         break;
 #endif
-#ifdef WEB3_VERSION
+#if defined(WEB3_VERSION) && !defined(TRANSITION_FIRMWARE)
     case SIG_INIT_NFT_BIN:
         rcvValue = *(uint32_t *)param;
         if (rcvValue != 0) {

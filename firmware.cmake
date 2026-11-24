@@ -9,6 +9,9 @@ set(MCU cortex-m4)
 set(LINKER_SCRIPT ${CMAKE_CURRENT_SOURCE_DIR}/mh1903b.ld)
 set(ARCH_FLAGS "-mcpu=${MCU} -mthumb -mlittle-endian")
 set(MCU_FLAGS "${ARCH_FLAGS} -Os -mfloat-abi=hard -mfpu=fpv4-sp-d16")
+if(BUILD_VARIANT STREQUAL "TRANSITION_FIRMWARE")
+    string(APPEND MCU_FLAGS " -ffunction-sections -fdata-sections")
+endif()
 set(CMAKE_C_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g")
 set(CMAKE_CXX_FLAGS "${MCU_FLAGS} -Wall -Wno-unknown-pragmas -Wno-format -g")
 
@@ -86,6 +89,12 @@ file(GLOB_RECURSE EXCLUDED_FILES
 if(NOT BTC_ONLY)
     list(REMOVE_ITEM SRC ${EXCLUDED_FILES})
     list(APPEND WEBUSB_PROTOCOL ${WEBUSB_PROTOCOL_GENERAL})
+endif()
+
+if(BUILD_VARIANT STREQUAL "TRANSITION_FIRMWARE")
+    list(REMOVE_ITEM TASKS src/tasks/qrdecode_task.c)
+    list(FILTER CRYPTO EXCLUDE REGEX "/rsa\\.c$")
+    list(FILTER WEBUSB_PROTOCOL EXCLUDE REGEX "/eapdu_services/")
 endif()
     
 file(GLOB_RECURSE FREERTOS

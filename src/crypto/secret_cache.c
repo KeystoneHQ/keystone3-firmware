@@ -9,13 +9,14 @@
 #include "account_manager.h"
 #include "se_manager.h"
 
+static uint8_t g_checksumCache[32] = {0};
+#ifndef TRANSITION_FIRMWARE
 static char *g_passwordCache = NULL;
 static char *g_newPasswordCache = NULL;
 static char *g_passphraseCache = NULL;
 static uint8_t *g_entropyCache = NULL;
 static uint32_t g_entropyLen;
 static uint8_t *g_emsCache = NULL;
-static uint8_t g_checksumCache[32] = {0};
 static uint32_t g_emsLen;
 static char *g_mnemonicCache = NULL;
 static char *g_slip39MnemonicCache[SLIP39_MAX_MEMBER];
@@ -26,6 +27,7 @@ static uint32_t g_diceRollsLen = 0;
 static uint16_t g_identifier;
 static uint16_t g_iteration;
 static bool g_extendable;
+#endif
 
 void SecretCacheSetChecksum(uint8_t *checksum)
 {
@@ -37,6 +39,7 @@ void SecretCacheGetChecksum(char *checksum)
     ByteArrayToHexStr(g_checksumCache, sizeof(g_checksumCache), checksum);
 }
 
+#ifndef TRANSITION_FIRMWARE
 void SecretCacheSetWalletIndex(uint8_t iconIndex)
 {
     g_walletIconIndex = iconIndex;
@@ -310,3 +313,4 @@ void ClearSecretCache(void)
     // SE-side transient session secrets share the passcode cache's lifetime (gen-2). No-op on gen-1.
     SE_ClearSessionSecrets();
 }
+#endif

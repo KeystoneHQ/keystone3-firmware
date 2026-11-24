@@ -7,7 +7,6 @@ find_program(BINDGEN_EXE bindgen)
 find_program(CBINDGEN_EXE cbindgen)
 
 # BUILD_ENVIRONMENT: PRODUCTION, DEBUG, SIMULATOR
-# BUILD_VARIANT: BTC_ONLY, MULTI_COINS, CYPHERPUNK
 
 set(RUST_DIR ${CMAKE_SOURCE_DIR}/rust)
 set(RUST_C_DIR ${RUST_DIR}/rust_c)
@@ -45,6 +44,8 @@ if(BUILD_VARIANT STREQUAL "BTC_ONLY")
     set(FEATURE_VARIANT "btc-only")
 elseif(BUILD_VARIANT STREQUAL "CYPHERPUNK")
     set(FEATURE_VARIANT "cypherpunk")
+elseif(BUILD_VARIANT STREQUAL "TRANSITION_FIRMWARE")
+    set(FEATURE_VARIANT "transition-firmware")
 else()
     set(FEATURE_VARIANT "multi-coins")
 endif()
@@ -52,7 +53,7 @@ endif()
 set(FEATURE ${FEATURE_ENVIRONMENT}-${FEATURE_VARIANT})
 
 set(CBINDGEN_BINDINGS_TARGET ${RUST_C_DIR}/bindings/${FEATURE}/librust_c.h)
-set(COPY_BINDINGS_TARGET cp ${CBINDGEN_BINDINGS_TARGET} ${TARGET_PATH})
+set(COPY_BINDINGS_TARGET ${CMAKE_COMMAND} -E copy_if_different ${CBINDGEN_BINDINGS_TARGET} ${TARGET_PATH})
 
 # compile rust lib
 set(CARGO_FLAG --release -p rust_c --no-default-features)
@@ -72,5 +73,6 @@ add_custom_target(rust_c ALL
     COMMAND rustup run ${RUST_TOOLCHAIN} ${RUST_CARGO_EXECUTABLE} build ${CARGO_FLAG}
     COMMAND ${COPY_BUILD_TARGET}
     COMMAND ${COPY_BINDINGS_TARGET}
+    BYPRODUCTS ${TARGET_PATH}/${LIB_NAME} ${TARGET_PATH}/librust_c.h
     WORKING_DIRECTORY ${RUST_DIR}
 )

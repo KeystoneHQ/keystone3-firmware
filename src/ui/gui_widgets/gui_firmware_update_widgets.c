@@ -179,7 +179,9 @@ void GuiFirmwareSdCardCopyResult(bool en)
         printf("copy success\n");
     } else {
         printf("copy failed\n");
+#if !FIRMWARE_TRANSITION_ONLY
         GuiDeleteKeyboardWidget(g_keyboardWidget);
+#endif
         g_noticeWindow = GuiCreateErrorCodeWindow(ERR_UPDATE_FIRMWARE_NOT_DETECTED, &g_noticeWindow, NULL);
     }
 }
@@ -197,7 +199,9 @@ void GuiFirmwareUpdateDeInit(void)
         g_knownWarningCountDownTimer = NULL;
     }
 #endif
+#if !FIRMWARE_TRANSITION_ONLY
     GuiDeleteKeyboardWidget(g_keyboardWidget);
+#endif
     g_param = NULL;
     printf("GuiFirmwareUpdateDeInit\n");
     GUI_DEL_OBJ(g_noticeWindow)
@@ -226,6 +230,9 @@ void GuiFirmwareUpdateRefresh(void)
     SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, ReturnHandler, NULL);
 #endif
     SetMidBtnLabel(g_pageWidget->navBarWidget, NVS_BAR_MID_LABEL, "");
+#if FIRMWARE_TRANSITION_ONLY
+    SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_RIGHT_BUTTON_BUTT, NULL, NULL);
+#else
     if (GetEntryEnum() == FIRMWARE_UPDATE_ENTRY_SETUP && g_firmwareUpdateWidgets.currentTile == FIRMWARE_UPDATE_SELECT) {
         SetNavBarRightBtn(g_pageWidget->navBarWidget, NVS_BAR_NEW_SKIP, OpenViewHandler, &g_purposeView);
     } else {
@@ -242,13 +249,18 @@ void GuiFirmwareUpdateRefresh(void)
             }
         }
     }
+#endif
     GuiCreateSelectTile(g_firmwareUpdateWidgets.tileSelect);
+#if !FIRMWARE_TRANSITION_ONLY
     PassWordPinHintRefresh(g_keyboardWidget);
+#endif
 }
 
 void GuiFirmwareUpdateWidgetRefresh(void)
 {
+#if !FIRMWARE_TRANSITION_ONLY
     PassWordPinHintRefresh(g_keyboardWidget);
+#endif
 }
 
 void GuiFirmwareUpdatePrevTile(void)
@@ -695,10 +707,12 @@ static void CloseQrcodeHandler(lv_event_t *e)
 
 void GuiFirmwareUpdateVerifyPasswordErrorCount(void *param)
 {
+#if !FIRMWARE_TRANSITION_ONLY
     PasswordVerifyResult_t *passwordVerifyResult = (PasswordVerifyResult_t *)param;
     if (g_keyboardWidget != NULL) {
         GuiShowErrorNumber(g_keyboardWidget, passwordVerifyResult);
     }
+#endif
 }
 
 static void GuiFirmwareUpdateViewSha256(uint8_t percent)

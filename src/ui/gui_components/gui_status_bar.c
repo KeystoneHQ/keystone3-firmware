@@ -575,6 +575,7 @@ static lv_obj_t *CreateMidWordCntSelect(lv_obj_t *navBar)
     return btn;
 }
 
+#ifndef TRANSITION_FIRMWARE
 static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 {
     lv_obj_t *btn = GuiCreateStatusCoinButton(navBar, _(""), &walletBluewallet);
@@ -582,6 +583,8 @@ static lv_obj_t *CreateCoinBtn(lv_obj_t *navBar)
 
     return btn;
 }
+
+#endif
 
 static lv_obj_t *CreateWordCntSelect(lv_obj_t *navBar)
 {
@@ -745,9 +748,11 @@ void SetNavBarMidBtn(NavBarWidget_t *navBarWidget, NVS_MID_BUTTON_ENUM button,
         navBarWidget->midBtn = CreateMidLabel(navBarWidget->navBar);
         midButtonCb = eventCb;
         break;
+#ifndef TRANSITION_FIRMWARE
     case NVS_BAR_MID_COIN:
         navBarWidget->midBtn = CreateCoinBtn(navBarWidget->navBar);
         return;
+#endif
     default:
         return;
     }

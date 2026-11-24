@@ -131,7 +131,7 @@ static void UiDisplayTask(void *argument)
 #endif
             }
             break;
-#ifndef BTC_ONLY
+#if !defined(BTC_ONLY) && !defined(TRANSITION_FIRMWARE)
             case UI_MSG_USB_TRANSPORT_VIEW: {
                 GuiFrameOpenViewWithParam(&g_USBTransportView, rcvMsg.buffer, rcvMsg.length);
             }
@@ -154,7 +154,7 @@ static void UiDisplayTask(void *argument)
             }
             break;
 #endif
-#ifdef WEB3_VERSION
+#if defined(WEB3_VERSION) && !defined(TRANSITION_FIRMWARE)
             case UI_MSG_CLOSE_NFT_LOCK: {
                 uint8_t *snapShotAddr = GetActSnapShot();
                 while (LcdBusy()) {
@@ -168,6 +168,7 @@ static void UiDisplayTask(void *argument)
             }
             break;
 #endif
+#ifndef TRANSITION_FIRMWARE
             case UI_MSG_PREPARE_RECEIVE_UR_USB: {
 #ifdef CYPHERPUNK_VERSION
                 if (rcvMsg.value == ZcashBatchTx) {
@@ -178,6 +179,7 @@ static void UiDisplayTask(void *argument)
                 GuiFrameOpenViewWithParam(&g_transactionDetailView, &rcvMsg.value, sizeof(rcvMsg.value));
             }
             break;
+#endif
             case UI_MSG_OPEN_VIEW: {
                 GUI_VIEW *view = (GUI_VIEW *)rcvMsg.value;
                 GuiFrameOpenView(view);

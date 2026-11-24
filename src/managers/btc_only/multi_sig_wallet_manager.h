@@ -49,7 +49,9 @@ typedef struct MultiSigWalletManager {
 
 MultiSigWalletManager_t* initMultiSigWalletManager();
 int32_t LoadCurrentAccountMultisigWallet(const char* password);
+#ifdef BTC_ONLY
 MultiSigWalletItem_t *AddMultisigWalletToCurrentAccount(MultiSigWallet *wallet, const char *password);
+#endif
 MultiSigWalletItem_t *GetMultisigWalletByVerifyCode(const char* verifyCode);
 MultiSigWalletManager_t* GetMultisigWalletManager();
 int GetCurrentAccountMultisigWalletNum(bool isPassphrase);

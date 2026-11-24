@@ -19,9 +19,17 @@ void GuiCreateBootUpdateHandler(lv_event_t * e)
     if (g_bootUpdating) {
         return;
     }
-    if (GetCurrentDisplayPercent() <= 40 ||
+    int32_t updateKeyStatus = SUCCESS_CODE;
+#if FIRMWARE_TRANSITION_ONLY && !defined(COMPILE_SIMULATOR)
+    uint8_t updateKey[UPDATE_PUB_KEY_LEN + 1];
+    updateKeyStatus = GetUpdatePubKey(updateKey);
+#endif
+    if (updateKeyStatus != SUCCESS_CODE || GetCurrentDisplayPercent() <= 40 ||
             GetUsbDetectState() == false) {
-        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("error_box_low_power"), _("boot_update_limit_desc"), NULL, _("OK"), WHITE_COLOR_OPA20);
+        GUI_DEL_OBJ(g_noticeWindow)
+        char buff[BUFFER_SIZE_512];
+        snprintf_s(buff, sizeof(buff), "%s%s", updateKeyStatus != SUCCESS_CODE ? " " : "", _("boot_update_limit_desc"));
+        g_noticeWindow = GuiCreateConfirmHintBox(&imgFailed, _("error_box_low_power"), buff, NULL, _("OK"), WHITE_COLOR_OPA20);
         lv_obj_add_event_cb(GuiGetHintBoxRightBtn(g_noticeWindow), CloseHintBoxHandler, LV_EVENT_CLICKED, &g_noticeWindow);
         return;
     }

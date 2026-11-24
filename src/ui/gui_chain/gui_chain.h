@@ -2,6 +2,7 @@
 #define _GUI_CHAIN_H
 
 #include "gui_animating_qrcode.h"
+#ifndef TRANSITION_FIRMWARE
 #include "gui_btc.h"
 #ifndef BTC_ONLY
 #include "gui_zcash.h"
@@ -25,6 +26,7 @@
 #include "gui_iota.h"
 #else
 #include "gui_monero.h"
+#endif
 #endif
 #endif
 

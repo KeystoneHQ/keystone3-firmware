@@ -3,4 +3,5 @@ pub mod ed25519;
 pub mod rsa;
 pub mod secp256k1;
 mod utils;
+#[cfg(any(feature = "multi_coins", feature = "cypherpunk"))]
 pub mod zcash;

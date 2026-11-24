@@ -27,4 +27,4 @@ jobs:
         uses: taiki-e/install-action@cargo-llvm-cov
 
       - name: Run rust/apps/cardano
-        run: cd rust/apps/cardano && cargo +$RUST_TOOLCHAIN llvm-cov --fail-under-regions 53 --fail-under-functions 63 --fail-under-lines 66 --ignore-filename-regex 'keystore/*|utils/*'
+        run: cd rust/apps/cardano && cargo +$RUST_TOOLCHAIN llvm-cov --fail-under-regions 76 --fail-under-functions 65 --fail-under-lines 72 --ignore-filename-regex 'keystore/*|utils/*'

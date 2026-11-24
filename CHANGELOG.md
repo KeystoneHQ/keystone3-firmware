@@ -1,3 +1,18 @@
+## 4.0.2(2026-11-24)
+
+**Web3:**
+
+Improved system stability.
+
+**Cypherpunk:**
+
+Improved system stability.
+
+**BTC Only:**
+
+Improved system stability.
+
+
 ## 4.0.0(2026-11-13)
 
 **Web3:**

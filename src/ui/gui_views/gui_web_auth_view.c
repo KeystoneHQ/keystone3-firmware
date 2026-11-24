@@ -4,6 +4,7 @@
 #include "gui_status_bar.h"
 #include "gui_web_auth_widgets.h"
 #include "err_code.h"
+#include <string.h>
 
 int32_t GuiWebAuthViewEventProcess(void *self, uint16_t usEvent, void *param, uint16_t usLen)
 {
@@ -21,6 +22,18 @@ int32_t GuiWebAuthViewEventProcess(void *self, uint16_t usEvent, void *param, ui
     case GUI_EVENT_RESTART:
         GuiWebAuthAreaRestart();
         break;
+    case SIG_WEB_AUTH_KEY_CHECK:
+        GuiWebAuthShowKeyCheck(param);
+        break;
+    case SIG_WEB_AUTH_VERIFICATION_ID: {
+        uint32_t crc;
+        if (param == NULL || usLen != sizeof(crc)) {
+            return ERR_GUI_ERROR;
+        }
+        memcpy(&crc, param, sizeof(crc));
+        GuiWebAuthShowVerificationId(crc);
+        break;
+    }
     default:
         return ERR_GUI_UNHANDLED;
     }

@@ -16,6 +16,7 @@ static bool g_isMulti = false;
 static URParseResult *g_urResult = NULL;
 static URParseMultiResult *g_urMultiResult = NULL;
 static char *g_authCode = NULL;
+static bool g_calculatingAuthCode;
 static lv_obj_t *g_hintBox = NULL;
 static PageWidget_t *g_pageWidget;
 
@@ -60,6 +61,9 @@ void GuiSetWebAuthResultData(URParseResult *urResult, URParseMultiResult *multiR
 
 void GuiWebAuthResultSuccessHandler(lv_event_t *e)
 {
+    if (g_calculatingAuthCode) {
+        return;
+    }
     if (g_webAuthSuccessCb != NULL) {
         g_webAuthSuccessCb();
     }
@@ -263,11 +267,18 @@ void GuiWebAuthResultAreaRestart()
 
 void GuiWebAuthResultInitNVSBar()
 {
-    SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    if (g_calculatingAuthCode) {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_LEFT_BUTTON_BUTT, NULL, NULL);
+    } else {
+        SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_RETURN, CloseCurrentViewHandler, NULL);
+    }
 }
 
 uint32_t GuiWebAuthResultPrevTile()
 {
+    if (g_calculatingAuthCode) {
+        return SUCCESS_CODE;
+    }
     // it starts from result tile;
     switch (g_WebAuthResultTileView.currentTile) {
     case WEB_AUTH_RESULT_CODE:
@@ -283,6 +294,9 @@ uint32_t GuiWebAuthResultPrevTile()
 
 uint32_t GuiWebAuthResultNextTile()
 {
+    if (g_calculatingAuthCode) {
+        return SUCCESS_CODE;
+    }
     switch (g_WebAuthResultTileView.currentTile) {
     case WEB_AUTH_RESULT_CODE:
         SetNavBarLeftBtn(g_pageWidget->navBarWidget, NVS_BAR_CLOSE, ReturnHandler, NULL);
@@ -299,6 +313,8 @@ static lv_obj_t *g_WebAuthResultPendingCont;
 
 void GuiWebAuthResultShowPending()
 {
+    g_calculatingAuthCode = true;
+    GuiWebAuthResultInitNVSBar();
     g_WebAuthResultPendingCont = GuiCreateAnimHintBox(480, 326, 82);
     lv_obj_t *title = GuiCreateTextLabel(g_WebAuthResultPendingCont, _("seed_check_wait_verify"));
     lv_obj_align(title, LV_ALIGN_BOTTOM_MID, 0, -124);
@@ -314,7 +330,14 @@ void GuiWebAuthResultHidePending()
 
 void GuiWebAuthShowAuthCode(char *authCode)
 {
+    g_calculatingAuthCode = false;
+    GuiWebAuthResultHidePending();
+    GuiWebAuthResultInitNVSBar();
+    if (authCode == NULL || strnlen_s(authCode, 9) != 8) {
+        GuiWebAuthResultNextTile();
+        return;
+    }
     g_authCode = authCode;
     GuiWebAuthResultRenderAuthCode(g_WebAuthResultTileView.result);
-    GuiWebAuthResultHidePending();
+    g_authCode = NULL;
 }

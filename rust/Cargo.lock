@@ -3407,9 +3407,9 @@ dependencies = [
 
 [[package]]
 name = "pasta_curves"
-version = "0.6.1"
+version = "0.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0ed53ba43531a06e1f82020907cf192fc3c25d7c0baf5c49c547b74e7103b62"
+checksum = "6c6ffcfacaf7dc81ca2e318f019b6e09f84327ecfbddb4e58574bcebdd123975"
 dependencies = [
  "blake2b_simd",
  "ff 0.14.0",
@@ -4211,6 +4211,7 @@ dependencies = [
  "sandbox_parser",
  "serde_json",
  "sha1",
+ "sha2 0.10.9",
  "sim_qr_reader",
  "sui-transaction-types-core",
  "thiserror-core",

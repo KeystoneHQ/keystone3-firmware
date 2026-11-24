@@ -1,4 +1,10 @@
 {
+    "4.0.0": {
+        "web3": {
+            "firmware_sha256": "8f9bc9b50c5835f4735c1a80638d5f0793ca938624d1c6fcad1170a20ec9a053",
+            "source_code_sha256": "d618ec341dd21091d81424874be5393d22410357de61fcd82ae266dce510af87"
+        }
+    },
     "3.9.9": {
         "web3": {
             "firmware_sha256": "195c7f18a6d80dd4ece60bebe2741e2259a780819704ce7ed3f9c77daa37509e",

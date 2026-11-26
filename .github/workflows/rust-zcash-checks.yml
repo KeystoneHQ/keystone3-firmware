@@ -9,23 +9,24 @@ on:
 
 name: Zcash Checks
 
+permissions:
+  contents: read
+
 jobs:
   UnitTest:
     name: Unit Test And Code coverage
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.8.0
+        with:
+          persist-credentials: false
 
       - name: Read Rust toolchain
         run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          override: true
-          components: rustfmt
-          target: x86_64-apple-darwin
+      - name: Install Rust toolchain
+        run: rustup toolchain install "$RUST_TOOLCHAIN" --component rustfmt --target x86_64-apple-darwin
 
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
@@ -42,15 +43,15 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.8.0
+        with:
+          persist-credentials: false
 
       - name: Read Rust toolchain
         run: echo "RUST_TOOLCHAIN=$(cat rust-toolchain)" >> $GITHUB_ENV
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: ${{ env.RUST_TOOLCHAIN }}
-          override: true
+      - name: Install Rust toolchain
+        run: rustup toolchain install "$RUST_TOOLCHAIN"
 
       - name: Run rust_c zcash tests
         run: cd rust && cargo +$RUST_TOOLCHAIN test -p rust_c --no-default-features --features simulator-cypherpunk --lib -- zcash common::ur

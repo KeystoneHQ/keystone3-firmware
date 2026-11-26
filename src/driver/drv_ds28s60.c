@@ -77,6 +77,7 @@
 #define VALUE_CHECK(value, expect)          {if (value != expect) {printf("input err!\r\n"); return; }}
 
 DS28S60_Info_t g_ds28s60Info;
+static osMutexId_t g_ds28s60CommandMutex;
 
 static const SPIIO_Cfg_t DS28S60_SPI_CONFIG = {
     .MISO_PORT = DS28S60_MISO_PORT,
@@ -134,6 +135,11 @@ static void GetPartialSecret(uint8_t *partialSecret);
 void DS28S60_Init(void)
 {
     GPIO_InitTypeDef gpioInit = {0};
+
+    if (g_ds28s60CommandMutex == NULL) {
+        g_ds28s60CommandMutex = osMutexNew(NULL);
+        ASSERT(g_ds28s60CommandMutex != NULL);
+    }
 
     SpiIoInit(&DS28S60_SPI_CONFIG);
     gpioInit.GPIO_Mode = GPIO_Mode_Out_PP;
@@ -348,6 +354,15 @@ static int32_t ConfirmBlockSettings(void)
 //resultArray does not contain len-byte and result-byte.
 static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t paraLen, uint8_t expectedLen, uint8_t *resultArray)
 {
+    osKernelState_t kernelState = osKernelGetState();
+    bool useMutex = kernelState == osKernelRunning || kernelState == osKernelLocked;
+    if (useMutex) {
+        uint32_t waitTicks = kernelState == osKernelRunning ? osWaitForever : 0U;
+        if (osMutexAcquire(g_ds28s60CommandMutex, waitTicks) != osOK) {
+            return ERR_GENERAL_FAIL;
+        }
+    }
+
     uint32_t tryCount = 0;
     int32_t ret = SUCCESS_CODE;
     while (tryCount++ < RETRY_MAX_COUNT) {
@@ -356,6 +371,10 @@ static int32_t DS28S60_SendCmdAndGetResult(uint8_t cmd, uint8_t *para, uint8_t p
             break;
         }
         printf("retry %d\r\n", (int)tryCount);
+    }
+    if (useMutex) {
+        osStatus_t status = osMutexRelease(g_ds28s60CommandMutex);
+        ASSERT(status == osOK);
     }
     assert(ret == 0);
     return ret;

@@ -1,0 +1,42 @@
+{
+    "4.0.2": {
+        "web3": {
+            "firmware_sha256": "46123729055f81f9180da71089aeb872265e79336b5473f0ae90d3c43e3b70e9",
+            "source_code_sha256": "0292819062a6e4d5813aac8176528c3175c894dca1a0b74338752be9e52aaafc"
+        },
+        "btc_only": {
+            "firmware_sha256": "155ac40a85c693389be5b232a10dca5fdb5b6325a10635ce347060c93dd147c2",
+            "source_code_sha256": "e340360f95211bb94784b5c9d31b21faef94b3b66d755c13bcbd7362e6fdc465"
+        },
+        "cypherpunk": {
+            "firmware_sha256": "3ff57ba352fabe9eb6567968befc86b6c11286d195daf0cbf79cd389a1d7485e",
+            "source_code_sha256": "b10528ec4060126f15029b404965189111e943b66c58cfb3c0b574e9f79ff20c"
+        }
+    },
+    "4.0.0": {
+        "web3": {
+            "firmware_sha256": "8f9bc9b50c5835f4735c1a80638d5f0793ca938624d1c6fcad1170a20ec9a053",
+            "source_code_sha256": "d618ec341dd21091d81424874be5393d22410357de61fcd82ae266dce510af87"
+        }
+    },
+    "3.9.9": {
+        "web3": {
+            "firmware_sha256": "195c7f18a6d80dd4ece60bebe2741e2259a780819704ce7ed3f9c77daa37509e",
+            "source_code_sha256": "b2e650b706a30c66c981f26f2ec25fec637a3dbfeb33e55b6ee02a319c01528e"
+        }
+    },
+    "3.2.2": {
+        "web3": {
+            "firmware_sha256": "53c8584d40eeac4b65b343ce6e874d9e409aabdd3e665bc489099234fd0e1e5f",
+            "source_code_sha256": "1ffda518d933d1cb6cbe0a69c34a58e313eeadcd9b82cb6adb4f1753c6051488"
+        },
+        "btc_only": {
+            "firmware_sha256": "177e91d72002df65a15fc52ca8226d9c02ac7f85f8f5dd96693d95457298eccb",
+            "source_code_sha256": "c5b0f1f27e5bd36543a7f7ec9d4803e0a731d46fe467ee4d0f202a75ac1bf873"
+        },
+        "cypherpunk": {
+            "firmware_sha256": "394b947c27441c43a4a1761b5815819104c5496f2cce3b8b47faf26bd720a9f8",
+            "source_code_sha256": "ceb77490e895acec2d7ffab25cc5415878bfdac65d74ba4239cd4ef8dc73c6a4"
+        }
+    }
+}

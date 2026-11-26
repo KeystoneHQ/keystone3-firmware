@@ -6,6 +6,9 @@
 #include "user_memory.h"
 #include "err_code.h"
 #include "assert.h"
+#include "drv_ds28s60.h"
+#include "se_manager.h"
+#include "memzero.h"
 
 #define FACTORY_RESULT_CHECK_ENABLE         1
 
@@ -43,17 +46,50 @@ int32_t SetSerialNumber(const char *serialNumber)
     return SUCCESS_CODE;
 }
 
+int32_t GetWebAuthRsaPrimes(uint8_t pq[WEB_AUTH_RSA_PRIMES_LEN])
+{
+    if (pq == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
+    bool empty = true;
+    for (uint32_t page = PAGE_WEB_AUTH_PQ_FIRST; page <= PAGE_WEB_AUTH_PQ_LAST; page++) {
+        uint8_t *data = pq + (page - PAGE_WEB_AUTH_PQ_FIRST) * 32;
+        if (DS28S60_HmacAuthenticatedRead(data, page) != SUCCESS_CODE) {
+            memzero(pq, WEB_AUTH_RSA_PRIMES_LEN);
+            return ERR_GENERAL_FAIL;
+        }
+        uint8_t zero = 0, ff = 0;
+        for (uint32_t i = 0; i < 32; i++) {
+            zero |= data[i];
+            ff |= data[i] ^ 0xFF;
+        }
+        if (zero != 0 && ff != 0) {
+            empty = false;
+        }
+    }
+    if (empty) {
+        memzero(pq, WEB_AUTH_RSA_PRIMES_LEN);
+        return ERR_WEB_AUTH_KEY_NOT_EXIST;
+    }
+    return SUCCESS_CODE;
+}
+
 int32_t GetWebAuthRsaKey(uint8_t *key)
 {
     uint8_t *data;
 
     data = SRAM_MALLOC(WEB_AUTH_RSA_KEY_LEN);
+    if (data == NULL) {
+        return ERR_GENERAL_FAIL;
+    }
     ReadOtpData(OTP_ADDR_WEB_AUTH_RSA_KEY, data, WEB_AUTH_RSA_KEY_LEN);
     if (CheckEntropy(data, WEB_AUTH_RSA_KEY_LEN) == false) {
+        memzero(data, WEB_AUTH_RSA_KEY_LEN);
         SRAM_FREE(data);
         return ERR_WEB_AUTH_KEY_NOT_EXIST;
     }
     memcpy(key, data, WEB_AUTH_RSA_KEY_LEN);
+    memzero(data, WEB_AUTH_RSA_KEY_LEN);
     SRAM_FREE(data);
     return SUCCESS_CODE;
 }

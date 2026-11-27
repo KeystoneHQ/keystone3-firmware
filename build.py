@@ -86,7 +86,8 @@ def build_img_to_c_file(force=False, skip_image=False):
     def calculate_directory_hash(directory):
         hash_md5 = hashlib.md5()
         for root, dirs, files in os.walk(directory):
-            for file in files:
+            dirs.sort()
+            for file in sorted(files):
                 if file.lower().endswith('.png'):
                     file_path = os.path.join(root, file)
                     with open(file_path, 'rb') as f:
